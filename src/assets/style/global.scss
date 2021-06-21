@@ -1,0 +1,19 @@
+.clearfix::after {
+  content   : '.';
+  display   : block;
+  height    : 0;
+  clear     : both;
+  visibility: hidden;
+}
+
+.stream-view {
+  video {
+    max-height: 150px;
+  }
+}
+
+.ofweek-dialog {
+  .el-dialog__body {
+    padding: 0 20px;
+  }
+}
