@@ -10,11 +10,26 @@
       <div class="wrap-item" v-for="(item,index) in liveRemoteList" :key="index"></div>
     </div>
     <div class="ppt-view"></div>
+      <el-dialog title="提示" v-model="applyShow">
+        <p>{{applyMsg.auditerNick}}申请上麦</p>
+        <template #footer>
+          <el-button @click="handleGuestApply(0)">拒绝</el-button>
+          <el-button type="primary" @click="handleGuestApply(1)">同意</el-button>
+        </template>
+      </el-dialog>
+      <el-dialog title="提示" v-model="inviteShow">
+        <p>{{inviteMsg.inviterNick}}邀请您上麦</p>
+        <template #footer>
+          <el-button @click="handleInvite(0)">拒绝</el-button>
+          <el-button type="primary" @click="handleInvite(1)">同意</el-button>
+        </template>
+      </el-dialog>
   </div>
 </template> 
 
 <script>
 import { mapState } from "vuex";
+import { ElMessage } from 'element-plus'
 import { IM_EVENT } from "../../../sdk/imLive";
 import MediaCheck from "./mediaCheck.vue";
 import { eventEmitter } from '../../../utils/event'
@@ -30,6 +45,12 @@ export default {
     return {
       streamList: [],
       mediaSelVisible: false,
+      applyShow: false,
+      applyMsg: {},
+      applyTimer: null,
+      inviteShow: false,
+      inviteMsg: {},
+      inviteTimer: null
     };
   },
 
@@ -134,37 +155,70 @@ export default {
           const payloadData = JSON.parse(msg.payload?.data);
           const { msgCode } = payloadData
           console.log(payloadData);
+
+          if (String(payloadData.roomId) !== String(this.roomId)) {
+            return 
+          }
+
           const codeAction = {
-            // 邀请直播
-            1706:() => {
-              debugger
+            // 邀请直播消息
+            1706: () => {
+              this.inviteMsg = payloadData
+              this.inviteShow = true
+              // 30秒内不处理上麦消息自动决绝并关闭弹窗
+              this.inviteTimer = setTimeout(() => {
+                this.handleInvite(0)
+               }, 30 * 1000);
             },
-            // 申请上麦
-            1710:() => {
-              debugger
+
+            // 申请上麦消息
+            1710: () => {
+               this.applyMsg = payloadData
+               this.applyShow = true
+                // 30秒内不处理上麦消息自动决绝并关闭弹窗
+               this.applyTimer = setTimeout(() => {
+                this.handleGuestApply(0)
+               }, 30 * 1000);
             },
-            // 处理上麦申请
-            1712:() => {
-              debugger
+
+            // 处理上麦申请消息
+            1712: () => {
+              if (String(payloadData.auditerId) !== String(this.userInfo.imAccount)) {
+                return 
+              }
+              if (payloadData.isAgree) {
+                ElMessage.success(`${payloadData.anthorNick}同意了您的上麦申请`)
+              } else {
+                ElMessage.warn(`${payloadData.anthorNick}拒绝了您的上麦申请`)
+              }
             },
-            // 处理上麦邀请
-            1714:() => {
-              debugger
+
+            // 处理上麦邀请消息
+            1714: () => {
+              if (String(payloadData.adminId) !== String(this.userInfo.imAccount)) {
+                return
+              }
+              ElMessage[payloadData.isAgree ? 'success' : 'fail'](`${payloadData.guestNick}${payloadData.isAgree ? 
+              '同意' : '拒绝'}了您的上麦邀请`)
             },
+
             // 开始直播
-            1722:() => {
+            1722: () => {
               debugger
             },
+
             // 结束直播
-            1723:() => {
+            1723: () => {
               debugger
             },
+
             // 嘉宾上麦
-            1726:() => {
+            1726: () => {
               debugger
             },
+
             // 嘉宾下麦
-            1727:() => {
+            1727: () => {
               debugger
             },
           }
@@ -213,6 +267,34 @@ export default {
       if (ok) {
       }
     },
+
+    // 处理上麦邀请
+    handleInvite(isagree) {
+      window.clearTimeout(this.inviteTimer)
+      this.$store.dispatch({
+        type: 'live/handleInviteLive',
+        payload: {
+          roomid: this.roomId,
+          adminid: this.inviteMsg.inviterId,
+          isagree
+        }
+      })
+      this.inviteShow = false;
+    },
+
+    // 处理上麦申请
+    handleGuestApply(isagree) {
+      window.clearTimeout(this.applyTimer)
+      this.$store.dispatch({
+        type: 'live/handleApplyLive',
+        payload: {
+          roomid: this.roomId,
+          auditerid: this.applyMsg.auditerId,
+          isagree
+        }
+      })
+      this.applyShow = false;
+    }
   },
 };
 </script>

@@ -53,3 +53,16 @@
 .icon-unhand {
   background: url(~assets/img/live/i-unhand.png) no-repeat center;
 }
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+label,
+span {
+  line-height: normal;
+  padding: 0;
+  margin: 0;
+}
