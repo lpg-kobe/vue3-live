@@ -10,11 +10,14 @@ import { replaceHistory } from '../../../utils/tool'
 export default {
   namespaced: true,
   state: {
-    userInfo: getUserSession()
+    // 登录用户
+    userInfo: getUserSession(),
+    // 房间用户
+    user: {}
   },
   getters: {},
   mutations: {
-    setState (state, params) {
+    setState(state, params) {
       if (Array.isArray(params)) {
         params.forEach(({ key, value }) => {
           state[key] = value
@@ -27,7 +30,7 @@ export default {
     }
   },
   actions: {
-    async login ({ commit, dispatch }, { payload }) {
+    async login({ commit, dispatch }, { payload }) {
       const { status, data: { data } } = await login(payload)
       status && dispatch({
         type: 'judgeLogin',
@@ -37,12 +40,12 @@ export default {
       })
     },
 
-    async sendSms ({ commit, dispatch }, { payload, callback }) {
+    async sendSms({ commit, dispatch }, { payload, callback }) {
       const { status, data } = await sendSms(payload)
       status && callback?.({ status, ...data })
     },
 
-    async smsLogin ({ commit, dispatch }, { payload }) {
+    async smsLogin({ commit, dispatch }, { payload }) {
       const { status, data: { data } } = await smsLogin(payload)
       status && dispatch({
         type: 'judgeLogin',
@@ -52,7 +55,7 @@ export default {
       })
     },
 
-    judgeLogin ({ }, { payload: { data } }) {
+    judgeLogin({ }, { payload: { data } }) {
       if (data?.isAuthorOrGuest === 0) {
         ElMessage.error(t('您还不是主播，请点击右下方申请直播'));
         return;

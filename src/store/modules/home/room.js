@@ -102,7 +102,7 @@ export default {
       const { status, data } = await entryroom(payload)
       console.log(data, 'entryroom进入房间成功')
 
-      if (data.code === 0) {
+      if (status) {
         // 保存用户信息
         commit('user/setState', [
           {
@@ -146,7 +146,6 @@ export default {
             } else {
               _name = data.data.mobilePhone
             }
-            console.log(_name)
             commit('user/setState', {
               key: 'userName',
               value: _name

@@ -93,12 +93,12 @@ export default {
           handleGetUserMediaError(error);
           return;
         }
-
-        trtcClient.stream.play("mediaPreview", {
-          muted: true,
-        });
       }
 
+      await trtcClient.stream.stop()
+      trtcClient.stream.play("mediaPreview", {
+        muted: true,
+      });
       timer.value = window.requestAnimationFrame?.(raqToCheckAudio);
       cameras.value = await trtcClient.getCameras();
       mics.value = await trtcClient.getMics();

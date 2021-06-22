@@ -3,12 +3,16 @@ import { getRoomPrivateKey, getMembers, startLive, stopLive, applyLive, guestSta
 export default {
   namespaced: true,
   state: {
+    // 直播状态
+    liveStart: false,
+    // 小窗口节点id
+    liveThumbId: 'thumbVideo',
     // 直播成员
     livemembers: [],
     // 远端流
     liveRemoteList: [],
     // 当前主讲人
-    liveAdmin: {}
+    liveSpeaker: null
   },
   getters: {},
   mutations: {
@@ -36,7 +40,7 @@ export default {
     async getMembers({ commit }, { payload, callback }) {
       const { status, data: { data } } = await getMembers(payload)
       if (status) {
-        callback?.()
+        callback?.(data)
         commit('setState', {
           key: 'liveMembers',
           value: data

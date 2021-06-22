@@ -3,11 +3,13 @@
     <MediaCheck
       :visible="mediaSelVisible"
       :client="trtcClient"
-      :user="userInfo"
+      :user="user.userInfo"
       @btn-click="handleMediaSel"
     />
-    <div v-if="liveRemoteList.length" class="remote-view flex">
-      <div class="wrap-item" v-for="(item,index) in liveRemoteList" :key="index"></div>
+    <div v-if="mainStreamList.length" class="remote-view flex">
+      <div class="wrap-item" v-for="(item) in mainStreamList" :key="item.userId">
+        <div :id="`remote_${item.userId}`"></div>
+      </div>
     </div>
     <div class="ppt-view"></div>
       <el-dialog title="提示" v-model="applyShow">
@@ -43,8 +45,8 @@ export default {
 
   data() {
     return {
-      streamList: [],
-      mediaSelVisible: false,
+      mainStreamList: [],
+      mediaSelVisible: true,
       applyShow: false,
       applyMsg: {},
       applyTimer: null,
@@ -55,17 +57,16 @@ export default {
   },
 
   created() {
+    this.joinTrtc();
+    this.initLive();
     this.unbindEvent();
     this.bindEvent();
-    this.joinTrtc();
-    this.initRoom();
   },
 
   computed: {
     ...mapState({
-      userInfo: ({ user: { userInfo } }) => userInfo,
-      liveMembers: ({ live: { liveMembers } }) => liveMembers,
-      liveRemoteList: ({ live: { liveRemoteList } }) => liveRemoteList,
+      user: ({ user }) => user,
+      live: ({ live }) => live,
       imClient: ({ imClient }) => imClient,
       trtcClient: ({ trtcClient }) => trtcClient,
       roomId: ({ router: { params } }) => params?.roomId,
@@ -99,21 +100,39 @@ export default {
       });
     },
 
-    // init room status
-    initRoom() {
+    // init live data before do anything
+    initLive() {
       this.$store.dispatch({
         type: "live/getMembers",
         payload: {
           roomid: this.roomId,
         },
-        callback: () => {},
+        callback: (members) => {
+          // init room speaker
+          const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
+          this.$store.commit('live/setState', {
+            key: 'liveSpeaker',
+            value: {
+              ...speaker,
+              userId: speaker.memberId
+            }
+          })
+        },
       });
+
+      // get user in room, will move feature
+      this.$store.dispatch({
+        type: 'room/entryroom',
+        payload: {
+          roomid: this.roomId
+        }
+      })
     },
 
     // ready to mix stream of users in room
     startMixStream() {
       const videoRate = 9 / 16;
-      const mixUsers = this.liveMembers.map(({ memberId }) => ({
+      const mixUsers = this.live.liveMembers.map(({ memberId }) => ({
         height: 120,
         width: 120 / videoRate,
         // locationX:
@@ -183,11 +202,12 @@ export default {
 
             // 处理上麦申请消息
             1712: () => {
-              if (String(payloadData.auditerId) !== String(this.userInfo.imAccount)) {
+              if (String(payloadData.auditerId) !== String(this.user?.userInfo?.imAccount)) {
                 return 
               }
               if (payloadData.isAgree) {
                 ElMessage.success(`${payloadData.anthorNick}同意了您的上麦申请`)
+                this.initGuestLive()
               } else {
                 ElMessage.warn(`${payloadData.anthorNick}拒绝了您的上麦申请`)
               }
@@ -195,17 +215,15 @@ export default {
 
             // 处理上麦邀请消息
             1714: () => {
-              if (String(payloadData.adminId) !== String(this.userInfo.imAccount)) {
+              if (String(payloadData.adminId) !== String(this.user?.userInfo?.imAccount)) {
                 return
               }
               ElMessage[payloadData.isAgree ? 'success' : 'fail'](`${payloadData.guestNick}${payloadData.isAgree ? 
               '同意' : '拒绝'}了您的上麦邀请`)
             },
 
-            // 开始直播
-            1722: () => {
-              debugger
-            },
+            // 主播开始直播消息
+            1722: () => {},
 
             // 结束直播
             1723: () => {
@@ -231,9 +249,8 @@ export default {
 
     /** remote stream publish */
     onStreamAdded(event) {
-      const { stream: remoteStream } = event;
       this.trtcClient.client
-        .subscribe(remoteStream, { audio: true, video: true })
+        .subscribe(event.stream, { audio: true, video: true })
         .then(
           () => {
             console.log("some one publish stream");
@@ -244,20 +261,39 @@ export default {
         );
     },
 
-    /** admin of room ready to start live */
-    onLiveStart(){
-      
-    },
-
     /** success to get remote stream to play */
     onGetRemoteStream(event) {
-      debugger
-      const { stream: remoteStream } = event;
+      console.log('liveSpeaker.....', this.liveSpeaker)
       this.$store.commit('live/setState', {
         key: 'liveRemoteList',
-        value: [...liveRemoteList, remoteStream]
+        value: [...live.liveRemoteList, event.stream]
       })
-      // remoteStream.play();
+
+      //  filter current speaker to thumb & play remote stream to main stream view
+      // if(!this.live.liveSpeaker){
+      //   this.$store.dispatch({
+      //     type: 'live/getMembers',
+      //     payload: {
+      //       roomid: this.roomId
+      //     },
+      //     callback: (members) => {
+      //       const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker) || {}
+      //       this.mainStreamList = this.liveRemoteList.filter
+      //       this.$store.commit('live/setState', {
+      //         key: 'liveSpeaker',
+      //         value: {
+      //           ...speaker,
+      //           userId: speaker.memberId,
+      //         }
+      //       })
+      //     }
+      //   })
+      // } else {
+      //   this.mainStreamList = this.liveRemoteList.filter(({
+      //      userId
+      //   }) => String(userId) !== String(this.live.liveSpeaker.userId))
+      // }
+      // stream.play();
     },
 
     onStreamRemoved() {},
@@ -294,7 +330,39 @@ export default {
         }
       })
       this.applyShow = false;
+    },
+
+    /** 主播开始直播 */
+    onLiveStart () {
+      // publish & mix
+      this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
+        console.log('success for anchor to publish stream~~~~~')            
+
+        this.$store.commit('live/setState', [{            
+          key: 'liveStart',
+          value: true                        
+        }])          
+        this.$nextTick(async () => {
+          await this.trtcClient.stream.stop()
+          this.trtcClient.stream.play(this.live.liveThumbId)
+        })
+
+      }, (err) => {
+        ElMessage.error('上麦失败')
+        console.warn('fail for anchor to publish stream', err)
+      })            
+    },
+
+    /** 嘉宾开始上麦 */
+    initGuestLive () {
+      this.trtcClient.client.publish(() => {
+        console.log('success for guest to publish stream~~~~~') 
+      }, (err) => {
+        ElMessage.error('上麦失败')
+        console.warn('fail for guest to publish stream', err)
+      })
     }
+
   },
 };
 </script>

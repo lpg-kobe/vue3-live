@@ -12,15 +12,16 @@
       <div class="menu"></div>
     </section>
     <section class="section-r">
-      <thumb-view></thumb-view>
+      <thumb-view v-if="liveStart"></thumb-view>
     </section>
   </main>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import { ElMessage } from 'element-plus'
 import ThumbView from '../../views/home/components/thumbView.vue'
-import { mapState } from 'vuex'
+import { eventEmitter } from '../../utils/event'
 
 export default {
   name: "layout",
@@ -32,6 +33,8 @@ export default {
   computed: {
     ...mapState({
       userInfo: ({ user: { userInfo } }) => userInfo,
+      liveStart: ({ live: { liveStart } }) => liveStart,
+      trtcClient: ({ trtcClient }) => trtcClient,
       roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
@@ -43,13 +46,16 @@ export default {
          roomid: this.roomId
        },
        callback: ({ myStreamId }) => {
-         ElMessage.success('上麦成功')
+         eventEmitter.emit(eventEmitter.event?.live?.start)
          this.$store.dispatch({
             type: 'live/startLive',
             payload: {
               roomid: this.roomId,
               streamid: myStreamId,
               streamtype: 1
+            },
+            callback: () => {
+              ElMessage.success('上麦成功') 
             }
           })
        }
@@ -63,6 +69,7 @@ export default {
           roomid: this.roomId
         },
         callback: () => {
+          this.trtcClient.client.unpublish()
           ElMessage.success('直播已结束')
         }
       })
