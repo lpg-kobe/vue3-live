@@ -1,12 +1,12 @@
 /**
- * @desc api services of auth
+ * @desc api services of user
  */
 
 import request from '../../utils/request';
 import qs from 'qs';
 
 // 用户登录
-export function login (payload) {
+export function login(payload) {
   return request(
     `/web/login/memberlogin?${qs.stringify(payload)}`,
     { method: 'post' }
@@ -14,7 +14,7 @@ export function login (payload) {
 }
 
 // 用户退出登录
-export function logout (payload) {
+export function logout(payload) {
   return request(
     `/web/logout`,
     { method: 'post' }
@@ -22,7 +22,7 @@ export function logout (payload) {
 }
 
 // 验证码登录
-export function smsLogin (payload) {
+export function smsLogin(payload) {
   return request(
     `/web/login/quickRegOrLogin?${qs.stringify(payload)}`,
     { method: 'post' }
@@ -30,7 +30,7 @@ export function smsLogin (payload) {
 }
 
 // 发送验证码
-export function sendSms (payload) {
+export function sendSms(payload) {
   return request(
     `/web/login/sendSMSValicode?${qs.stringify(payload)}`,
     {

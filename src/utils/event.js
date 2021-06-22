@@ -5,6 +5,10 @@
 
 // global event define
 export const EVENTENUM = {
+  live: {
+    start: 'START_LIVE',
+    stop: 'STOP_LIVE'
+  },
   login: {
     expire: 'LOGIN_EXPIRE',
   },
@@ -25,7 +29,7 @@ export default class Event {
     this.eventBus = this.eventBus || Object.create(null);
   }
 
-  on (eventName, handler, context) {
+  on(eventName, handler, context) {
     if (typeof handler !== 'function') {
       console.error('Event handler must be a function');
       return;
@@ -37,7 +41,7 @@ export default class Event {
     });
   }
 
-  emit (eventName, data) {
+  emit(eventName, data) {
     let eventCollection = this.eventBus[eventName];
     const args = [];
     if (eventCollection) {
@@ -52,7 +56,7 @@ export default class Event {
     }
   }
 
-  off (eventName, handler) {
+  off(eventName, handler) {
     const eventCollection = this.eventBus[eventName];
 
     // clear all eventBus when not give the eventName

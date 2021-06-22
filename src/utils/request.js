@@ -3,8 +3,6 @@
  * @author pika
  */
 
-import { getUserSession } from './session';
-import { getStore } from './tool';
 import { eventEmitter } from './event';
 import { IM_EVENT } from '../sdk/imLive';
 import 'whatwg-fetch'
@@ -12,11 +10,11 @@ import { VITE_apiHost, MODE } from '../constants';
 import { handleSuccess, handleError } from './reponseHandler';
 const fetchController = new AbortController(); // 实验性功能
 
-function parseJSON (response) {
+function parseJSON(response) {
   return response.json();
 }
 
-function checkStatus (response) {
+function checkStatus(response) {
   if (response.status >= 200 && response.status < 300) {
     return response;
   }
@@ -34,7 +32,7 @@ function checkStatus (response) {
  * @param  {object} [handler] The handler callback after "fetch"
  * @return {object}           An object containing either "data" or "err"
  */
-export default function request (
+export default function request(
   url,
   options,
   handler

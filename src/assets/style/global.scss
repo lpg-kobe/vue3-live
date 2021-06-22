@@ -1,8 +1,8 @@
 .clearfix::after {
-  content   : '.';
-  display   : block;
-  height    : 0;
-  clear     : both;
+  content: '.';
+  display: block;
+  height: 0;
+  clear: both;
   visibility: hidden;
 }
 
@@ -16,4 +16,40 @@
   .el-dialog__body {
     padding: 0 20px;
   }
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-cloumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.icon-user {
+  background: url(~assets/img/live/i-user.png) no-repeat center;
+}
+.icon-camera {
+  background: url(~assets/img/live/i-camera.png) no-repeat center;
+}
+.icon-mic {
+  background: url(~assets/img/live/i-mic.png) no-repeat center;
+}
+.icon-hand {
+  background: url(~assets/img/live/i-hand.png) no-repeat center;
+}
+.icon-unhand {
+  background: url(~assets/img/live/i-unhand.png) no-repeat center;
 }

@@ -11,7 +11,6 @@ import { eventEmitter } from '../utils/event'
 import ImSdk, { IM_EVENT } from '../sdk/imLive'
 import WebTrtcLive, { TRTC_EVENT } from '../sdk/webTrtcLive'
 import { VITE_sdkAppId } from '../constants';
-import TRTC from 'trtc-js-sdk'
 
 export default {
 
@@ -26,7 +25,7 @@ export default {
   },
 
   mutations: {
-    setState (state, params) {
+    setState(state, params) {
       if (Array.isArray(params)) {
         params.forEach(({ key, value }) => {
           state[key] = value
@@ -41,7 +40,7 @@ export default {
 
   actions: {
     // register global event
-    registerEvent ({ commit }, { payload }) {
+    registerEvent({ commit }, { payload }) {
       Object.values(IM_EVENT).forEach(ele => {
         Object.values(ele).forEach(event => {
           eventEmitter.on(event, () => {
@@ -71,7 +70,7 @@ export default {
     },
 
     // init im
-    initIm ({ commit, state }, { payload, callback }) {
+    initIm({ commit, state }, { payload, callback }) {
       const { imAccount, userSig } = state.user?.userInfo || {};
       const imParam = { userId: imAccount, userSig };
       const imClient = new ImSdk(imParam);
@@ -83,7 +82,7 @@ export default {
     },
 
     // init trtc
-    initTrtc ({ commit, state, dispatch }, { payload, callback }) {
+    initTrtc({ commit, state }, { payload, callback }) {
       const { imAccount, userSig } = state.user?.userInfo || {};
       const imParam = { userId: imAccount, userSig, sdkAppId: VITE_sdkAppId };
       const trtcClient = new WebTrtcLive(imParam);
