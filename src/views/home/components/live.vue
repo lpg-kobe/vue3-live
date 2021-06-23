@@ -360,7 +360,7 @@ export default {
 
     /** 嘉宾开始上麦 */
     initGuestLive () {
-      this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
+      this.trtcClient.client.publish(this.trtcClient.stream).then(async () => {
         console.log('success for guest to publish stream~~~~~') 
         this.$store.dispatch('live/setState', [{
           key: 'liveStart',
