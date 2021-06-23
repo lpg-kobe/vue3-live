@@ -232,7 +232,18 @@ export default {
 
             // 结束直播
             1723: () => {
-              debugger
+              this.$store.commit('live/setState', [{
+                key: 'liveStreamList',
+                value: []
+              },{
+                key: 'liveSpeaker',
+                value: {
+                  userId: ''
+                },
+              },{
+                key: 'liveStart',
+                value: false
+              }])
             },
 
             // 嘉宾上麦
@@ -288,7 +299,7 @@ export default {
         })
         isSpeaker = String(data.find(({ isMainSpeaker }) => isMainSpeaker).memberId) === String(stream.userId_)
       } else {
-        isSpeaker = String(this.live.liveSpeaker.userId) === String(stream.userId_)
+        isSpeaker = String(this.live.liveSpeaker?.userId) === String(stream.userId_)
       }
       this.$nextTick(() => {
         !isSpeaker && stream.play(`live_stream_${stream.userId_}`)
@@ -347,6 +358,12 @@ export default {
         this.$store.commit('live/setState', [{            
           key: 'liveStart',
           value: true                        
+        }, {
+          key: 'liveSpeaker',
+          value: {
+            stream: this.trtcClient.stream,
+            userId: this.trtcClient.stream.userId_
+          }
         }, {
           key: 'liveStreamList',
           value: [...this.live.liveStreamList, this.trtcClient.stream]
