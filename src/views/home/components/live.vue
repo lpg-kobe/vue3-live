@@ -353,7 +353,7 @@ export default {
 
     /** 嘉宾开始上麦 */
     initGuestLive () {
-      this.trtcClient.client.publish(() => {
+      this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
         console.log('success for guest to publish stream~~~~~') 
       }, (err) => {
         ElMessage.error('上麦失败')
