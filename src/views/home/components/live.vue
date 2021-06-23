@@ -326,12 +326,16 @@ export default {
       }
 
       this.$nextTick(() => {
-        !isSpeaker && stream.play(`live_stream_${stream.userId_}`)
+        !isSpeaker && this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
       })
     },
 
     onStreamRemoved(event) {
-      debugger
+      const { stream } = event
+      this.$store.commit('live/setState', {
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== stream.userId_)
+      })
     },
 
     handleMediaSel(ok) {
@@ -449,7 +453,7 @@ export default {
         }])
         await this.trtcClient.stream.stop()
         this.$nextTick(() => {
-          this.trtcClient.stream.play(`live_stream_${this.trtcClient.stream.userId_}`)
+          this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`)
         })
       }, (err) => {
         ElMessage.error('上麦失败')
@@ -468,6 +472,19 @@ export default {
       })
       this.trtcClient.client.unpublish(this.trtcClient.stream)
       ElMessage.success('您已下麦')
+    },
+
+    /** try to play & handle error */
+    tryToPlayStream (stream, target) {
+      stream.play(target).then(()=>{
+        console.log('yes!!! success to play remote stream')
+      }, (err)=>{
+        const errorCode = err?.getCode?.();
+        if (errorCode === 0x4043) {
+          // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
+          // stream.resume()
+        } 
+      })
     }
 
   },
