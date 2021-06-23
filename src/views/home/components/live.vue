@@ -264,7 +264,6 @@ export default {
 
             // 嘉宾上麦
             1726: () => {
-              debugger
             },
 
             // 嘉宾下麦
@@ -295,6 +294,7 @@ export default {
 
     /** success to get remote stream to play */
     async onGetRemoteStream (event) {
+      debugger
       let isSpeaker = false
       const { stream } = event
       this.$store.commit('live/setState', [{
@@ -419,13 +419,20 @@ export default {
 
     /** 主播结束直播 */
     async onAnchorStop () {
+
+      this.trtcClient.client.unpublish(this.trtcClient.stream)
+      this.trtcClient.stream.stop()
+      this.$store.commit('live/setState', [{
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
+      }])
+
       await this.$store.dispatch({
         type: 'live/stopLive',
         payload: {
           roomid: this.roomId
         }
       })
-      this.trtcClient.client.unpublish(this.trtcClient.stream)
       ElMessage.success('直播已结束')
     },
 
@@ -463,6 +470,14 @@ export default {
 
     /** 嘉宾下麦 */
     async onGuestStop () {
+      
+      this.trtcClient.client.unpublish(this.trtcClient.stream)
+      this.trtcClient.stream.stop()
+      this.$store.commit('live/setState', [{
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
+      }])
+
       await this.$store.dispatch({
         type: 'live/guestStopLive',
         payload: {
@@ -470,7 +485,6 @@ export default {
           memberid: this.user.userInfo?.imAccount
         }
       })
-      this.trtcClient.client.unpublish(this.trtcClient.stream)
       ElMessage.success('您已下麦')
     },
 
