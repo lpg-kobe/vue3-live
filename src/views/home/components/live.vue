@@ -163,6 +163,7 @@ export default {
       eventEmitter.off(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
       eventEmitter.off(eventEmitter.event?.guest?.start,this.onGuestStart)
+      eventEmitter.off(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.off(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive);
       this.trtcClient?.offClient("stream-added", this.onStreamAdded);
@@ -175,6 +176,7 @@ export default {
       eventEmitter.on(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
       eventEmitter.on(eventEmitter.event?.guest?.start,this.onGuestStart)
+      eventEmitter.on(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.on(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.on(IM_EVENT?.msgReceive, this.onMsgReceive);
       this.trtcClient?.onClient("stream-added", this.onStreamAdded);
