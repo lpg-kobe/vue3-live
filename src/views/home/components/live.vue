@@ -66,6 +66,7 @@ export default {
     ...mapState({
       user: ({ user }) => user,
       live: ({ live }) => live,
+      room: ({ room }) => room,
       imClient: ({ imClient }) => imClient,
       trtcClient: ({ trtcClient }) => trtcClient,
       roomId: ({ router: { params } }) => params?.roomId,
@@ -99,8 +100,14 @@ export default {
       });
     },
 
-    // init live data before do anything
+    // init live data before do anything, will move other in feature
     initLive() {
+      this.$store.dispatch({
+        type: 'room/getroom',
+        payload: {
+          roomid: this.roomId
+        }
+      })
       this.$store.dispatch({
         type: "live/getMembers",
         payload: {
@@ -152,7 +159,11 @@ export default {
     },
 
     unbindEvent() {
-      eventEmitter.off(eventEmitter.event?.live?.start,this.onLiveStart)
+      eventEmitter.off(eventEmitter.event?.anchor?.start,this.onAnchorStart)
+      eventEmitter.off(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
+      eventEmitter.off(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
+      eventEmitter.off(eventEmitter.event?.guest?.start,this.onGuestStart)
+      eventEmitter.off(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive);
       this.trtcClient?.offClient("stream-added", this.onStreamAdded);
       this.trtcClient?.offClient("stream-subscribed", this.onGetRemoteStream);
@@ -160,7 +171,11 @@ export default {
     },
 
     bindEvent() {
-      eventEmitter.on(eventEmitter.event?.live?.start,this.onLiveStart)
+      eventEmitter.on(eventEmitter.event?.anchor?.start,this.onAnchorStart)
+      eventEmitter.on(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
+      eventEmitter.on(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
+      eventEmitter.on(eventEmitter.event?.guest?.start,this.onGuestStart)
+      eventEmitter.on(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.on(IM_EVENT?.msgReceive, this.onMsgReceive);
       this.trtcClient?.onClient("stream-added", this.onStreamAdded);
       this.trtcClient?.onClient("stream-subscribed", this.onGetRemoteStream);
@@ -212,7 +227,7 @@ export default {
               }
               if (payloadData.isAgree) {
                 ElMessage.success(`${payloadData.anthorNick}同意了您的上麦申请`)
-                this.initGuestLive()
+                eventEmitter.emit(eventEmitter.event?.guest?.start)
               } else {
                 ElMessage.warn(`${payloadData.anthorNick}拒绝了您的上麦申请`)
               }
@@ -253,7 +268,7 @@ export default {
 
             // 嘉宾下麦
             1727: () => {
-              debugger
+              
             },
           }
           codeAction[msgCode]?.()
@@ -350,7 +365,16 @@ export default {
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */
-    onLiveStart () {
+    onAnchorStart () {
+      this.$store.dispatch({
+        type: 'live/startLive',
+        payload: {
+          roomid: this.roomId,
+          streamid: this.room.room?.myStreamId,
+          streamtype: 1
+        },
+        callback: () => ElMessage.success('上麦成功')
+      })
       // publish & mix
       this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
         console.log('success for anchor to publish stream~~~~~')            
@@ -375,8 +399,34 @@ export default {
       })            
     },
 
+    /** 主播邀请直播 */
+    async onAnchorInvite () {},
+
+    /** 主播结束直播 */
+    async onAnchorStop () {
+      await this.$store.dispatch({
+        type: 'live/stopLive',
+        payload: {
+          roomid: this.roomId
+        }
+      })
+      this.trtcClient.client.unpublish()
+      ElMessage.success('直播已结束')
+    },
+
+    /** 嘉宾申请上麦 */
+    async onGuestApply () {
+      await this.$store.dispatch({
+        type: 'live/applyLive',
+        payload: {
+          roomid: this.roomId
+        }
+      })
+      ElMessage.success('上麦申请已发送')
+    },
+
     /** 嘉宾开始上麦 */
-    initGuestLive () {
+    onGuestStart () {
       this.trtcClient.client.publish(this.trtcClient.stream).then(async () => {
         console.log('success for guest to publish stream~~~~~') 
         this.$store.commit('live/setState', [{
@@ -394,6 +444,19 @@ export default {
         ElMessage.error('上麦失败')
         console.warn('fail for guest to publish stream', err)
       })
+    },
+
+    /** 嘉宾下麦 */
+    async onGuestStop () {
+      await this.$store.dispatch({
+        type: 'live/guestStopLive',
+        payload: {
+          roomid: this.roomId,
+          memberid: this.user.userInfo?.imAccount
+        }
+      })
+      this.trtcClient.client.unpublish()
+      ElMessage.success('您已下麦')
     }
 
   },

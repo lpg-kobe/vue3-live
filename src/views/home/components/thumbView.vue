@@ -24,6 +24,6 @@ export default {
 .thumb-view-container{
   height: 198px;
   width: 352px;
-  background: green;
+  overflow: hidden;
   }
 </style>

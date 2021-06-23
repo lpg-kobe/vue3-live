@@ -5,9 +5,15 @@
 
 // global event define
 export const EVENTENUM = {
-  live: {
-    start: 'START_LIVE',
-    stop: 'STOP_LIVE'
+  anchor: {
+    invite: 'ANCHOR_INVITE_LIVE', // 邀请上麦
+    start: 'ANCHOR_START_LIVE', // 开始直播
+    stop: 'ANCHOR_STOP_LIVE' // 结束直播
+  },
+  guest: {
+    apply: 'GUEST_APPLY_LIVE', // 申请上麦
+    start: 'GUEST_START_LIVE', // 上麦
+    stop: 'GUEST_STOP_LIVE', // 下麦
   },
   login: {
     expire: 'LOGIN_EXPIRE',
