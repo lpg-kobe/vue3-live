@@ -21,9 +21,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.thumb-view-container{
-  height: 198px;
-  width: 352px;
+.thumb-view-container {
+  height: calc(9 / 16 * 360px);
+  width: 360px;
   overflow: hidden;
   }
 </style>

@@ -63,25 +63,25 @@ header {
 }
 
 main {
-  width: 1200px;
-  display: flex;
+  min-width: 1200px;
+  max-width: 1520px;
+  width: 80%;
   min-height: 520px;
   margin: 0 auto;
 }
 
 .section-l {
-  flex: 1;
+  width: calc(100% - 12px - 360px);
+  float: left;
 }
 
 .section-r {
-  width: 352px;
-  flex-basis: 352px;
+  float: left;
+  width: 360px;
   margin-left: 12px;
   background: #000;
 }
 
 .menu {
-  height: 240px;
-  background: #000;
 }
 </style>

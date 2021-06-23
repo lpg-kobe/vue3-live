@@ -7,11 +7,25 @@
       @btn-click="handleMediaSel"
     />
     <div v-if="filterLiveStream().length" class="remote-view flex">
-      <div class="wrap-item" v-for="(item) in filterLiveStream()" :key="item.userId">
+      <div class="wrap-item live-small-view" v-for="(item) in filterLiveStream()" :key="item.userId" 
+      @mouseover="onLiveStreamMouse(1, item)" @mouseout="onLiveStreamMouse(0, item)">
         <div :id="`live_stream_${item.userId_}`"></div>
+        <div class="stream-mask" v-show="item.maskShow">
+          <div class="mask-header">
+              {{item.userName || '--'}}
+          </div>
+          <div class="mask-menu">
+            <i class="icon icon-user" title="上麦"></i>
+            <i class="icon icon-camera" title="开启摄像头"></i>
+            <i class="icon icon-mic" title="开启麦克风"></i>
+            <i class="icon icon-hand" title="我要发言"></i>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="ppt-view"></div>
+    <div class="live-main-view flex-center">
+      ppt
+    </div>
       <el-dialog title="提示" v-model="applyShow">
         <p>{{applyMsg.auditerNick}}申请上麦</p>
         <template #footer>
@@ -165,9 +179,9 @@ export default {
       eventEmitter.off(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.off(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive);
-      this.trtcClient?.offClient("stream-added", this.onStreamAdded);
-      this.trtcClient?.offClient("stream-subscribed", this.onGetRemoteStream);
-      this.trtcClient?.offClient("stream-removed", this.onStreamRemoved);
+      this.trtcClient?.client?.off("stream-added", this.onStreamAdded);
+      this.trtcClient?.client?.off("stream-subscribed", this.onGetRemoteStream);
+      this.trtcClient?.client?.off("stream-removed", this.onStreamRemoved);
     },
 
     bindEvent() {
@@ -178,9 +192,9 @@ export default {
       eventEmitter.on(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.on(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.on(IM_EVENT?.msgReceive, this.onMsgReceive);
-      this.trtcClient?.onClient("stream-added", this.onStreamAdded);
-      this.trtcClient?.onClient("stream-subscribed", this.onGetRemoteStream);
-      this.trtcClient?.onClient("stream-removed", this.onStreamRemoved);
+      this.trtcClient?.client?.on("stream-added", this.onStreamAdded);
+      this.trtcClient?.client?.on("stream-subscribed", this.onGetRemoteStream);
+      this.trtcClient?.client?.on("stream-removed", this.onStreamRemoved);
     },
 
     onMsgReceive({ data }) {
@@ -230,7 +244,7 @@ export default {
                 ElMessage.success(`${payloadData.anthorNick}同意了您的上麦申请`)
                 eventEmitter.emit(eventEmitter.event?.guest?.start)
               } else {
-                ElMessage.warn(`${payloadData.anthorNick}拒绝了您的上麦申请`)
+                ElMessage.error(`${payloadData.anthorNick}拒绝了您的上麦申请`)
               }
             },
 
@@ -239,7 +253,7 @@ export default {
               if (String(payloadData.adminId) !== String(this.user?.userInfo?.imAccount)) {
                 return
               }
-              ElMessage[payloadData.isAgree ? 'success' : 'fail'](`${payloadData.guestNick}${payloadData.isAgree ? 
+              ElMessage[payloadData.isAgree ? 'success' : 'error'](`${payloadData.guestNick}${payloadData.isAgree ? 
               '同意' : '拒绝'}了您的上麦邀请`)
             },
 
@@ -374,6 +388,7 @@ export default {
 
     /** filter speaker member from live stream */
     filterLiveStream () {
+      // TODO change filter
       return this.live.liveStreamList.filter(({ 
       userId_
       }) => String(userId_) !== String(this.live.liveSpeaker.userId))
@@ -449,6 +464,13 @@ export default {
 
     /** 嘉宾开始上麦 */
     onGuestStart () {
+      this.$store.dispatch({
+        type: 'live/guestStartLive',
+        payload: {
+          roomid: this.roomId
+        },
+        callback: () => ElMessage.success('上麦成功')
+      })
       this.trtcClient.client.publish(this.trtcClient.stream).then(async () => {
         console.log('success for guest to publish stream~~~~~') 
         this.$store.commit('live/setState', [{
@@ -488,6 +510,10 @@ export default {
       ElMessage.success('您已下麦')
     },
 
+    onLiveStreamMouse (type, item) {
+      item.maskShow = type
+    },
+
     /** try to play & handle error */
     tryToPlayStream (stream, target) {
       stream.play(target).then(()=>{
@@ -506,20 +532,47 @@ export default {
 </script>
 <style lang="scss" scoped>
 .ofweek-live-container {
-  height: 460px;
   .remote-view {
-    flex-basis: 150px;
-    height: 150px;
     background: #2C2C2C;
     .wrap-item {
-      background: #000;
+      position: relative;
+      margin: 10px 0 10px 10px;
+      width: calc((100% - 10px * 6) / 5);
+      .stream-mask{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        background: #000;
+        padding: 0 10px;
+        .mask-header{
+          margin: 10px 0 25px 0;
+          color:#fff;
+          font-size: 14px;
+        }
+        .mask-menu{}
+      }
       .icon {
-        width: 36px;
-        height: 36px;
+        display: inline-block;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
-        background: #333333;
+        margin-left: 10px;
+        background-color:#333333;
+        &:first-child{
+          margin-left: 0;
+        }
+        &.active{
+          background-color:#E65E50;
+        }
       }
     }
+  }
+  .live-main-view {
+    background: red;
+    height: calc(100% * 9 / 16)
   }
 }
 </style>

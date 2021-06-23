@@ -6,9 +6,21 @@
   visibility: hidden;
 }
 
-.stream-view {
+.thumb-view {
   video {
-    max-height: 150px;
+    height: 198px;
+  }
+}
+
+.thumb-view {
+  video {
+    height: calc(9 / 16 * 360px);
+    width: 360px;
+  }
+}
+
+.live-main-view {
+  video {
   }
 }
 
@@ -39,19 +51,19 @@
 }
 
 .icon-user {
-  background: url(~assets/img/live/i-user.png) no-repeat center;
+  background: url(../img/live/i-user.png) no-repeat center/50%;
 }
 .icon-camera {
-  background: url(~assets/img/live/i-camera.png) no-repeat center;
+  background: url(../img/live/i-camera.png) no-repeat center/50%;
 }
 .icon-mic {
-  background: url(~assets/img/live/i-mic.png) no-repeat center;
+  background: url(../img/live/i-mic.png) no-repeat center/50%;
 }
 .icon-hand {
-  background: url(~assets/img/live/i-hand.png) no-repeat center;
+  background: url(../img/live/i-hand.png) no-repeat center/50%;
 }
 .icon-unhand {
-  background: url(~assets/img/live/i-unhand.png) no-repeat center;
+  background: url(assets/img/live/i-unhand.png) no-repeat center/16px 20px;
 }
 
 h1,
