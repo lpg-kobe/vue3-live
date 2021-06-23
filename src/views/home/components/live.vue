@@ -267,7 +267,7 @@ export default {
       const { stream } = event
       this.$store.commit('live/setState', [{
         key: 'liveStreamList',
-        value: [...live.liveStreamList, stream]
+        value: [...this.live.liveStreamList, stream]
       },{            
           key: 'liveStart',
           value: true                        
