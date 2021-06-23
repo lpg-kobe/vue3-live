@@ -362,7 +362,7 @@ export default {
     initGuestLive () {
       this.trtcClient.client.publish(this.trtcClient.stream).then(async () => {
         console.log('success for guest to publish stream~~~~~') 
-        this.$store.dispatch('live/setState', [{
+        this.$store.commit('live/setState', [{
           key: 'liveStart',
           value: true
         },{
