@@ -57,7 +57,7 @@ export default {
 
     judgeLogin({ }, { payload: { data } }) {
       if (data?.isAuthorOrGuest === 0) {
-        ElMessage.error(t('您还不是主播，请点击右下方申请直播'));
+        ElMessage.error('您还不是主播，请点击右下方申请直播');
         return;
       }
       ElMessage.success('登录成功')

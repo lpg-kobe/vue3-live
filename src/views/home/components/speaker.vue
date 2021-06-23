@@ -24,7 +24,7 @@ export default {
       handler: async function () {
         const speakerStream = this.live.liveStreamList.find(({ userId_ }) => String(userId_) ===
         String(this.live.liveSpeaker.userId))
-        if (!speakerStream){return}
+        if (!speakerStream){ return }
         await speakerStream.stop()
         speakerStream.play('speakerId')
       },

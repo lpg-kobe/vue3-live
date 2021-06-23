@@ -171,7 +171,12 @@ export default {
       try {
         for (let i = 0, len = data.length; i < len; i++) {
           const msg = data[i];
-          const payloadData = JSON.parse(msg.payload?.data);
+
+          if (!msg.payload?.data) {
+            return 
+          }
+          
+          const payloadData = JSON.parse(msg.payload?.data)
           const { msgCode } = payloadData
           console.log(payloadData);
 
@@ -285,7 +290,9 @@ export default {
       } else {
         isSpeaker = String(this.live.liveSpeaker.userId) === String(stream.userId_)
       }
-      !isSpeaker && stream.play(`live_stream_${stream.userId_}`)
+      this.$nextTick(() => {
+        !isSpeaker && stream.play(`live_stream_${stream.userId_}`)
+      })
     },
 
     onStreamRemoved() {},
@@ -331,7 +338,7 @@ export default {
       }) => String(userId_) !== String(this.live.liveSpeaker.userId))
     },
 
-    /** 主播开始直播 */
+    /** 主播开始直播，主播上麦默认主讲人 */
     onLiveStart () {
       // publish & mix
       this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
@@ -355,6 +362,17 @@ export default {
     initGuestLive () {
       this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
         console.log('success for guest to publish stream~~~~~') 
+        this.$store.dispatch('live/setState', [{
+          key: 'liveStart',
+          value: true
+        },{
+          key: 'liveStreamList',
+          value: [...this.live.liveStreamList, this.trtcClient.stream]
+        }])
+        await this.trtcClient.stream.stop()
+        this.$nextTick(() => {
+          this.trtcClient.stream.play(`live_stream_${this.trtcClient.stream.userId_}`)
+        })
       }, (err) => {
         ElMessage.error('上麦失败')
         console.warn('fail for guest to publish stream', err)
