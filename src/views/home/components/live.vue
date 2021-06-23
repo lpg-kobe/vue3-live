@@ -6,9 +6,9 @@
       :user="user.userInfo"
       @btn-click="handleMediaSel"
     />
-    <div v-if="mainStreamList.length" class="remote-view flex">
-      <div class="wrap-item" v-for="(item) in mainStreamList" :key="item.userId">
-        <div :id="`remote_${item.userId}`"></div>
+    <div v-if="filterLiveStream().length" class="remote-view flex">
+      <div class="wrap-item" v-for="(item) in filterLiveStream()" :key="item.userId">
+        <div :id="`live_stream_${item.userId_}`"></div>
       </div>
     </div>
     <div class="ppt-view"></div>
@@ -45,7 +45,6 @@ export default {
 
   data() {
     return {
-      mainStreamList: [],
       mediaSelVisible: true,
       applyShow: false,
       applyMsg: {},
@@ -108,6 +107,7 @@ export default {
           roomid: this.roomId,
         },
         callback: (members) => {
+          console.log('members.......', members)
           // init room speaker
           const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
           this.$store.commit('live/setState', {
@@ -262,38 +262,30 @@ export default {
     },
 
     /** success to get remote stream to play */
-    onGetRemoteStream(event) {
-      console.log('liveSpeaker.....', this.liveSpeaker)
-      this.$store.commit('live/setState', {
-        key: 'liveRemoteList',
-        value: [...live.liveRemoteList, event.stream]
-      })
+    async onGetRemoteStream (event) {
+      let isSpeaker = false
+      const { stream } = event
+      this.$store.commit('live/setState', [{
+        key: 'liveStreamList',
+        value: [...live.liveStreamList, stream]
+      },{            
+          key: 'liveStart',
+          value: true                        
+      }])
 
-      //  filter current speaker to thumb & play remote stream to main stream view
-      // if(!this.live.liveSpeaker){
-      //   this.$store.dispatch({
-      //     type: 'live/getMembers',
-      //     payload: {
-      //       roomid: this.roomId
-      //     },
-      //     callback: (members) => {
-      //       const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker) || {}
-      //       this.mainStreamList = this.liveRemoteList.filter
-      //       this.$store.commit('live/setState', {
-      //         key: 'liveSpeaker',
-      //         value: {
-      //           ...speaker,
-      //           userId: speaker.memberId,
-      //         }
-      //       })
-      //     }
-      //   })
-      // } else {
-      //   this.mainStreamList = this.liveRemoteList.filter(({
-      //      userId
-      //   }) => String(userId) !== String(this.live.liveSpeaker.userId))
-      // }
-      // stream.play();
+      //  ignore current speaker & play remote stream to main stream view
+      if (!this.live.liveSpeaker?.userId) {
+        const { data } = await this.$store.dispatch({
+          type: 'live/getMembers',
+          payload: {
+            roomid: this.roomId
+          }
+        })
+        isSpeaker = String(data.find(({ isMainSpeaker }) => isMainSpeaker).memberId) === String(stream.userId_)
+      } else {
+        isSpeaker = String(this.live.liveSpeaker.userId) === String(stream.userId_)
+      }
+      !isSpeaker && stream.play(`live_stream_${stream.userId_}`)
     },
 
     onStreamRemoved() {},
@@ -332,6 +324,13 @@ export default {
       this.applyShow = false;
     },
 
+    /** filter speaker member from live stream */
+    filterLiveStream () {
+      return this.live.liveStreamList.filter(({ 
+      userId_
+      }) => String(userId_) !== String(this.live.liveSpeaker.userId))
+    },
+
     /** 主播开始直播 */
     onLiveStart () {
       // publish & mix
@@ -341,11 +340,10 @@ export default {
         this.$store.commit('live/setState', [{            
           key: 'liveStart',
           value: true                        
-        }])          
-        this.$nextTick(async () => {
-          await this.trtcClient.stream.stop()
-          this.trtcClient.stream.play(this.live.liveThumbId)
-        })
+        }, {
+          key: 'liveStreamList',
+          value: [...this.live.liveStreamList, this.trtcClient.stream]
+        }])   
 
       }, (err) => {
         ElMessage.error('上麦失败')

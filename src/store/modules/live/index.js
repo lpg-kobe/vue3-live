@@ -5,14 +5,16 @@ export default {
   state: {
     // 直播状态
     liveStart: false,
-    // 小窗口节点id
-    liveThumbId: 'thumbVideo',
     // 直播成员
     livemembers: [],
-    // 远端流
-    liveRemoteList: [],
+    // 上麦中的流
+    liveStreamList: [],
     // 当前主讲人
-    liveSpeaker: null
+    liveSpeaker: {
+      userId: ''
+    },
+    // 当前主窗口视角 2 插播 1 ppt 0 本人画面
+    liveMainView: 2
   },
   getters: {},
   mutations: {
@@ -46,6 +48,7 @@ export default {
           value: data
         })
       }
+      return { status, data }
     },
 
     // 房间开始直播
