@@ -243,7 +243,7 @@ export default {
           codeAction[msgCode]?.()
         }
       } catch (err) {
-        console.warn("fail to pass msg of im");
+        console.warn("fail to pass msg of im", err);
       }
     },
 
