@@ -114,7 +114,6 @@ export default {
           roomid: this.roomId,
         },
         callback: (members) => {
-          console.log('members.......', members)
           // init room speaker
           const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
           this.$store.commit('live/setState', {
@@ -314,16 +313,26 @@ export default {
             roomid: this.roomId
           }
         })
-        isSpeaker = String(data.find(({ isMainSpeaker }) => isMainSpeaker).memberId) === String(stream.userId_)
+        const mainSpeaker = data.find(({ isMainSpeaker }) => isMainSpeaker)
+        this.$store.commit('live/setState', {
+          key: 'liveSpeaker',
+          value: {
+            userId: mainSpeaker.memberId
+          }
+        })
+        isSpeaker = String(mainSpeaker.memberId) === String(stream.userId_)
       } else {
         isSpeaker = String(this.live.liveSpeaker?.userId) === String(stream.userId_)
       }
+
       this.$nextTick(() => {
         !isSpeaker && stream.play(`live_stream_${stream.userId_}`)
       })
     },
 
-    onStreamRemoved() {},
+    onStreamRemoved(event) {
+      debugger
+    },
 
     handleMediaSel(ok) {
       this.mediaSelVisible = false;
@@ -375,7 +384,7 @@ export default {
           streamid: this.room.room?.myStreamId,
           streamtype: 1
         },
-        callback: () => ElMessage.success('上麦成功')
+        callback: () => ElMessage.success('直播已开始')
       })
       // publish & mix
       this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
@@ -396,7 +405,7 @@ export default {
         }])   
 
       }, (err) => {
-        ElMessage.error('上麦失败')
+        ElMessage.error('直播失败，请重试')
         console.warn('fail for anchor to publish stream', err)
       })            
     },
@@ -412,7 +421,7 @@ export default {
           roomid: this.roomId
         }
       })
-      this.trtcClient.client.unpublish()
+      this.trtcClient.client.unpublish(this.trtcClient.stream)
       ElMessage.success('直播已结束')
     },
 
@@ -457,7 +466,7 @@ export default {
           memberid: this.user.userInfo?.imAccount
         }
       })
-      this.trtcClient.client.unpublish()
+      this.trtcClient.client.unpublish(this.trtcClient.stream)
       ElMessage.success('您已下麦')
     }
 
