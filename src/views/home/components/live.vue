@@ -6,19 +6,22 @@
       :user="user.userInfo"
       @btn-click="handleMediaSel"
     />
-    <div v-if="filterLiveStream().length" class="remote-view flex">
-      <div class="wrap-item live-small-view" v-for="(item) in filterLiveStream()" :key="item.userId" 
+    <div v-if="mainStreamList.length" class="remote-view flex">
+      <div class="wrap-item live-small-view" v-for="(item) in mainStreamList" :key="item.userId_" 
       @mouseover="onLiveStreamMouse(1, item)" @mouseout="onLiveStreamMouse(0, item)">
         <div :id="`live_stream_${item.userId_}`"></div>
         <div class="stream-mask" v-show="item.maskShow">
           <div class="mask-header">
-              {{item.userName || '--'}}
+              {{item.userName}}
           </div>
           <div class="mask-menu">
-            <i class="icon icon-user" title="上麦"></i>
-            <i class="icon icon-camera" title="开启摄像头"></i>
-            <i class="icon icon-mic" title="开启麦克风"></i>
-            <i class="icon icon-hand" title="我要发言"></i>
+            <i class="icon icon-user" title="设为主讲" v-if="user.user.role === 1"></i>
+            <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
+            :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`"></i>
+            <i :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`" 
+            :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`"></i>
+            <i class="icon icon-hand" 
+            title="上麦中"></i>
           </div>
         </div>
       </div>
@@ -60,6 +63,7 @@ export default {
   data() {
     return {
       mediaSelVisible: true,
+      mainStreamList: [],
       applyShow: false,
       applyMsg: {},
       applyTimer: null,
@@ -339,6 +343,7 @@ export default {
         isSpeaker = String(this.live.liveSpeaker?.userId) === String(stream.userId_)
       }
 
+      this.mainStreamList = this.filterLiveStream()
       this.$nextTick(() => {
         !isSpeaker && this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
       })
@@ -388,7 +393,6 @@ export default {
 
     /** filter speaker member from live stream */
     filterLiveStream () {
-      // TODO change filter
       return this.live.liveStreamList.filter(({ 
       userId_
       }) => String(userId_) !== String(this.live.liveSpeaker.userId))
@@ -420,8 +424,12 @@ export default {
           }
         }, {
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, this.trtcClient.stream]
-        }])   
+          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
+            isOpenMic: true,
+            isOpenCamera: true
+          })]
+        }])
+        this.mainStreamList = this.filterLiveStream()   
 
       }, (err) => {
         ElMessage.error('直播失败，请重试')
@@ -435,8 +443,8 @@ export default {
     /** 主播结束直播 */
     async onAnchorStop () {
 
-      this.trtcClient.client.unpublish(this.trtcClient.stream)
-      this.trtcClient.stream.stop()
+      this.trtcClient.client?.unpublish(this.trtcClient.stream)
+      this.trtcClient.stream?.stop()
       this.$store.commit('live/setState', [{
         key: 'liveStreamList',
         value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
@@ -473,16 +481,26 @@ export default {
       })
       this.trtcClient.client.publish(this.trtcClient.stream).then(async () => {
         console.log('success for guest to publish stream~~~~~') 
+
         this.$store.commit('live/setState', [{
           key: 'liveStart',
           value: true
         },{
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, this.trtcClient.stream]
+          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
+            isOpenMic: false,
+            isOpenCamera: true
+          })]
         }])
+
+        this.mainStreamList = this.filterLiveStream()
+        // 嘉宾上麦默认静音
+        this.trtcClient.stream.muteAudio()
         await this.trtcClient.stream.stop()
         this.$nextTick(() => {
-          this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`)
+          this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`, {
+            muted: true
+          })
         })
       }, (err) => {
         ElMessage.error('上麦失败')
@@ -515,10 +533,10 @@ export default {
     },
 
     /** try to play & handle error */
-    tryToPlayStream (stream, target) {
-      stream.play(target).then(()=>{
+    tryToPlayStream (stream, target, options={}) {
+      stream.play(target, options).then(()=>{
         console.log('yes!!! success to play remote stream')
-      }, (err)=>{
+      }, (err) => {
         const errorCode = err?.getCode?.();
         if (errorCode === 0x4043) {
           // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
