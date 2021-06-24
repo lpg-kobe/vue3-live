@@ -175,9 +175,9 @@ export default {
           userId: this.live.liveSpeaker.userId // 主讲人占位
         },
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
-          width: thumbWidth,
-          height: thumbHeight,
-          locationX: 120,
+          width: 120,
+          height: 120,
+          locationX: 120 * index,
           locationY: 120,
           pureAudio: false,
           zOrder: 2,
