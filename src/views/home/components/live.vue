@@ -186,6 +186,7 @@ export default {
       ];
       const mixConfig = {
         mode: "preset-layout",
+        streamId: this.room.room?.myStreamIdMix,
         videoWidth,
         videoHeight,
         videoBitrate: 1500,
