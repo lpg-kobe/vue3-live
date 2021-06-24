@@ -312,7 +312,6 @@ export default {
 
     /** success to get remote stream to play */
     async onGetRemoteStream (event) {
-      debugger
       let isSpeaker = false
       const { stream } = event
       this.$store.commit('live/setState', [{
@@ -411,11 +410,11 @@ export default {
       })
 
       // publish & mix
-      const modifyStream = Object.assign(this.trtcClient.stream, {
+      const streamConfig = {
         isOpenMic: true,
         isOpenCamera: true
-      })
-      this.trtcClient.client.publish(modifyStream).then(() => {
+      }
+      this.trtcClient.client.publish(this.customStream(this.trtcClient.stream, streamConfig)).then(() => {
         console.log('success for anchor to publish stream~~~~~')            
 
         this.$store.commit('live/setState', [{            
@@ -429,7 +428,7 @@ export default {
           }
         }, {
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, modifyStream]
+          value: [...this.live.liveStreamList, this.customStream(this.trtcClient.stream, streamConfig)]
         }])
         this.mainStreamList = this.filterLiveStream()   
 
@@ -482,11 +481,12 @@ export default {
         callback: () => ElMessage.success('上麦成功')
       })
 
-      const modifyStream = Object.assign(this.trtcClient.stream, {
+      const streamConfig = {
         isOpenMic: false,
         isOpenCamera: true
-      })
-      this.trtcClient.client.publish(modifyStream).then(async () => {
+      }
+      this.trtcClient.client.publish(this.customStream(this.trtcClient.stream, streamConfig))
+      .then(async () => {
         console.log('success for guest to publish stream~~~~~') 
 
         this.$store.commit('live/setState', [{
@@ -494,7 +494,7 @@ export default {
           value: true
         },{
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, modifyStream]
+          value: [...this.live.liveStreamList, this.customStream(this.trtcClient.stream, streamConfig)]
         }])
 
         this.mainStreamList = this.filterLiveStream()
@@ -534,6 +534,15 @@ export default {
 
     onLiveStreamMouse (type, item) {
       item.maskShow = type
+    },
+
+    /** custom stream attribute before create */
+    customStream (stream, config) {
+      // can i use __proto__ here ?
+      Object.entries(config).forEach(([key, value]) => {
+        stream.__proto__[key] = value
+      })
+      return stream
     },
 
     /** try to play & handle error */
