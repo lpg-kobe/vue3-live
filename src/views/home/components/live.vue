@@ -315,13 +315,6 @@ export default {
       debugger
       let isSpeaker = false
       const { stream } = event
-      this.$store.commit('live/setState', [{
-        key: 'liveStreamList',
-        value: [...this.live.liveStreamList, stream]
-      },{            
-          key: 'liveStart',
-          value: true                        
-      }])
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
@@ -340,9 +333,19 @@ export default {
         })
         isSpeaker = String(mainSpeaker.memberId) === String(stream.userId_)
       } else {
-        isSpeaker = String(this.live.liveSpeaker?.userId) === String(stream.userId_)
+        isSpeaker = String(this.live.liveSpeaker.userId) === String(stream.userId_)
       }
 
+      this.$store.commit('live/setState', [{
+        key: 'liveStreamList',
+        value: [...this.live.liveStreamList, Object.assign(stream, {
+          isOpenMic: isSpeaker,
+          isOpenCamera: true
+        })]
+      },{            
+          key: 'liveStart',
+          value: true                        
+      }])
       this.mainStreamList = this.filterLiveStream()
       this.$nextTick(() => {
         !isSpeaker && this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
@@ -411,11 +414,7 @@ export default {
       })
 
       // publish & mix
-      const streamConfig = {
-        isOpenMic: true,
-        isOpenCamera: true
-      }
-      this.trtcClient.client.publish(this.customStream(this.trtcClient.stream, streamConfig)).then(() => {
+      this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
         console.log('success for anchor to publish stream~~~~~')            
 
         this.$store.commit('live/setState', [{            
@@ -429,7 +428,10 @@ export default {
           }
         }, {
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, this.customStream(this.trtcClient.stream, streamConfig)]
+          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
+            isOpenMic: true,
+            isOpenCamera: true
+          })]
         }])
         this.mainStreamList = this.filterLiveStream()   
 
@@ -482,11 +484,7 @@ export default {
         callback: () => ElMessage.success('上麦成功')
       })
 
-      const streamConfig = {
-        isOpenMic: false,
-        isOpenCamera: true
-      }
-      this.trtcClient.client.publish(this.customStream(this.trtcClient.stream, streamConfig))
+      this.trtcClient.client.publish(this.trtcClient.stream)
       .then(async () => {
         console.log('success for guest to publish stream~~~~~') 
 
@@ -495,7 +493,10 @@ export default {
           value: true
         },{
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, this.customStream(this.trtcClient.stream, streamConfig)]
+          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
+            isOpenMic: false,
+            isOpenCamera: true
+          })]
         }])
 
         this.mainStreamList = this.filterLiveStream()
@@ -541,7 +542,7 @@ export default {
     customStream (stream, config) {
       // can i use __proto__ here ?
       Object.entries(config).forEach(([key, value]) => {
-        stream.constructor.prototype[key] = value
+        stream.__proto__[key] = value
       })
       return stream
     },
