@@ -6,7 +6,7 @@ export default {
     // 直播状态
     liveStart: false,
     // 直播成员
-    livemembers: [],
+    liveMembers: [],
     // 上麦中的流
     liveStreamList: [],
     // 当前主讲人

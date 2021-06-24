@@ -12,7 +12,7 @@
         <div :id="`live_stream_${item.userId_}`"></div>
         <div class="stream-mask" v-show="item.maskShow">
           <div class="mask-header">
-              {{item.userName}}
+              {{item.nick}}
           </div>
           <div class="mask-menu">
             <i class="icon icon-user" title="设为主讲" v-if="user.user.role === 1"></i>
@@ -398,7 +398,9 @@ export default {
     filterLiveStream (filterId = this.live.liveSpeaker?.userId) {
       return this.live.liveStreamList.filter(({ 
       userId_
-      }) => String(userId_) !== String(filterId))
+      }) => String(userId_) !== String(filterId)).map((stream) => Object.assign(stream, {
+        ...this.live.liveMembers.find(({ memberId }) => String(memberId) === String(stream.userId_))
+      }))
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */
@@ -590,6 +592,7 @@ export default {
         .mask-menu{}
       }
       .icon {
+        cursor: pointer;
         display: inline-block;
         width: 24px;
         height: 24px;
