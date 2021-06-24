@@ -174,7 +174,7 @@ export default {
           zOrder: 1,
           userId: this.live.liveSpeaker.userId // 主讲人占位
         },
-        ...this.mainStreamList.map(({ }, index) => ({ 
+        ...this.mainStreamList.map(({ userId_ }, index) => ({ 
           width: thumbWidth,
           height: thumbHeight,
           locationX: index * thumbWidth + videoSpace * (index + 1),
@@ -194,7 +194,7 @@ export default {
         videoGOP: 2,
         audioSampleRate: 48000,
         audioBitrate: 64,
-        audioChannels: 1,
+        audioChannels: 2,
         mixUsers
       };
       this.trtcClient.client.startMixTranscode(mixConfig).then(() => {
