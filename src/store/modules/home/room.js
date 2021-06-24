@@ -48,9 +48,8 @@ export default {
     async getroom({ commit }, { payload, callback }) {
       const { status, data: { data } } = await getroom(payload)
 
-      document.title = data.name
-
       if (status) {
+        document.title = data.name
         commit('setState', [
           {
             key: 'room',
@@ -154,52 +153,52 @@ export default {
         })
 
         // 获取房间信息
-        dispatch({
-          type: 'getroom',
-          payload: {
-            roomid: 94
-          },
-          callback: () => {
-            // 是否完善名片
-            // if (state.user.user.isCompletedInfo === 0 && this.room.watchMode === 2 && this.liveStatus !== 1) {
-            //   setTimeout(() => {
-            //     commit('user/setState', {
-            //       key: 'cardShow',
-            //       value: true
-            //     }, { root: true })
-            //   }, this.room.delayLoginTime * 1000)
-            // }
-            return
-            // 用户心跳
-            let heartTimer = setInterval(() => {
-              heartbeat({
-                memberId: this.imAccount,
-                roomId: this.roomId,
-                time: new Date()
-              }).then(data => {
-                // 断网后网络恢复
-                if (this.networkBreak) {
-                  window.location.reload();
-                }
-              }, error => {
-                this.$EventBus.$emit('chatAddErrorMsg', this.networkDisconnection)
-                if (!this.networkBreak) {
-                  this.networkBreak = true
-                }
-              })
-            }, 8000)
+        // dispatch({
+        //   type: 'getroom',
+        //   payload: {
+        //     roomid: 94
+        //   },
+        //   callback: () => {
+        //     // 是否完善名片
+        //     // if (state.user.user.isCompletedInfo === 0 && this.room.watchMode === 2 && this.liveStatus !== 1) {
+        //     //   setTimeout(() => {
+        //     //     commit('user/setState', {
+        //     //       key: 'cardShow',
+        //     //       value: true
+        //     //     }, { root: true })
+        //     //   }, this.room.delayLoginTime * 1000)
+        //     // }
+        //     return
+        //     // 用户心跳
+        //     let heartTimer = setInterval(() => {
+        //       heartbeat({
+        //         memberId: this.imAccount,
+        //         roomId: this.roomId,
+        //         time: new Date()
+        //       }).then(data => {
+        //         // 断网后网络恢复
+        //         if (this.networkBreak) {
+        //           window.location.reload();
+        //         }
+        //       }, error => {
+        //         this.$EventBus.$emit('chatAddErrorMsg', this.networkDisconnection)
+        //         if (!this.networkBreak) {
+        //           this.networkBreak = true
+        //         }
+        //       })
+        //     }, 8000)
 
-            // 被踢出
-            // this.$EventBus.$on('timKickOut',() => {
-            //   clearInterval(heartTimer)
-            // })
+        //     // 被踢出
+        //     // this.$EventBus.$on('timKickOut',() => {
+        //     //   clearInterval(heartTimer)
+        //     // })
 
-            // ?为啥延迟100毫秒
-            setTimeout(() => {
-              this.initFinish = true
-            }, 100)
-          }
-        })
+        //     // ?为啥延迟100毫秒
+        //     setTimeout(() => {
+        //       this.initFinish = true
+        //     }, 100)
+        //   }
+        // })
 
         // 登录TIM
         // this.timLogin(isVisitor)
