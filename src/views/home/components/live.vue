@@ -468,7 +468,7 @@ export default {
         type: 'live/startLive',
         payload: {
           roomid: this.roomId,
-          streamid: this.room.room?.myStreamId,
+          streamid: this.room.room?.myStreamIdMix,
           streamtype: 1
         },
         callback: () => ElMessage.success('直播已开始')
