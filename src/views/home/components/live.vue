@@ -184,8 +184,8 @@ export default {
           locationX: index * thumbWidth + videoSpace * (index + 1),
           locationY: speakerHeight + videoSpace, // 从上至下
           pureAudio: false,
-          zOrder: 1,
-          streamType: 'auxiliary', // 远端辅流
+          zOrder: 2,
+          // streamType: 'auxiliary', // 远端辅流
           userId: '$PLACE_HOLDER_REMOTE$' // 其余人小窗口占位
         }))
       ];
