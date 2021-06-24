@@ -580,7 +580,7 @@ export default {
           })]
         }])
         this.mainStreamList = this.filterLiveStream() 
-        // this.startMixStream()  
+        this.startMixStream()  
 
       }, (err) => {
         ElMessage.error('直播失败，请重试')
