@@ -175,10 +175,10 @@ export default {
           userId: this.live.liveSpeaker.userId // 主讲人占位
         },
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
-          width: 120,
-          height: 120,
-          locationX: 120 * index,
-          locationY: 120,
+          width: thumbWidth,
+          height: thumbHeight,
+          locationX: index * thumbWidth + videoSpace * (index + 1),
+          locationY: 0,
           pureAudio: false,
           zOrder: 2,
           userId: '$PLACE_HOLDER_REMOTE$' // 其余人小窗口占位
