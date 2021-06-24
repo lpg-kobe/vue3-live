@@ -167,25 +167,27 @@ export default {
       const mixUsers = [
         {
           width: videoWidth,
-          height: speakerHeight,
+          height: this.mainStreamList.length ? speakerHeight : videoHeight,
           locationX: 0,
           locationY: 0,
           pureAudio: false,
           zOrder: 1,
+          streamType: 'main', // 远端主流
           userId: this.live.liveSpeaker.userId // 主讲人占位
         },
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
           width: thumbWidth,
           height: thumbHeight,
           locationX: index * thumbWidth + videoSpace * (index + 1),
-          locationY: 0,
+          locationY: speakerHeight + videoSpace, // 从上至下
           pureAudio: false,
-          zOrder: 2,
-          userId: '$PLACE_HOLDER_REMOTE$' // 其余人小窗口占位
+          zOrder: 1,
+          sstreamType: 'auxiliary', // 远端辅流
+          userId: userId_ // 其余人小窗口占位
         }))
       ];
       const mixConfig = {
-        mode: "preset-layout",
+        mode: "manual",
         streamId: this.room.room?.myStreamIdMix,
         videoWidth,
         videoHeight,
@@ -387,7 +389,9 @@ export default {
           key: 'liveStart',
           value: true                        
       }])
+
       this.mainStreamList = this.filterLiveStream()
+      this.startMixStream()
       this.$nextTick(() => {
         !isSpeaker && this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
       })
@@ -400,6 +404,7 @@ export default {
         value: this.filterLiveStream(stream.userId_)
       })
       this.mainStreamList = this.filterLiveStream()
+      this.startMixStream()
     },
 
     handleMediaSel(ok) {
