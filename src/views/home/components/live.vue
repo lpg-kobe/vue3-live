@@ -357,6 +357,7 @@ export default {
         key: 'liveStreamList',
         value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== stream.userId_)
       })
+      this.mainStreamList = this.filterLiveStream()
     },
 
     handleMediaSel(ok) {
