@@ -355,7 +355,7 @@ export default {
       const { stream } = event
       this.$store.commit('live/setState', {
         key: 'liveStreamList',
-        value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== stream.userId_)
+        value: this.filterLiveStream(stream.userId_)
       })
       this.mainStreamList = this.filterLiveStream()
     },
@@ -394,11 +394,11 @@ export default {
       this.applyShow = false;
     },
 
-    /** filter speaker member from live stream */
-    filterLiveStream () {
+    /** filter live stream by id */
+    filterLiveStream (filterId = this.live.liveSpeaker?.userId) {
       return this.live.liveStreamList.filter(({ 
       userId_
-      }) => String(userId_) !== String(this.live.liveSpeaker.userId))
+      }) => String(userId_) !== String(filterId))
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */
@@ -451,7 +451,7 @@ export default {
       this.trtcClient.stream?.stop()
       this.$store.commit('live/setState', [{
         key: 'liveStreamList',
-        value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
+        value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
 
@@ -522,7 +522,7 @@ export default {
       this.trtcClient.stream.stop()
       this.$store.commit('live/setState', [{
         key: 'liveStreamList',
-        value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
+        value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
 
