@@ -24,7 +24,7 @@
             v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
             :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`" @click="handleLiveMenuClick('mic', item)"></i>
             <i class="icon icon-hand" 
-            v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
+            v-if="String(item.userId_)===String(user.user.imAccount)"
             title="上麦中" @click="handleLiveMenuClick('live', item)"></i>
           </div>
         </div>
@@ -170,13 +170,13 @@ export default {
       const mixUsers = [
         {
           width: videoWidth,
-          height: this.mainStreamList.length ? speakerHeight : videoHeight,
+          height: speakerHeight,
           locationX: 0,
           locationY: 0,
           pureAudio: false,
+          // streamType: 'main', // 远端主流
+          userId: String(this.live.liveSpeaker.userId), // 主讲人占位
           zOrder: 1,
-          streamType: 'main', // 远端主流
-          userId: String(this.live.liveSpeaker.userId) // 主讲人占位
         },
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
           width: thumbWidth,
@@ -184,18 +184,18 @@ export default {
           locationX: index * thumbWidth + videoSpace * (index + 1),
           locationY: speakerHeight + videoSpace, // 从上至下
           pureAudio: false,
-          zOrder: 2,
-          streamType: 'auxiliary', // 远端辅流
-          userId: userId_ // 其余人小窗口占位
+          // streamType: 'auxiliary', // 远端辅流
+          userId: '$PLACE_HOLDER_REMOTE$', // 其余人小窗口占位
+          zOrder: 2
         }))
       ];
       const mixConfig = {
-        mode: "manual",
+        mode: "preset-layout",
         streamId: this.room.room?.myStreamIdMix,
         videoWidth,
         videoHeight,
         videoBitrate: 1500,
-        videoFramerate: 15,
+        videoFramerate: 20,
         videoGOP: 2,
         audioSampleRate: 48000,
         audioBitrate: 64,
@@ -531,7 +531,8 @@ export default {
           if (payload.role === 1) {
             eventEmitter.emit(eventEmitter.event.anchor.stop)
           } else {
-            payload.client_.unpublish(payload)
+            eventEmitter.emit(eventEmitter.event.guest.stop)
+            // payload.client_.unpublish(payload)
           }
         },
       }
@@ -667,7 +668,7 @@ export default {
         this.mainStreamList = this.filterLiveStream()
         // 嘉宾上麦默认静音
         this.trtcClient.stream.muteAudio()
-        this.startMixStream()
+        // this.startMixStream()
         await this.trtcClient.stream.stop()
         this.$nextTick(() => {
           this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`, {
@@ -690,7 +691,7 @@ export default {
         value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
-      this.startMixStream()
+      // this.startMixStream()
 
       await this.$store.dispatch({
         type: 'live/guestStopLive',
