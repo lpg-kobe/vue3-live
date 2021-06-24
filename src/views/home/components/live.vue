@@ -175,7 +175,7 @@ export default {
           locationY: 0,
           pureAudio: false,
           zOrder: 1,
-          // streamType: 'main', // 远端主流
+          streamType: 'main', // 远端主流
           userId: String(this.live.liveSpeaker.userId) // 主讲人占位
         },
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
@@ -185,12 +185,12 @@ export default {
           locationY: speakerHeight + videoSpace, // 从上至下
           pureAudio: false,
           zOrder: 2,
-          // streamType: 'auxiliary', // 远端辅流
-          userId: '$PLACE_HOLDER_REMOTE$' // 其余人小窗口占位
+          streamType: 'auxiliary', // 远端辅流
+          userId: userId_ // 其余人小窗口占位
         }))
       ];
       const mixConfig = {
-        mode: "preset-layout",
+        mode: "manual",
         streamId: this.room.room?.myStreamIdMix,
         videoWidth,
         videoHeight,
@@ -667,7 +667,7 @@ export default {
         this.mainStreamList = this.filterLiveStream()
         // 嘉宾上麦默认静音
         this.trtcClient.stream.muteAudio()
-        // this.startMixStream()
+        this.startMixStream()
         await this.trtcClient.stream.stop()
         this.$nextTick(() => {
           this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`, {
