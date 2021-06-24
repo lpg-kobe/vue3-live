@@ -409,8 +409,13 @@ export default {
         },
         callback: () => ElMessage.success('直播已开始')
       })
+
       // publish & mix
-      this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
+      const modifyStream = Object.assign(this.trtcClient.stream, {
+        isOpenMic: true,
+        isOpenCamera: true
+      })
+      this.trtcClient.client.publish(modifyStream).then(() => {
         console.log('success for anchor to publish stream~~~~~')            
 
         this.$store.commit('live/setState', [{            
@@ -424,10 +429,7 @@ export default {
           }
         }, {
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
-            isOpenMic: true,
-            isOpenCamera: true
-          })]
+          value: [...this.live.liveStreamList, modifyStream]
         }])
         this.mainStreamList = this.filterLiveStream()   
 
@@ -479,7 +481,12 @@ export default {
         },
         callback: () => ElMessage.success('上麦成功')
       })
-      this.trtcClient.client.publish(this.trtcClient.stream).then(async () => {
+
+      const modifyStream = Object.assign(this.trtcClient.stream, {
+        isOpenMic: false,
+        isOpenCamera: true
+      })
+      this.trtcClient.client.publish(modifyStream).then(async () => {
         console.log('success for guest to publish stream~~~~~') 
 
         this.$store.commit('live/setState', [{
@@ -487,10 +494,7 @@ export default {
           value: true
         },{
           key: 'liveStreamList',
-          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
-            isOpenMic: false,
-            isOpenCamera: true
-          })]
+          value: [...this.live.liveStreamList, modifyStream]
         }])
 
         this.mainStreamList = this.filterLiveStream()
