@@ -74,6 +74,13 @@ export function setSpeaker(payload) {
   )
 }
 
+// 开关摄像头
+export function toggleCamera(payload) {
+  return request(
+    `/web/room/broatroomcamera?${qs.stringify(payload)}`,
+  )
+}
+
 // 嘉宾申请上麦
 export function applyLive(payload) {
   return request(

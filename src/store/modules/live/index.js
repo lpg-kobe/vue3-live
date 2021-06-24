@@ -5,6 +5,7 @@ import {
   stopLive,
   applyLive,
   setSpeaker,
+  toggleCamera,
   guestStartLive,
   guestStopLive,
   inviteLive,
@@ -83,6 +84,13 @@ export default {
     // 房间设置主讲人
     async setMainSpeaker({ }, { payload, callback }) {
       const { status, data: { data } } = await setSpeaker(payload)
+      status && callback?.(data)
+      return { status, data }
+    },
+
+    // 摄像头开关
+    async toggleCamera({ }, { payload, callback }) {
+      const { status, data: { data } } = await toggleCamera(payload)
       status && callback?.(data)
       return { status, data }
     },

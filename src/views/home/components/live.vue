@@ -18,10 +18,13 @@
             <i class="icon icon-user" title="设为主讲" v-if="user.user.role===1" 
             @click="handleLiveMenuClick('speaker', item)"></i>
             <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
-            :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('mic', item)"></i>
+            v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
+            :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('camera', item)"></i>
             <i :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`" 
-            :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`" @click="handleLiveMenuClick('camera', item)"></i>
+            v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
+            :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`" @click="handleLiveMenuClick('mic', item)"></i>
             <i class="icon icon-hand" 
+            v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
             title="上麦中" @click="handleLiveMenuClick('live', item)"></i>
           </div>
         </div>
@@ -173,7 +176,7 @@ export default {
           pureAudio: false,
           zOrder: 1,
           streamType: 'main', // 远端主流
-          userId: this.live.liveSpeaker.userId // 主讲人占位
+          userId: String(this.live.liveSpeaker.userId) // 主讲人占位
         },
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
           width: thumbWidth,
@@ -239,7 +242,6 @@ export default {
       this.trtcClient?.client?.on("stream-added", this.onStreamAdded);
       this.trtcClient?.client?.on("stream-subscribed", this.onGetRemoteStream);
       this.trtcClient?.client?.on("stream-removed", this.onStreamRemoved);
-      this.trtcClient?.client?.on("stream-updated", ()=>{debugger});
       this.trtcClient?.client?.on("mute-audio", this.onRemoteMuteAudio);
       this.trtcClient?.client?.on("unmute-audio", this.onRemoteUnmuteAudio);
       this.trtcClient?.client?.on("mute-video", this.onRemoteMuteVideo);
@@ -425,19 +427,39 @@ export default {
     },
 
     onRemoteMuteAudio (event) {
-      
+      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
+        stream,
+        {
+          isOpenMic: String(event.userId) === String(stream.userId_) ? false : stream.isOpenMic
+        }
+      ))
     },
 
-    onRemoteUnmuteAudio () {
-      
+    onRemoteUnmuteAudio (event) {
+      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
+        stream,
+        {
+          isOpenMic: String(event.userId) === String(stream.userId_) ? true : stream.isOpenMic
+        }
+      ))
     },
 
-    onRemoteMuteVideo () {
-      
+    onRemoteMuteVideo (event) {
+      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
+        stream,
+        {
+          isOpenCamera: String(event.userId) === String(stream.userId_) ? false : stream.isOpenCamera
+        }
+      ))
     },
 
-    onRemoteUnmuteVideo () {
-      
+    onRemoteUnmuteVideo (event) {
+      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
+        stream,
+        {
+          isOpenCamera: String(event.userId) === String(stream.userId_) ? true : stream.isOpenCamera
+        }
+      ))
     },
 
     handleMediaSel(ok) {
@@ -497,8 +519,20 @@ export default {
             payload.unmuteVideo()
             payload.isOpenCamera = true
           }
+          this.$store.dispatch({
+            type: 'live/toggleCamera',
+            payload: {
+              roomid: this.roomId,
+              openorclose: payload.isOpenCamera ? 1 : 2
+            }
+          })
         },
         'live': () => {
+          if (payload.role === 1) {
+            eventEmitter.emit(eventEmitter.event.anchor.stop)
+          } else {
+            payload.client_.unpublish(payload)
+          }
         },
       }
       actionMap[type]?.()
@@ -656,7 +690,6 @@ export default {
         value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
-      this.startMixStream()
 
       await this.$store.dispatch({
         type: 'live/guestStopLive',
