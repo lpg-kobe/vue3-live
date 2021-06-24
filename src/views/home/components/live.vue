@@ -174,14 +174,14 @@ export default {
           zOrder: 1,
           userId: this.live.liveSpeaker.userId // 主讲人占位
         },
-        ...this.mainStreamList.map(({ userId_ }, index) => ({ 
+        ...this.mainStreamList.map(({ }, index) => ({ 
           width: thumbWidth,
           height: thumbHeight,
           locationX: index * thumbWidth + videoSpace * (index + 1),
           locationY: 0,
           pureAudio: false,
           zOrder: 1,
-          userId: userId_ // 其余人小窗口占位
+          userId: '$PLACE_HOLDER_REMOTE$' // 其余人小窗口占位
         }))
       ];
       const mixConfig = {
