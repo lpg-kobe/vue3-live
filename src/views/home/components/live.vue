@@ -170,7 +170,7 @@ export default {
       const mixUsers = [
         {
           width: videoWidth,
-          height: speakerHeight,
+          height: this.mainStreamList.length ? speakerHeight : videoHeight,
           locationX: 0,
           locationY: 0,
           pureAudio: false,
@@ -690,6 +690,7 @@ export default {
         value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
+      this.startMixStream()
 
       await this.$store.dispatch({
         type: 'live/guestStopLive',
