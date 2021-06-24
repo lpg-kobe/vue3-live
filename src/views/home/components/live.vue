@@ -312,6 +312,7 @@ export default {
 
     /** success to get remote stream to play */
     async onGetRemoteStream (event) {
+      debugger
       let isSpeaker = false
       const { stream } = event
       this.$store.commit('live/setState', [{
@@ -540,7 +541,7 @@ export default {
     customStream (stream, config) {
       // can i use __proto__ here ?
       Object.entries(config).forEach(([key, value]) => {
-        stream.__proto__[key] = value
+        stream.constructor.prototype[key] = value
       })
       return stream
     },
