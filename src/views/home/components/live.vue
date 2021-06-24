@@ -278,6 +278,7 @@ export default {
                 key: 'liveStart',
                 value: false
               }])
+              this.mainStreamList = []
             },
 
             // 嘉宾上麦
@@ -317,12 +318,15 @@ export default {
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
-        const { data } = await this.$store.dispatch({
+        const { status, data } = await this.$store.dispatch({
           type: 'live/getMembers',
           payload: {
             roomid: this.roomId
           }
         })
+
+        if(!status){ return }
+
         const mainSpeaker = data.find(({ isMainSpeaker }) => isMainSpeaker)
         this.$store.commit('live/setState', {
           key: 'liveSpeaker',
