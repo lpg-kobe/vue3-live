@@ -177,10 +177,10 @@ export default {
         ...this.mainStreamList.map(({ userId_ }, index) => ({ 
           width: thumbWidth,
           height: thumbHeight,
-          locationX: index * thumbWidth + videoSpace * (index + 1),
-          locationY: 0,
+          locationX: 120,
+          locationY: 120,
           pureAudio: false,
-          zOrder: 1,
+          zOrder: 2,
           userId: '$PLACE_HOLDER_REMOTE$' // 其余人小窗口占位
         }))
       ];
