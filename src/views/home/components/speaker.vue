@@ -26,8 +26,12 @@ export default {
         String(oVal))
         const newSpeaker = this.live.liveStreamList.find(({ userId_ }) => String(userId_) ===
         String(nVal))
+        // old stream must stop & replay in new dom if it has been play in other dom
         await oldSpeaker?.stop()
         await newSpeaker?.stop()
+        this.$nextTick(() => {
+          oldSpeaker?.play(`live_stream_${oldSpeaker.userId_}`)
+        })
         newSpeaker?.play('speakerId')
       },
       immediate: true
