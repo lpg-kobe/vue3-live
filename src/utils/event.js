@@ -8,12 +8,21 @@ export const EVENTENUM = {
   anchor: {
     invite: 'ANCHOR_INVITE_LIVE', // 邀请上麦
     start: 'ANCHOR_START_LIVE', // 开始直播
-    stop: 'ANCHOR_STOP_LIVE' // 结束直播
+    stop: 'ANCHOR_STOP_LIVE', // 结束直播
+    closeMic: 'ANCHOR_CLOSE_MIC', // 关闭麦克风
+    openMic: 'ANCHOR_OPEN_MIC', // 开启麦克风
+    openCamera: 'ANCHOR_OPEN_CAMERA', // 开启摄像头
+    closeCamera: 'ANCHOR_CLOSE_CAMERA', // 关闭摄像头
+    setSpeaker: 'ANCHOR_SET_SPEAKER' // 设置主讲人
   },
   guest: {
     apply: 'GUEST_APPLY_LIVE', // 申请上麦
     start: 'GUEST_START_LIVE', // 上麦
     stop: 'GUEST_STOP_LIVE', // 下麦
+    closeMic: 'GUEST_CLOSE_MIC', // 关闭麦克风
+    openMic: 'GUEST_OPEN_MIC', // 开启麦克风
+    openCamera: 'GUEST_OPEN_CAMERA', // 开启摄像头
+    closeCamera: 'GUEST_CLOSE_CAMERA', // 关闭摄像头
   },
   login: {
     expire: 'LOGIN_EXPIRE',

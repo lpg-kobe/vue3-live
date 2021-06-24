@@ -15,13 +15,14 @@
               {{item.nick}}
           </div>
           <div class="mask-menu">
-            <i class="icon icon-user" title="设为主讲" v-if="user.user.role === 1"></i>
+            <i class="icon icon-user" title="设为主讲" v-if="user.user.role === 1" 
+            @click="handleLiveMenuClick('speaker', item)"></i>
             <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
-            :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`"></i>
+            :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('mic', item)"></i>
             <i :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`" 
-            :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`"></i>
+            :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`" @click="handleLiveMenuClick('camera', item)"></i>
             <i class="icon icon-hand" 
-            title="上麦中"></i>
+            title="上麦中" @click="handleLiveMenuClick('live', item)"></i>
           </div>
         </div>
       </div>
@@ -153,26 +154,62 @@ export default {
       })
     },
 
-    // ready to mix stream of users in room
+    // ready to mix stream of all users in live
     startMixStream() {
       const videoRate = 9 / 16;
-      const mixUsers = this.live.liveMembers.map(({ memberId }) => ({
-        height: 120,
-        width: 120 / videoRate,
-        // locationX:
-      }));
+      const videoHeight = 468;
+      const videoSpace = 10;
+      const thumbHeight = 120;
+      const videoWidth = 468 / videoRate;
+      const thumbWidth = (videoWidth - videoSpace * 6) / 5;
+      const speakerHeight = videoHeight - thumbHeight - videoSpace * 2;
+      // 主讲人占大画面，其余人依次排列在下方
+      const mixUsers = [
+        {
+          width: videoWidth,
+          height: speakerHeight,
+          locationX: 0,
+          locationY: 0,
+          pureAudio: false,
+          zOrder: 1,
+          userId: this.live.liveSpeaker.userId // 主讲人占位
+        },
+        ...this.mainStreamList.map(({ userId_ }, index) => ({ 
+          width: thumbWidth,
+          height: thumbHeight,
+          locationX: index * thumbWidth + videoSpace * (index + 1),
+          locationY: 0,
+          pureAudio: false,
+          zOrder: 1,
+          userId: userId_ // 其余人小窗口占位
+        }))
+      ];
       const mixConfig = {
         mode: "preset-layout",
-        videoWidth: 450 / videoRate,
-        videoHeight: 450,
+        videoWidth,
+        videoHeight,
         videoBitrate: 1500,
         videoFramerate: 15,
         videoGOP: 2,
         audioSampleRate: 48000,
         audioBitrate: 64,
         audioChannels: 1,
-        // 预设一路本地摄像头、一路本地屏幕分享、两路远端流的排版位置
+        mixUsers
       };
+      this.trtcClient.client.startMixTranscode(mixConfig).then(() => {
+        console.log('混流成功~~')
+      }, (err) => {
+        ElMessage.error('直播混流出现异常，请重试')
+        console.error('混流失败', err)
+      })
+    },
+
+    stopMixStream () {
+      this.trtcClient.client.stopMixTranscode().then(() => {
+        console.log('success to stop mixstream')
+      }, (err) => {
+        console.warn('fail to stop mixstream', err)
+      })
     },
 
     unbindEvent() {
@@ -398,6 +435,24 @@ export default {
       this.applyShow = false;
     },
 
+    /** handle menu click of user live stream */
+    handleLiveMenuClick (type, payload) {
+      const actionMap = {
+        'speaker': () => {
+          
+        },
+        'mic': () => {
+          
+        },
+        'camera': () => {
+          
+        },
+        'live': () => {
+        },
+      }
+      actionMap[type]?.()
+    },
+
     /** filter live stream by id */
     filterLiveStream (filterId = this.live.liveSpeaker?.userId) {
       return this.live.liveStreamList.filter(({ 
@@ -439,7 +494,8 @@ export default {
             isOpenCamera: true
           })]
         }])
-        this.mainStreamList = this.filterLiveStream()   
+        this.mainStreamList = this.filterLiveStream() 
+        this.startMixStream()  
 
       }, (err) => {
         ElMessage.error('直播失败，请重试')
@@ -460,6 +516,7 @@ export default {
         value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
+      this.stopMixStream()
 
       await this.$store.dispatch({
         type: 'live/stopLive',
@@ -577,6 +634,7 @@ export default {
     background: #2C2C2C;
     .wrap-item {
       position: relative;
+      overflow: hidden;
       margin: 10px 0 10px 10px;
       width: calc((100% - 10px * 6) / 5);
       .stream-mask{
@@ -589,6 +647,10 @@ export default {
         background: #000;
         padding: 0 10px;
         .mask-header{
+          overflow: hidden;
+          white-space: nowrap;
+          word-break: keep-all;
+          text-overflow: ellipsis;
           margin: 10px 0 25px 0;
           color:#fff;
           font-size: 14px;
@@ -603,10 +665,11 @@ export default {
         border-radius: 50%;
         margin-left: 10px;
         background-color:#333333;
+        transition: all 0.3s ease;
         &:first-child{
           margin-left: 0;
         }
-        &.active{
+        &.active,&:hover{
           background-color:#E65E50;
         }
       }
