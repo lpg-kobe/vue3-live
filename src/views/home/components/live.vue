@@ -15,7 +15,7 @@
               {{item.nick}}
           </div>
           <div class="mask-menu">
-            <i class="icon icon-user" title="设为主讲" 
+            <i class="icon icon-user" title="设为主讲" v-if="user.user.role===1" 
             @click="handleLiveMenuClick('speaker', item)"></i>
             <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
             :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('mic', item)"></i>
@@ -239,6 +239,7 @@ export default {
       this.trtcClient?.client?.on("stream-added", this.onStreamAdded);
       this.trtcClient?.client?.on("stream-subscribed", this.onGetRemoteStream);
       this.trtcClient?.client?.on("stream-removed", this.onStreamRemoved);
+      this.trtcClient?.client?.on("stream-updated", ()=>{debugger});
       this.trtcClient?.client?.on("mute-audio", this.onRemoteMuteAudio);
       this.trtcClient?.client?.on("unmute-audio", this.onRemoteUnmuteAudio);
       this.trtcClient?.client?.on("mute-video", this.onRemoteMuteVideo);
@@ -423,7 +424,7 @@ export default {
       this.mainStreamList = this.filterLiveStream()
     },
 
-    onRemoteMuteAudio () {
+    onRemoteMuteAudio (event) {
       
     },
 
@@ -480,10 +481,22 @@ export default {
           eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, payload)
         },
         'mic': () => {
-          
+          if (payload.isOpenMic) {
+            payload.muteAudio()
+            payload.isOpenMic = false
+          } else {
+            payload.unmuteAudio()
+            payload.isOpenMic = true
+          }
         },
         'camera': () => {
-          
+          if (payload.isOpenCamera) {
+            payload.muteVideo()
+            payload.isOpenCamera = false
+          } else {
+            payload.unmuteVideo()
+            payload.isOpenCamera = true
+          }
         },
         'live': () => {
         },
