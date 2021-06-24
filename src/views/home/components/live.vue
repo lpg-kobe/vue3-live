@@ -170,7 +170,7 @@ export default {
       const mixUsers = [
         {
           width: videoWidth,
-          height: this.mainStreamList.length ? speakerHeight : videoHeight,
+          height: speakerHeight,
           locationX: 0,
           locationY: 0,
           pureAudio: false,
@@ -580,7 +580,7 @@ export default {
           })]
         }])
         this.mainStreamList = this.filterLiveStream() 
-        this.startMixStream()  
+        // this.startMixStream()  
 
       }, (err) => {
         ElMessage.error('直播失败，请重试')
@@ -667,7 +667,7 @@ export default {
         this.mainStreamList = this.filterLiveStream()
         // 嘉宾上麦默认静音
         this.trtcClient.stream.muteAudio()
-        this.startMixStream()
+        // this.startMixStream()
         await this.trtcClient.stream.stop()
         this.$nextTick(() => {
           this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`, {
