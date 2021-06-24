@@ -67,6 +67,13 @@ export function handleApplyLive(payload) {
   );
 }
 
+// 房间设置主讲人
+export function setSpeaker(payload) {
+  return request(
+    `/web/room/setmainspeaker?${qs.stringify(payload)}`,
+  )
+}
+
 // 嘉宾申请上麦
 export function applyLive(payload) {
   return request(

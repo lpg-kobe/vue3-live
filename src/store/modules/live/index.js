@@ -1,4 +1,15 @@
-import { getRoomPrivateKey, getMembers, startLive, stopLive, applyLive, guestStartLive, guestStopLive, inviteLive, handleApplyLive, handleInviteLive } from '../../../services/live'
+import {
+  getRoomPrivateKey,
+  getMembers,
+  startLive,
+  stopLive,
+  applyLive,
+  setSpeaker,
+  guestStartLive,
+  guestStopLive,
+  inviteLive,
+  handleApplyLive, handleInviteLive
+} from '../../../services/live'
 
 export default {
   namespaced: true,
@@ -67,6 +78,13 @@ export default {
     async stopLive({ }, { payload, callback }) {
       const { status, data: { data } } = await stopLive(payload)
       status && callback?.(data)
+    },
+
+    // 房间设置主讲人
+    async setMainSpeaker({ }, { payload, callback }) {
+      const { status, data: { data } } = await setSpeaker(payload)
+      status && callback?.(data)
+      return { status, data }
     },
 
     // 嘉宾下麦

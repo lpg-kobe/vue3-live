@@ -21,12 +21,14 @@ export default {
   },
   watch: {
     'live.liveSpeaker.userId': {
-      handler: async function () {
-        const speakerStream = this.live.liveStreamList.find(({ userId_ }) => String(userId_) ===
-        String(this.live.liveSpeaker.userId))
-        if (!speakerStream){ return }
-        await speakerStream.stop()
-        speakerStream.play('speakerId')
+      handler: async function (nVal, oVal) {
+        const oldSpeaker = this.live.liveStreamList.find(({ userId_ }) => String(userId_) ===
+        String(oVal))
+        const newSpeaker = this.live.liveStreamList.find(({ userId_ }) => String(userId_) ===
+        String(nVal))
+        await oldSpeaker?.stop()
+        await newSpeaker?.stop()
+        newSpeaker?.play('speakerId')
       },
       immediate: true
     }

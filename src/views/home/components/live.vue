@@ -15,7 +15,7 @@
               {{item.nick}}
           </div>
           <div class="mask-menu">
-            <i class="icon icon-user" title="设为主讲" v-if="user.user.role === 1" 
+            <i class="icon icon-user" title="设为主讲" 
             @click="handleLiveMenuClick('speaker', item)"></i>
             <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
             :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('mic', item)"></i>
@@ -219,19 +219,19 @@ export default {
       eventEmitter.off(eventEmitter.event?.anchor?.start,this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
+      eventEmitter.off(eventEmitter.event?.anchor?.setSpeaker,this.onAnchorSetSpeaker)
       eventEmitter.off(eventEmitter.event?.guest?.start,this.onGuestStart)
       eventEmitter.off(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.off(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive);
-      this.trtcClient?.client?.off("stream-added", this.onStreamAdded);
-      this.trtcClient?.client?.off("stream-subscribed", this.onGetRemoteStream);
-      this.trtcClient?.client?.off("stream-removed", this.onStreamRemoved);
+      this.trtcClient?.client?.off("*")
     },
 
     bindEvent() {
       eventEmitter.on(eventEmitter.event?.anchor?.start,this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
+      eventEmitter.on(eventEmitter.event?.anchor?.setSpeaker,this.onAnchorSetSpeaker)
       eventEmitter.on(eventEmitter.event?.guest?.start,this.onGuestStart)
       eventEmitter.on(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.on(eventEmitter.event?.guest?.stop,this.onGuestStop)
@@ -239,6 +239,10 @@ export default {
       this.trtcClient?.client?.on("stream-added", this.onStreamAdded);
       this.trtcClient?.client?.on("stream-subscribed", this.onGetRemoteStream);
       this.trtcClient?.client?.on("stream-removed", this.onStreamRemoved);
+      this.trtcClient?.client?.on("mute-audio", this.onRemoteMuteAudio);
+      this.trtcClient?.client?.on("unmute-audio", this.onRemoteUnmuteAudio);
+      this.trtcClient?.client?.on("mute-video", this.onRemoteMuteVideo);
+      this.trtcClient?.client?.on("unmute-video", this.onRemoteUnmuteVideo);
     },
 
     onMsgReceive({ data }) {
@@ -304,6 +308,18 @@ export default {
             // 主播开始直播消息
             1722: () => {},
 
+            // 主播设置主讲人消息
+            1724: () => {
+              this.$store.commit('live/setState', {
+                key: 'liveSpeaker',
+                value: {
+                  ...payloadData,
+                  userId: payloadData.mainSpeakerId
+                }
+              })
+              this.mainStreamList = this.filterLiveStream()
+            },
+
             // 结束直播
             1723: () => {
               this.$store.commit('live/setState', [{
@@ -319,6 +335,8 @@ export default {
                 value: false
               }])
               this.mainStreamList = []
+              this.trtcClient.client?.unpublish(this.trtcClient.stream)
+              this.trtcClient.stream?.stop()
             },
 
             // 嘉宾上麦
@@ -391,7 +409,6 @@ export default {
       }])
 
       this.mainStreamList = this.filterLiveStream()
-      this.startMixStream()
       this.$nextTick(() => {
         !isSpeaker && this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
       })
@@ -404,7 +421,22 @@ export default {
         value: this.filterLiveStream(stream.userId_)
       })
       this.mainStreamList = this.filterLiveStream()
-      this.startMixStream()
+    },
+
+    onRemoteMuteAudio () {
+      
+    },
+
+    onRemoteUnmuteAudio () {
+      
+    },
+
+    onRemoteMuteVideo () {
+      
+    },
+
+    onRemoteUnmuteVideo () {
+      
     },
 
     handleMediaSel(ok) {
@@ -445,7 +477,7 @@ export default {
     handleLiveMenuClick (type, payload) {
       const actionMap = {
         'speaker': () => {
-          
+          eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, payload)
         },
         'mic': () => {
           
@@ -533,6 +565,22 @@ export default {
       ElMessage.success('直播已结束')
     },
 
+    /** 主播设置主讲人 */
+    async onAnchorSetSpeaker ({ data }) {
+      const { status } = await this.$store.dispatch({
+        type: 'live/setMainSpeaker',
+        payload: {
+          roomid: this.roomId,
+          memberid: data?.userId_
+        }
+      })
+      if (!status) {
+        return 
+      }
+      this.startMixStream()
+      ElMessage.success(`已将${data?.nick}设为主讲人`)
+    },
+
     /** 嘉宾申请上麦 */
     async onGuestApply () {
       await this.$store.dispatch({
@@ -572,6 +620,7 @@ export default {
         this.mainStreamList = this.filterLiveStream()
         // 嘉宾上麦默认静音
         this.trtcClient.stream.muteAudio()
+        this.startMixStream()
         await this.trtcClient.stream.stop()
         this.$nextTick(() => {
           this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`, {
@@ -594,6 +643,7 @@ export default {
         value: this.filterLiveStream(this.trtcClient.stream.userId_)
       }])
       this.mainStreamList = this.filterLiveStream()
+      this.startMixStream()
 
       await this.$store.dispatch({
         type: 'live/guestStopLive',
