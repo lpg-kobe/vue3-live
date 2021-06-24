@@ -26,7 +26,7 @@ export default {
         String(oVal))
         const newSpeaker = this.live.liveStreamList.find(({ userId_ }) => String(userId_) ===
         String(nVal))
-        await oldSpeaker?.stop()
+        // await oldSpeaker?.stop()
         await newSpeaker?.stop()
         newSpeaker?.play('speakerId')
       },
