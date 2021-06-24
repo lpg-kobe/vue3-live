@@ -312,7 +312,6 @@ export default {
 
     /** success to get remote stream to play */
     async onGetRemoteStream (event) {
-      debugger
       let isSpeaker = false
       const { stream } = event
 
@@ -453,6 +452,7 @@ export default {
         key: 'liveStreamList',
         value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
       }])
+      this.mainStreamList = this.filterLiveStream()
 
       await this.$store.dispatch({
         type: 'live/stopLive',
@@ -523,6 +523,7 @@ export default {
         key: 'liveStreamList',
         value: this.live.liveStreamList.filter(({ userId_ }) => userId_ !== this.trtcClient.stream.userId_)
       }])
+      this.mainStreamList = this.filterLiveStream()
 
       await this.$store.dispatch({
         type: 'live/guestStopLive',
