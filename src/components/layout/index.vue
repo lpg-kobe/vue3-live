@@ -9,7 +9,6 @@
   <main>
     <section class="section-l">
       <router-view />
-      <div class="menu"></div>
     </section>
     <section class="section-r">
       <thumb-view v-if="liveStart"></thumb-view>
@@ -82,6 +81,4 @@ main {
   background: #000;
 }
 
-.menu {
-}
 </style>

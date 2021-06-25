@@ -1,9 +1,9 @@
 {
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite --mode stag",
-    "build-dev": "vite build --mode stag",
-    "build-prod": "vite build --mode prod",
+    "dev": "vite --mode dev",
+    "build-dev": "vite build --mode stag --base=/ofweek-live/",
+    "build-prod": "vite build --mode prod --base=/ofweek-live/",
     "serve": "vite preview --mode prod"
   },
   "dependencies": {

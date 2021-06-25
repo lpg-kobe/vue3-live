@@ -9,23 +9,23 @@
     <div v-if="mainStreamList.length" class="remote-view flex">
       <div class="wrap-item live-small-view" v-for="(item) in mainStreamList" :key="item.userId_" 
       @mouseover="onLiveStreamMouse(1, item)" @mouseout="onLiveStreamMouse(0, item)">
-        <div :id="`live_stream_${item.userId_}`"></div>
-        <div class="stream-mask" v-show="item.maskShow">
-          <div class="mask-header">
-              {{item.nick}}
-          </div>
-          <div class="mask-menu">
+        <div :id="`live_stream_${item.userId_}`" class="stream-player"></div>
+        <div class="stream-label">
+          <label>{{item.nick}}</label>
+        </div>
+        <div class="stream-mask flex-center" v-show="item.maskShow">
+          <div class="mask-menu flex-center">
             <i class="icon icon-user" title="设为主讲" v-if="user.user.role===1" 
             @click="handleLiveMenuClick('speaker', item)"></i>
             <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
-            v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
+            v-if="judgeAnchorOrSelf(item)"
             :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('camera', item)"></i>
             <i :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`" 
-            v-if="user.user.role===1||String(item.userId_)===String(user.user.imAccount)"
+            v-if="judgeAnchorOrSelf(item)"
             :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`" @click="handleLiveMenuClick('mic', item)"></i>
             <i class="icon icon-hand" 
-            v-if="String(item.userId_)===String(user.user.imAccount)"
-            title="上麦中" @click="handleLiveMenuClick('live', item)"></i>
+            v-if="judgeAnchorOrSelf(item)"
+            title="下麦" @click="handleLiveMenuClick('live', item)"></i>
           </div>
         </div>
       </div>
@@ -347,9 +347,7 @@ export default {
             },
 
             // 嘉宾下麦
-            1727: () => {
-              
-            },
+            1727: () => {},
           }
           codeAction[msgCode]?.()
         }
@@ -519,21 +517,19 @@ export default {
             payload.unmuteVideo()
             payload.isOpenCamera = true
           }
-          this.$store.dispatch({
-            type: 'live/toggleCamera',
-            payload: {
-              roomid: this.roomId,
-              openorclose: payload.isOpenCamera ? 1 : 2
-            }
-          })
         },
         'live': () => {
-          if (payload.role === 1) {
+          const isAnchorSelf = payload.role === 1
+          const isGuestSelf = String(this.user.user.imAccount) === String(payload.userId_)
+          const remoteClient = payload.client_
+
+          if (isAnchorSelf) {
             eventEmitter.emit(eventEmitter.event.anchor.stop)
           } else {
-            eventEmitter.emit(eventEmitter.event.guest.stop)
-            // payload.client_.unpublish(payload)
+            isGuestSelf ? eventEmitter.emit(eventEmitter.event.guest.stop) : 
+            (remoteClient?.unpublish(payload),payload.stop?.())
           }
+
         },
       }
       actionMap[type]?.()
@@ -704,7 +700,16 @@ export default {
     },
 
     onLiveStreamMouse (type, item) {
+      const { role, imAccount } = this.user.user
+      const isSelf = String(imAccount) === String(item.userId_)
+      if (role !== 1 && !isSelf) {
+        return 
+      }
       item.maskShow = type
+    },
+
+    judgeAnchorOrSelf (payload) {
+      return String(payload.userId_) === String(this.user.user.imAccount) || this.user.user.role === 1
     },
 
     /** custom stream attribute before create */
@@ -741,6 +746,22 @@ export default {
       overflow: hidden;
       margin: 10px 0 10px 10px;
       width: calc((100% - 10px * 6) / 5);
+      .stream-player {
+        height: 100%;
+      }
+      .stream-label {
+        position: absolute;
+        overflow: hidden;
+        white-space: nowrap;
+        word-break: keep-all;
+        text-overflow: ellipsis;
+        z-index: 3;
+        top: 10px;
+        left: 10px;
+        width: calc(100% - 10px);
+        font-size: 14px;
+        color: #fff;
+      }
       .stream-mask{
         position: absolute;
         top: 0;
@@ -748,8 +769,8 @@ export default {
         width: 100%;
         height: 100%;
         z-index: 2;
-        background: #000;
-        padding: 0 10px;
+        background: rgba(0, 0, 0, 0.75);
+        transition: all 0.3s ease;
         .mask-header{
           overflow: hidden;
           white-space: nowrap;
@@ -759,7 +780,10 @@ export default {
           color:#fff;
           font-size: 14px;
         }
-        .mask-menu{}
+        .mask-menu{
+          flex: 1;
+          padding: 0 10px;
+        }
       }
       .icon {
         cursor: pointer;

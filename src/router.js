@@ -6,8 +6,9 @@ import { getUserSession } from './utils/session'
 import Home from './views/home/index.vue'
 import Login from './views/login/index.vue'
 import store from './store'
+import { VITE_publicPath } from './constants'
 
-const historyMode = createWebHistory('')
+const historyMode = createWebHistory(VITE_publicPath)
 const router = createRouter({
   history: historyMode,
   routes: [{
@@ -30,7 +31,7 @@ const router = createRouter({
 })
 
 // router permission
-function routerPermit ({ name }, from, next) {
+function routerPermit({ name }, from, next) {
   if (name !== 'login' && !getUserSession()) {
     next({
       name: 'login'
@@ -41,7 +42,7 @@ function routerPermit ({ name }, from, next) {
 }
 
 // init global state|data for router config, don`t do anything here for single page
-function initRouterMeta (to) {
+function initRouterMeta(to) {
   const { meta: { initIm, initTrtc } } = to
   // save router data
   store.commit('setState', {

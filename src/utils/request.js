@@ -61,7 +61,7 @@ export default function request(
     headers,
   };
   // 修复url中多余的斜杠
-  const fixUrl = (MODE === 'prod' ? VITE_apiHost + url : url)
+  const fixUrl = (MODE !== 'dev' ? VITE_apiHost + url : url)
     .replace(/\/\//g, '/')
     .replace(/:\/([^/])/, '://$1');
 
