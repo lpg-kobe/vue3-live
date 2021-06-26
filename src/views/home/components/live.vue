@@ -362,11 +362,9 @@ export default {
             1727: () => {
               const isGuestSelf = String(payloadData.guestId) == String(this.user.user.imAccount)
               if (payloadData.isAuthorStopLive) {
-                // 主播下嘉宾麦
-                isGuestSelf && ElMessage.warn('您已被主播强制下麦')
+                // 主播推送当前嘉宾下麦
+                isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
               }
-              // 嘉宾自行下麦
-              isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
             },
           }
           codeAction[msgCode]?.()
@@ -539,10 +537,10 @@ export default {
           }
         },
         'live': () => {
-          const isAnchorSelf = payload.role === 1
-
-          if (isAnchorSelf) {
-            eventEmitter.emit(eventEmitter.event.anchor.stop)
+          const isSelf = String(payload.userId_) === String(this.user.user.imAccount)
+          const targetIsAnchor = payload.role === 1
+          if (isSelf) {
+            targetIsAnchor ? eventEmitter.emit(eventEmitter.event.anchor.stop) : eventEmitter.emit(eventEmitter.event.guest.stop)
           } else {
             this.$store.dispatch({
               type: 'live/guestStopLive',
