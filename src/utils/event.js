@@ -24,6 +24,9 @@ export const EVENTENUM = {
     openCamera: 'GUEST_OPEN_CAMERA', // 开启摄像头
     closeCamera: 'GUEST_CLOSE_CAMERA', // 关闭摄像头
   },
+  live: {
+    joinFail: 'FAIL_TO_JOIN_TRTC'
+  },
   login: {
     expire: 'LOGIN_EXPIRE',
   },

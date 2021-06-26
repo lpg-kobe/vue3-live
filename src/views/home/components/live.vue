@@ -13,6 +13,8 @@
         <div class="stream-label">
           <label>{{item.nick}}</label>
         </div>
+        <!--default cover-->
+        <Img :src="item.headUrl" class="stream-cover" v-show="!item.isOpenCamera" alt="cover" />
         <div class="stream-mask flex-center" v-show="item.maskShow">
           <div class="mask-menu flex-center">
             <i class="icon icon-user" title="设为主讲" v-if="user.user.role===1" 
@@ -55,6 +57,7 @@ import { mapState } from "vuex";
 import { ElMessage } from 'element-plus'
 import { IM_EVENT } from "../../../sdk/imLive";
 import MediaCheck from "./mediaCheck.vue";
+import Img from '../../../components/img/index.vue'
 import { eventEmitter } from '../../../utils/event'
 
 export default {
@@ -62,6 +65,7 @@ export default {
 
   components: {
     MediaCheck,
+    Img
   },
 
   data() {
@@ -113,9 +117,17 @@ export default {
             .then(
               () => {
                 console.log("success to join trtc-room");
+                this.$store.commit('live/setState', {
+                  key: 'liveJoinStatus',
+                  value: 1
+                })
               },
               (err) => {
                 console.error("fail to join trtc-room", err);
+                this.$store.commit('live/setState', {
+                  key: 'liveJoinStatus',
+                  value: 0
+                })
               }
             );
         },
@@ -346,8 +358,16 @@ export default {
             1726: () => {
             },
 
-            // 嘉宾下麦
-            1727: () => {},
+            // 嘉宾下麦推送
+            1727: () => {
+              const isGuestSelf = String(payloadData.guestId) == String(this.user.user.imAccount)
+              if (payloadData.isAuthorStopLive) {
+                // 主播下嘉宾麦
+                isGuestSelf && ElMessage.warn('您已被主播强制下麦')
+              }
+              // 嘉宾自行下麦
+              isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
+            },
           }
           codeAction[msgCode]?.()
         }
@@ -520,16 +540,18 @@ export default {
         },
         'live': () => {
           const isAnchorSelf = payload.role === 1
-          const isGuestSelf = String(this.user.user.imAccount) === String(payload.userId_)
-          const remoteClient = payload.client_
 
           if (isAnchorSelf) {
             eventEmitter.emit(eventEmitter.event.anchor.stop)
           } else {
-            isGuestSelf ? eventEmitter.emit(eventEmitter.event.guest.stop) : 
-            (remoteClient?.unpublish(payload),payload.stop?.())
+            this.$store.dispatch({
+              type: 'live/guestStopLive',
+              payload: {
+                roomid: this.roomId,
+                memberid: payload.userId_
+              }
+            })
           }
-
         },
       }
       actionMap[type]?.()
@@ -755,12 +777,19 @@ export default {
         white-space: nowrap;
         word-break: keep-all;
         text-overflow: ellipsis;
-        z-index: 3;
+        z-index: 4;
         top: 10px;
         left: 10px;
         width: calc(100% - 10px);
         font-size: 14px;
         color: #fff;
+      }
+      .stream-cover{
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
       }
       .stream-mask{
         position: absolute;

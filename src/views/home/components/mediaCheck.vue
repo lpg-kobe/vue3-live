@@ -196,4 +196,7 @@ export default {
 .media-select {
   width: 100%;
 }
+.stream-view {
+  height: 100%;
+}
 </style>

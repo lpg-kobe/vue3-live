@@ -26,7 +26,9 @@ export default {
       userId: ''
     },
     // 当前主窗口视角 2 插播 1 ppt 0 本人画面
-    liveMainView: 2
+    liveMainView: 2,
+    // trtc join 状态
+    liveJoinStatus: 0
   },
   getters: {},
   mutations: {

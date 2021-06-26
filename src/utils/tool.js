@@ -9,7 +9,7 @@ import { VITE_publicPath } from '../constants'
 // flag of requestAnimationFrame
 let rafFlag = {};
 
-export function getStore (name) {
+export function getStore(name) {
   try {
     // @ts-ignore
     return JSON.parse(localStorage.getItem(name));
@@ -20,7 +20,7 @@ export function getStore (name) {
   }
 }
 
-export function setStore (key, value) {
+export function setStore(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
@@ -29,11 +29,11 @@ export function setStore (key, value) {
   }
 }
 
-export function removeStore (key) {
+export function removeStore(key) {
   return localStorage.removeItem(key);
 }
 
-export function scrollElement (dom, position) {
+export function scrollElement(dom, position) {
   if (!dom.nodeType) {
     throw new Error(`target of ${dom} is not an HTMLElement`);
   }
@@ -53,7 +53,7 @@ export function scrollElement (dom, position) {
 }
 
 // 跟随屏幕帧率节流
-export function tottle (fn, key) {
+export function tottle(fn, key) {
   key = key || 'default';
   if (!rafFlag[key]) {
     window.requestAnimationFrame(() => {
@@ -65,7 +65,7 @@ export function tottle (fn, key) {
 }
 
 // debounce防抖
-export function debounce (
+export function debounce(
   fn,
   wait,
   immediate,
@@ -89,7 +89,7 @@ export function debounce (
  * @param {HTMLElement} dom 监听的dom节点
  * @param {Function} callback 回调函数
  */
-export function nextTick (dom, callback) {
+export function nextTick(dom, callback) {
   const realDom =
     typeof dom === 'string' ? document.querySelector(dom) : dom;
   if (!realDom.nodeType) {
@@ -101,7 +101,7 @@ export function nextTick (dom, callback) {
   let prevTop = rect.top - 1;
   let prevLeft = rect.left - 1;
 
-  function getPosition () {
+  function getPosition() {
     const nextRect = realDom.getBoundingClientRect();
     if (prevTop !== nextRect.top || prevLeft !== nextRect.left) {
       prevTop = nextRect.top;
@@ -125,12 +125,12 @@ export function nextTick (dom, callback) {
 /**
  * @desc 屏幕帧率检测
  */
-export function checkFps (cb) {
+export function checkFps(cb) {
   let initTime = performance.now();
   let prevTime = performance.now();
   let frame = 0;
   let fps = 60;
-  return function loop () {
+  return function loop() {
     const now = performance.now();
     const fs = now - prevTime;
     fps = Math.round(1000 / fs);
@@ -150,7 +150,7 @@ export function checkFps (cb) {
  * @desc 过滤字符文本换行符
  * @param {String} text 文本内容
  */
-export function filterBreakWord (text) {
+export function filterBreakWord(text) {
   return text.replace(/\n/g, '<br/>');
 }
 
@@ -158,7 +158,7 @@ export function filterBreakWord (text) {
  * @desc 路由自定义拼接
  * @param {String} path hashRouter-path or browserRouter-path
  */
-export function judgeRouterUrl (path) {
+export function judgeRouterUrl(path) {
   path = path.replace(/^\//, '');
   // hashRouter
   if (location.hash) {
@@ -175,12 +175,12 @@ export function judgeRouterUrl (path) {
  * @param {timer} setTimeout timer result
  * @param {delay} Number 间隔时间
  */
-export function loopToInterval (
+export function loopToInterval(
   fn,
   timer,
   delay
 ) {
-  async function loop () {
+  async function loop() {
     if (timer) {
       clearTimeout(timer);
       timer = null;
@@ -199,7 +199,7 @@ export function loopToInterval (
  * @param {Number||null} timer setTimeout timer
  * @param {Function} fn callback after countdown
  */
-export function countdown (
+export function countdown(
   endTime,
   timer,
   delay,
@@ -237,7 +237,7 @@ export function countdown (
 /**
  * @desc 全屏元素
  */
-export function fullScreenEle (ele) {
+export function fullScreenEle(ele) {
   ele = ele || document.documentElement;
   const fullFn =
     ele.requestFullscreen ||
@@ -251,7 +251,7 @@ export function fullScreenEle (ele) {
  * @desc 图片加载处理
  * @param {src} Array | String
  */
-export function loadImage (src, onComplete) {
+export function loadImage(src, onComplete) {
   if (Array.isArray(src)) {
     let loadCount = 0;
     let loadArrs = [];
@@ -288,7 +288,7 @@ export function loadImage (src, onComplete) {
 /**
  * @desc 退出全屏
  */
-export function exitFullScreen () {
+export function exitFullScreen() {
   const cancelFn =
     document.exitFullScreen ||
     document.mozCancelFullScreen ||
@@ -301,7 +301,7 @@ export function exitFullScreen () {
  * @desc 索引插入元素到输入框，后期考虑更换成rich editor
  * @return {String} value
  */
-export function formatInput (inputEle, value) {
+export function formatInput(inputEle, value) {
   const initValue = inputEle.value;
   const focusStart = ~~inputEle.selectionStart;
   const focusEnd = ~~inputEle.selectionEnd;
@@ -315,7 +315,7 @@ export function formatInput (inputEle, value) {
  * @desc replace router by mode
  * @param {String} url
  */
-export function replaceHistory (path) {
+export function replaceHistory(path) {
   path = path.replace(/^\//, '');
   if (location.hash) {
     window.location.hash = `#/${path}`
