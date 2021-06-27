@@ -27,6 +27,8 @@ export default class WebTrtcLive {
     }
 
     this.event = TRTC_EVENT
+    this.stream = null
+    this.previewStream = null
     this.trtc = TRTC
     this.createClient({
       ...config,
@@ -107,7 +109,7 @@ export default class WebTrtcLive {
     return this.client
   }
 
-  /** create local preview stream */
+  /** create default stream */
   createStream(config) {
     const { settings, ...streamConfig } = config
     return new Promise((resolve) => {
@@ -123,6 +125,29 @@ export default class WebTrtcLive {
       this.stream.setVideoProfile(settings)
       this.stream.initialize().then(() => resolve({
         stream: this.stream
+      }), (error) => resolve({
+        stream: null,
+        error
+      }))
+    })
+  }
+
+  /** create preview stream */
+  createPreviewStream(config) {
+    const { settings, ...streamConfig } = config
+    return new Promise((resolve) => {
+      if (!streamConfig?.userId) {
+        resolve({
+          stream: null,
+          error: {
+            name: 'noUserId'
+          }
+        })
+      }
+      this.previewStream = this.trtc.createStream(streamConfig)
+      this.previewStream.setVideoProfile(settings)
+      this.previewStream.initialize().then(() => resolve({
+        stream: this.previewStream
       }), (error) => resolve({
         stream: null,
         error

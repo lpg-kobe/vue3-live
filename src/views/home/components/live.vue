@@ -4,11 +4,6 @@
       :visible="mediaSelVisible"
       :client="trtcClient"
       :user="user.userInfo"
-      :live="
-        live.liveStreamList.some(
-          ({ userId_ }) => String(userId_) === String(user.user.imAccount)
-        )
-      "
       @btn-click="mediaSelVisible = false"
     />
     <div v-if="mainStreamList.length" class="remote-view flex">

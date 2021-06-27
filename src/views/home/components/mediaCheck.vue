@@ -158,8 +158,8 @@ export default {
         muted: true,
       })
       this.voiceLevelCheck()
-      this.cameras = cameraList
-      this.mics = micList
+      this.cameras = cameraList.filter(({ deviceId }) => deviceId !== 'default')
+      this.mics = micList.filter(({ deviceId }) => deviceId !== 'default')
       this.mediaForm = {
         micId: this.client.getCurMic()?.deviceId,
         cameraId: this.client.getCurCamera()?.deviceId,
@@ -213,13 +213,10 @@ export default {
     },
 
     async handleMediaChange(type, value) {
-      if (value === 'default') {
-        return
-      }
       if (type === 'mic') {
-        this.client.switchMic()
+        this.client.switchMic(value)
       } else {
-        const result = this.client.switchCamera()
+        const result = await this.client.switchCamera(value)
         if (result) {
           await this.client.stream.stop()
           this.client.stream.play('mediaPreview')
