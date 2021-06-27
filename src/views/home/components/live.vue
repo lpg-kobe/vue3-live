@@ -4,68 +4,94 @@
       :visible="mediaSelVisible"
       :client="trtcClient"
       :user="user.userInfo"
+      :live="
+        live.liveStreamList.some(
+          ({ userId_ }) => String(userId_) === String(user.user.imAccount)
+        )
+      "
       @btn-click="mediaSelVisible = false"
     />
     <div v-if="mainStreamList.length" class="remote-view flex">
-      <div class="wrap-item live-small-view" v-for="(item) in mainStreamList" :key="item.userId_" 
-      @mouseover="onLiveStreamMouse(1, item)" @mouseout="onLiveStreamMouse(0, item)">
+      <div
+        class="wrap-item live-small-view"
+        v-for="item in mainStreamList"
+        :key="item.userId_"
+        @mouseover="onLiveStreamMouse(1, item)"
+        @mouseout="onLiveStreamMouse(0, item)"
+      >
         <div :id="`live_stream_${item.userId_}`" class="stream-player"></div>
         <div class="stream-label">
-          <label>{{item.nick}}</label>
+          <label>{{ item.nick }}</label>
         </div>
         <!--default cover-->
-        <Img :src="item.headUrl" class="stream-cover" v-show="!item.isOpenCamera" alt="cover" />
+        <Img
+          :src="item.headUrl"
+          class="stream-cover"
+          v-show="!item.isOpenCamera"
+          alt="cover"
+        />
         <div class="stream-mask flex-center" v-show="item.maskShow">
           <div class="mask-menu flex-center">
-            <i class="icon icon-user" title="设为主讲" v-if="user.user.role===1" 
-            @click="handleLiveMenuClick('speaker', item)"></i>
-            <i :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`" 
-            v-if="judgeAnchorOrSelf(item)"
-            :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`" @click="handleLiveMenuClick('camera', item)"></i>
-            <i :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`" 
-            v-if="judgeAnchorOrSelf(item)"
-            :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`" @click="handleLiveMenuClick('mic', item)"></i>
-            <i class="icon icon-hand" 
-            v-if="judgeAnchorOrSelf(item)"
-            title="下麦" @click="handleLiveMenuClick('live', item)"></i>
+            <i
+              class="icon icon-user"
+              title="设为主讲"
+              v-if="user.user.role === 1"
+              @click="handleLiveMenuClick('speaker', item)"
+            ></i>
+            <i
+              :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`"
+              v-if="judgeAnchorOrSelf(item)"
+              :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`"
+              @click="handleLiveMenuClick('camera', item)"
+            ></i>
+            <i
+              :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`"
+              v-if="judgeAnchorOrSelf(item)"
+              :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`"
+              @click="handleLiveMenuClick('mic', item)"
+            ></i>
+            <i
+              class="icon icon-hand"
+              v-if="judgeAnchorOrSelf(item)"
+              title="下麦"
+              @click="handleLiveMenuClick('live', item)"
+            ></i>
           </div>
         </div>
       </div>
     </div>
-    <div class="live-main-view flex-center">
-      ppt
-    </div>
-      <el-dialog title="提示" v-model="applyShow">
-        <p>{{applyMsg.auditerNick}}申请上麦</p>
-        <template #footer>
-          <el-button @click="handleGuestApply(0)">拒绝</el-button>
-          <el-button type="primary" @click="handleGuestApply(1)">同意</el-button>
-        </template>
-      </el-dialog>
-      <el-dialog title="提示" v-model="inviteShow">
-        <p>{{inviteMsg.inviterNick}}邀请您上麦</p>
-        <template #footer>
-          <el-button @click="handleInvite(0)">拒绝</el-button>
-          <el-button type="primary" @click="handleInvite(1)">同意</el-button>
-        </template>
-      </el-dialog>
+    <div class="live-main-view flex-center">ppt</div>
+    <el-dialog title="提示" v-model="applyShow">
+      <p>{{ applyMsg.auditerNick }}申请上麦</p>
+      <template #footer>
+        <el-button @click="handleGuestApply(0)">拒绝</el-button>
+        <el-button type="primary" @click="handleGuestApply(1)">同意</el-button>
+      </template>
+    </el-dialog>
+    <el-dialog title="提示" v-model="inviteShow">
+      <p>{{ inviteMsg.inviterNick }}邀请您上麦</p>
+      <template #footer>
+        <el-button @click="handleInvite(0)">拒绝</el-button>
+        <el-button type="primary" @click="handleInvite(1)">同意</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template> 
 
 <script>
-import { mapState } from "vuex";
+import { mapState } from 'vuex'
 import { ElMessage } from 'element-plus'
-import { IM_EVENT } from "../../../sdk/imLive";
-import MediaCheck from "./mediaCheck.vue";
+import { IM_EVENT } from '../../../sdk/imLive'
+import MediaCheck from './mediaCheck.vue'
 import Img from '../../../components/img/index.vue'
 import { eventEmitter } from '../../../utils/event'
 
 export default {
-  name: "live",
+  name: 'live',
 
   components: {
     MediaCheck,
-    Img
+    Img,
   },
 
   data() {
@@ -77,15 +103,15 @@ export default {
       applyTimer: null,
       inviteShow: false,
       inviteMsg: {},
-      inviteTimer: null
-    };
+      inviteTimer: null,
+    }
   },
 
   created() {
-    this.joinTrtc();
-    this.initLive();
-    this.unbindEvent();
-    this.bindEvent();
+    this.joinTrtc()
+    this.initLive()
+    this.unbindEvent()
+    this.bindEvent()
   },
 
   computed: {
@@ -102,36 +128,40 @@ export default {
   methods: {
     // join trtc room after get private key
     joinTrtc() {
-      this.$store.dispatch({
-        type: "live/getPrivateKey",
-        payload: {
-          roomid: this.roomId,
-        },
-        callback: ({ data: { trtcPrivateSig } }) => {
-          this.trtcClient.client
-            .join({
-              roomId: Number(this.roomId),
-              role: "anchor",
-              privateMapKey: trtcPrivateSig,
-            })
-            .then(
-              () => {
-                console.log("success to join trtc-room");
-                this.$store.commit('live/setState', {
-                  key: 'liveJoinStatus',
-                  value: 1
-                })
-              },
-              (err) => {
-                console.error("fail to join trtc-room", err);
-                this.$store.commit('live/setState', {
-                  key: 'liveJoinStatus',
-                  value: 0
-                })
-              }
-            );
-        },
-      });
+      return new Promise((resolve) => {
+        this.$store.dispatch({
+          type: 'live/getPrivateKey',
+          payload: {
+            roomid: this.roomId,
+          },
+          callback: ({ data: { trtcPrivateSig } }) => {
+            this.trtcClient.client
+              .join({
+                roomId: Number(this.roomId),
+                role: 'anchor',
+                privateMapKey: trtcPrivateSig,
+              })
+              .then(
+                () => {
+                  console.log('success to join trtc-room')
+                  this.$store.commit('live/setState', {
+                    key: 'liveJoinStatus',
+                    value: 1,
+                  })
+                  resolve(true)
+                },
+                (err) => {
+                  console.error('fail to join trtc-room', err)
+                  this.$store.commit('live/setState', {
+                    key: 'liveJoinStatus',
+                    value: 0,
+                  })
+                  resolve(false)
+                }
+              )
+          },
+        })
+      })
     },
 
     // init live data before do anything, will move other in feature
@@ -139,11 +169,11 @@ export default {
       this.$store.dispatch({
         type: 'room/getroom',
         payload: {
-          roomid: this.roomId
-        }
+          roomid: this.roomId,
+        },
       })
       this.$store.dispatch({
-        type: "live/getMembers",
+        type: 'live/getMembers',
         payload: {
           roomid: this.roomId,
         },
@@ -154,30 +184,30 @@ export default {
             key: 'liveSpeaker',
             value: {
               ...speaker,
-              userId: speaker.memberId
-            }
+              userId: speaker.memberId,
+            },
           })
         },
-      });
+      })
 
       // get user in room, will move feature
       this.$store.dispatch({
         type: 'room/entryroom',
         payload: {
-          roomid: this.roomId
-        }
+          roomid: this.roomId,
+        },
       })
     },
 
     // ready to mix stream of all users in live
     startMixStream() {
-      const videoRate = 9 / 16;
-      const videoHeight = 468;
-      const videoSpace = 10;
-      const thumbHeight = 120;
-      const videoWidth = 468 / videoRate;
-      const thumbWidth = (videoWidth - videoSpace * 6) / 5;
-      const speakerHeight = videoHeight - thumbHeight - videoSpace * 2;
+      const videoRate = 9 / 16
+      const videoHeight = 468
+      const videoSpace = 10
+      const thumbHeight = 120
+      const videoWidth = 468 / videoRate
+      const thumbWidth = (videoWidth - videoSpace * 6) / 5
+      const speakerHeight = videoHeight - thumbHeight - videoSpace * 2
       // 主讲人占大画面，其余人依次排列在下方
       const mixUsers = [
         {
@@ -190,7 +220,7 @@ export default {
           userId: String(this.live.liveSpeaker.userId), // 主讲人占位
           zOrder: 1,
         },
-        ...this.mainStreamList.map(({ userId_ }, index) => ({ 
+        ...this.mainStreamList.map(({ userId_ }, index) => ({
           width: thumbWidth,
           height: thumbHeight,
           locationX: index * thumbWidth + videoSpace * (index + 1),
@@ -198,11 +228,11 @@ export default {
           pureAudio: false,
           // streamType: 'auxiliary', // 远端辅流
           userId: '$PLACE_HOLDER_REMOTE$', // 其余人小窗口占位
-          zOrder: 2
-        }))
-      ];
+          zOrder: 2,
+        })),
+      ]
       const mixConfig = {
-        mode: "preset-layout",
+        mode: 'preset-layout',
         streamId: this.room.room?.myStreamIdMix,
         videoWidth,
         videoHeight,
@@ -212,73 +242,90 @@ export default {
         audioSampleRate: 48000,
         audioBitrate: 64,
         audioChannels: 2,
-        mixUsers
-      };
-      this.trtcClient.client.startMixTranscode(mixConfig).then(() => {
-        console.log('混流成功~~')
-      }, (err) => {
-        ElMessage.error('直播混流出现异常，请重试')
-        console.error('混流失败', err)
-      })
+        mixUsers,
+      }
+      this.trtcClient.client.startMixTranscode(mixConfig).then(
+        () => {
+          console.log('混流成功~~')
+        },
+        (err) => {
+          ElMessage.error('直播混流出现异常，请重试')
+          console.error('混流失败', err)
+        }
+      )
     },
 
-    stopMixStream () {
-      this.trtcClient.client.stopMixTranscode().then(() => {
-        console.log('success to stop mixstream')
-      }, (err) => {
-        console.warn('fail to stop mixstream', err)
-      })
+    stopMixStream() {
+      this.trtcClient.client.stopMixTranscode().then(
+        () => {
+          console.log('success to stop mixstream')
+        },
+        (err) => {
+          console.warn('fail to stop mixstream', err)
+        }
+      )
     },
 
     unbindEvent() {
-      eventEmitter.off(eventEmitter.event?.anchor?.start,this.onAnchorStart)
-      eventEmitter.off(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
-      eventEmitter.off(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
-      eventEmitter.off(eventEmitter.event?.anchor?.setSpeaker,this.onAnchorSetSpeaker)
-      eventEmitter.off(eventEmitter.event?.guest?.start,this.onGuestStart)
-      eventEmitter.off(eventEmitter.event?.guest?.apply,this.onGuestApply)
-      eventEmitter.off(eventEmitter.event?.guest?.stop,this.onGuestStop)
-      this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive);
-      this.trtcClient?.stream?.off("*")
-      this.trtcClient?.client?.off("*")
+      eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
+      eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
+      eventEmitter.off(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
+      eventEmitter.off(
+        eventEmitter.event?.anchor?.setSpeaker,
+        this.onAnchorSetSpeaker
+      )
+      eventEmitter.off(eventEmitter.event?.guest?.start, this.onGuestStart)
+      eventEmitter.off(eventEmitter.event?.guest?.apply, this.onGuestApply)
+      eventEmitter.off(eventEmitter.event?.guest?.stop, this.onGuestStop)
+      this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive)
+      this.trtcClient?.stream?.off('*')
+      this.trtcClient?.client?.off('*')
     },
 
     bindEvent() {
-      eventEmitter.on(eventEmitter.event?.anchor?.start,this.onAnchorStart)
-      eventEmitter.on(eventEmitter.event?.anchor?.invite,this.onAnchorInvite)
-      eventEmitter.on(eventEmitter.event?.anchor?.stop,this.onAnchorStop)
-      eventEmitter.on(eventEmitter.event?.anchor?.setSpeaker,this.onAnchorSetSpeaker)
-      eventEmitter.on(eventEmitter.event?.guest?.start,this.onGuestStart)
-      eventEmitter.on(eventEmitter.event?.guest?.apply,this.onGuestApply)
-      eventEmitter.on(eventEmitter.event?.guest?.stop,this.onGuestStop)
-      this.imClient?.on(IM_EVENT?.msgReceive, this.onMsgReceive);
-      this.trtcClient?.client?.on("stream-added", this.onStreamAdded);
-      this.trtcClient?.client?.on("stream-subscribed", this.onGetRemoteStream);
-      this.trtcClient?.client?.on("stream-removed", this.onStreamRemoved);
-      this.trtcClient?.client?.on("mute-audio", this.onRemoteMuteAudio);
-      this.trtcClient?.client?.on("unmute-audio", this.onRemoteUnmuteAudio);
-      this.trtcClient?.client?.on("mute-video", this.onRemoteMuteVideo);
-      this.trtcClient?.client?.on("unmute-video", this.onRemoteUnmuteVideo);
+      eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
+      eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
+      eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
+      eventEmitter.on(
+        eventEmitter.event?.anchor?.setSpeaker,
+        this.onAnchorSetSpeaker
+      )
+      eventEmitter.on(eventEmitter.event?.guest?.start, this.onGuestStart)
+      eventEmitter.on(eventEmitter.event?.guest?.apply, this.onGuestApply)
+      eventEmitter.on(eventEmitter.event?.guest?.stop, this.onGuestStop)
+      this.imClient?.on(IM_EVENT?.msgReceive, this.onMsgReceive)
+      this.trtcClient?.client?.on('stream-added', this.onStreamAdded)
+      this.trtcClient?.client?.on('stream-subscribed', this.onGetRemoteStream)
+      this.trtcClient?.client?.on('stream-removed', this.onStreamRemoved)
+      this.trtcClient?.client?.on('mute-audio', this.onRemoteMuteAudio)
+      this.trtcClient?.client?.on('unmute-audio', this.onRemoteUnmuteAudio)
+      this.trtcClient?.client?.on('mute-video', this.onRemoteMuteVideo)
+      this.trtcClient?.client?.on('unmute-video', this.onRemoteUnmuteVideo)
     },
 
     onMsgReceive({ data }) {
       try {
         for (let i = 0, len = data.length; i < len; i++) {
-          const msg = data[i];
+          const msg = data[i]
 
           if (!msg.payload?.data) {
-            return 
+            return
           }
-          
+
           const payloadData = JSON.parse(msg.payload?.data)
           const { msgCode } = payloadData
-          console.log(payloadData);
+          console.log(payloadData)
 
           if (String(payloadData.roomId) !== String(this.roomId)) {
-            return 
+            return
           }
 
           const codeAction = {
+            // 直播间结束
+            1027: () => {
+              this.destroyRoom()
+            },
+
             // 邀请直播消息
             1706: () => {
               this.inviteMsg = payloadData
@@ -286,23 +333,26 @@ export default {
               // 30秒内不处理上麦消息自动决绝并关闭弹窗
               this.inviteTimer = setTimeout(() => {
                 this.handleInvite(0)
-               }, 30 * 1000);
+              }, 30 * 1000)
             },
 
             // 申请上麦消息
             1710: () => {
-               this.applyMsg = payloadData
-               this.applyShow = true
-                // 30秒内不处理上麦消息自动决绝并关闭弹窗
-               this.applyTimer = setTimeout(() => {
+              this.applyMsg = payloadData
+              this.applyShow = true
+              // 30秒内不处理上麦消息自动决绝并关闭弹窗
+              this.applyTimer = setTimeout(() => {
                 this.handleGuestApply(0)
-               }, 30 * 1000);
+              }, 30 * 1000)
             },
 
             // 处理上麦申请消息
             1712: () => {
-              if (String(payloadData.auditerId) !== String(this.user?.userInfo?.imAccount)) {
-                return 
+              if (
+                String(payloadData.auditerId) !==
+                String(this.user?.userInfo?.imAccount)
+              ) {
+                return
               }
               if (payloadData.isAgree) {
                 ElMessage.success(`${payloadData.anthorNick}同意了您的上麦申请`)
@@ -314,11 +364,17 @@ export default {
 
             // 处理上麦邀请消息
             1714: () => {
-              if (String(payloadData.adminId) !== String(this.user?.userInfo?.imAccount)) {
+              if (
+                String(payloadData.adminId) !==
+                String(this.user?.userInfo?.imAccount)
+              ) {
                 return
               }
-              ElMessage[payloadData.isAgree ? 'success' : 'error'](`${payloadData.guestNick}${payloadData.isAgree ? 
-              '同意' : '拒绝'}了您的上麦邀请`)
+              ElMessage[payloadData.isAgree ? 'success' : 'error'](
+                `${payloadData.guestNick}${
+                  payloadData.isAgree ? '同意' : '拒绝'
+                }了您的上麦邀请`
+              )
             },
 
             // 主播开始直播消息
@@ -330,38 +386,27 @@ export default {
                 key: 'liveSpeaker',
                 value: {
                   ...payloadData,
-                  userId: payloadData.mainSpeakerId
-                }
+                  userId: payloadData.mainSpeakerId,
+                },
               })
               this.mainStreamList = this.filterLiveStream()
             },
 
-            // 结束直播
+            // 主播结束直播
             1723: () => {
-              this.$store.commit('live/setState', [{
-                key: 'liveStreamList',
-                value: []
-              },{
-                key: 'liveSpeaker',
-                value: {
-                  userId: ''
-                },
-              },{
-                key: 'liveStart',
-                value: false
-              }])
-              this.mainStreamList = []
-              this.trtcClient.client?.unpublish(this.trtcClient.stream)
-              this.trtcClient.stream?.stop()
+              const isSelf =
+                String(payloadData.handlerId) ===
+                String(this.user.user.imAccount)
+              !isSelf && this.destroyRoom()
             },
 
             // 嘉宾上麦
-            1726: () => {
-            },
+            1726: () => {},
 
             // 嘉宾下麦推送
             1727: () => {
-              const isGuestSelf = String(payloadData.guestId) == String(this.user.user.imAccount)
+              const isGuestSelf =
+                String(payloadData.guestId) == String(this.user.user.imAccount)
               if (payloadData.isAuthorStopLive) {
                 // 主播推送当前嘉宾下麦
                 isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
@@ -371,7 +416,7 @@ export default {
           codeAction[msgCode]?.()
         }
       } catch (err) {
-        console.warn("fail to pass msg of im", err);
+        console.warn('fail to pass msg of im', err)
       }
     },
 
@@ -381,16 +426,16 @@ export default {
         .subscribe(event.stream, { audio: true, video: true })
         .then(
           () => {
-            console.log("some one publish stream");
+            console.log('some one publish stream')
           },
           () => {
-            console.error("failed to subscribe remoteStream");
+            console.error('failed to subscribe remoteStream')
           }
-        );
+        )
     },
 
     /** success to get remote stream to play */
-    async onGetRemoteStream (event) {
+    async onGetRemoteStream(event) {
       let isSpeaker = false
       const { stream } = event
 
@@ -399,38 +444,48 @@ export default {
         const { status, data } = await this.$store.dispatch({
           type: 'live/getMembers',
           payload: {
-            roomid: this.roomId
-          }
+            roomid: this.roomId,
+          },
         })
 
-        if(!status){ return }
+        if (!status) {
+          return
+        }
 
         const mainSpeaker = data.find(({ isMainSpeaker }) => isMainSpeaker)
         this.$store.commit('live/setState', {
           key: 'liveSpeaker',
           value: {
-            userId: mainSpeaker.memberId
-          }
+            userId: mainSpeaker.memberId,
+          },
         })
         isSpeaker = String(mainSpeaker.memberId) === String(stream.userId_)
       } else {
-        isSpeaker = String(this.live.liveSpeaker.userId) === String(stream.userId_)
+        isSpeaker =
+          String(this.live.liveSpeaker.userId) === String(stream.userId_)
       }
 
-      this.$store.commit('live/setState', [{
-        key: 'liveStreamList',
-        value: [...this.live.liveStreamList, Object.assign(stream, {
-          isOpenMic: isSpeaker,
-          isOpenCamera: true
-        })]
-      },{            
+      this.$store.commit('live/setState', [
+        {
+          key: 'liveStreamList',
+          value: [
+            ...this.live.liveStreamList,
+            Object.assign(stream, {
+              isOpenMic: isSpeaker,
+              isOpenCamera: true,
+            }),
+          ],
+        },
+        {
           key: 'liveStart',
-          value: true                        
-      }])
+          value: true,
+        },
+      ])
 
       this.mainStreamList = this.filterLiveStream()
       this.$nextTick(() => {
-        !isSpeaker && this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
+        !isSpeaker &&
+          this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
       })
     },
 
@@ -438,45 +493,53 @@ export default {
       const { stream } = event
       this.$store.commit('live/setState', {
         key: 'liveStreamList',
-        value: this.filterLiveStream(stream.userId_)
+        value: this.filterLiveStream(stream.userId_),
       })
       this.mainStreamList = this.filterLiveStream()
     },
 
-    onRemoteMuteAudio (event) {
-      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
-        stream,
-        {
-          isOpenMic: String(event.userId) === String(stream.userId_) ? false : stream.isOpenMic
-        }
-      ))
+    onRemoteMuteAudio(event) {
+      this.mainStreamList = this.mainStreamList.map((stream) =>
+        Object.assign(stream, {
+          isOpenMic:
+            String(event.userId) === String(stream.userId_)
+              ? false
+              : stream.isOpenMic,
+        })
+      )
     },
 
-    onRemoteUnmuteAudio (event) {
-      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
-        stream,
-        {
-          isOpenMic: String(event.userId) === String(stream.userId_) ? true : stream.isOpenMic
-        }
-      ))
+    onRemoteUnmuteAudio(event) {
+      this.mainStreamList = this.mainStreamList.map((stream) =>
+        Object.assign(stream, {
+          isOpenMic:
+            String(event.userId) === String(stream.userId_)
+              ? true
+              : stream.isOpenMic,
+        })
+      )
     },
 
-    onRemoteMuteVideo (event) {
-      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
-        stream,
-        {
-          isOpenCamera: String(event.userId) === String(stream.userId_) ? false : stream.isOpenCamera
-        }
-      ))
+    onRemoteMuteVideo(event) {
+      this.mainStreamList = this.mainStreamList.map((stream) =>
+        Object.assign(stream, {
+          isOpenCamera:
+            String(event.userId) === String(stream.userId_)
+              ? false
+              : stream.isOpenCamera,
+        })
+      )
     },
 
-    onRemoteUnmuteVideo (event) {
-      this.mainStreamList = this.mainStreamList.map(stream => Object.assign(
-        stream,
-        {
-          isOpenCamera: String(event.userId) === String(stream.userId_) ? true : stream.isOpenCamera
-        }
-      ))
+    onRemoteUnmuteVideo(event) {
+      this.mainStreamList = this.mainStreamList.map((stream) =>
+        Object.assign(stream, {
+          isOpenCamera:
+            String(event.userId) === String(stream.userId_)
+              ? true
+              : stream.isOpenCamera,
+        })
+      )
     },
 
     // 处理上麦邀请
@@ -487,10 +550,10 @@ export default {
         payload: {
           roomid: this.roomId,
           adminid: this.inviteMsg.inviterId,
-          isagree
-        }
+          isagree,
+        },
       })
-      this.inviteShow = false;
+      this.inviteShow = false
     },
 
     // 处理上麦申请
@@ -501,19 +564,19 @@ export default {
         payload: {
           roomid: this.roomId,
           auditerid: this.applyMsg.auditerId,
-          isagree
-        }
+          isagree,
+        },
       })
-      this.applyShow = false;
+      this.applyShow = false
     },
 
     /** handle menu click of user live stream */
-    handleLiveMenuClick (type, payload) {
+    handleLiveMenuClick(type, payload) {
       const actionMap = {
-        'speaker': () => {
+        speaker: () => {
           eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, payload)
         },
-        'mic': () => {
+        mic: () => {
           if (payload.isOpenMic) {
             payload.muteAudio()
             payload.isOpenMic = false
@@ -522,7 +585,7 @@ export default {
             payload.isOpenMic = true
           }
         },
-        'camera': () => {
+        camera: () => {
           if (payload.isOpenCamera) {
             payload.muteVideo()
             payload.isOpenCamera = false
@@ -531,18 +594,21 @@ export default {
             payload.isOpenCamera = true
           }
         },
-        'live': () => {
-          const isSelf = String(payload.userId_) === String(this.user.user.imAccount)
+        live: () => {
+          const isSelf =
+            String(payload.userId_) === String(this.user.user.imAccount)
           const targetIsAnchor = payload.role === 1
           if (isSelf) {
-            targetIsAnchor ? eventEmitter.emit(eventEmitter.event.anchor.stop) : eventEmitter.emit(eventEmitter.event.guest.stop)
+            targetIsAnchor
+              ? eventEmitter.emit(eventEmitter.event.anchor.stop)
+              : eventEmitter.emit(eventEmitter.event.guest.stop)
           } else {
             this.$store.dispatch({
               type: 'live/guestStopLive',
               payload: {
                 roomid: this.roomId,
-                memberid: payload.userId_
-              }
+                memberid: payload.userId_,
+              },
             })
           }
         },
@@ -551,185 +617,255 @@ export default {
     },
 
     /** filter live stream by id */
-    filterLiveStream (filterId = this.live.liveSpeaker?.userId) {
-      return this.live.liveStreamList.filter(({ 
-      userId_
-      }) => String(userId_) !== String(filterId)).map((stream) => Object.assign(stream, {
-        ...this.live.liveMembers.find(({ memberId }) => String(memberId) === String(stream.userId_))
-      }))
+    filterLiveStream(filterId = this.live.liveSpeaker?.userId) {
+      return this.live.liveStreamList
+        .filter(({ userId_ }) => String(userId_) !== String(filterId))
+        .map((stream) =>
+          Object.assign(stream, {
+            ...this.live.liveMembers.find(
+              ({ memberId }) => String(memberId) === String(stream.userId_)
+            ),
+          })
+        )
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */
-    onAnchorStart () {
+    async onAnchorStart() {
+      if (this.live.liveJoinStatus !== 1) {
+        await this.joinTrtc()
+      }
       this.$store.dispatch({
         type: 'live/startLive',
         payload: {
           roomid: this.roomId,
           streamid: this.room.room?.myStreamIdMix,
-          streamtype: 1
+          streamtype: 1,
         },
-        callback: () => ElMessage.success('直播已开始')
+        callback: () => ElMessage.success('直播已开始'),
       })
 
       // publish & mix
-      this.trtcClient.client.publish(this.trtcClient.stream).then(() => {
-        console.log('success for anchor to publish stream~~~~~')            
+      this.trtcClient.client.publish(this.trtcClient.stream).then(
+        () => {
+          console.log('success for anchor to publish stream~~~~~')
 
-        this.$store.commit('live/setState', [{            
-          key: 'liveStart',
-          value: true                        
-        }, {
-          key: 'liveSpeaker',
-          value: {
-            stream: this.trtcClient.stream,
-            userId: this.trtcClient.stream.userId_
-          }
-        }, {
-          key: 'liveStreamList',
-          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
-            isOpenMic: true,
-            isOpenCamera: true
-          })]
-        }])
-        this.mainStreamList = this.filterLiveStream() 
-        this.startMixStream()  
-
-      }, (err) => {
-        ElMessage.error('直播失败，请重试')
-        console.warn('fail for anchor to publish stream', err)
-      })            
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveStart',
+              value: true,
+            },
+            {
+              key: 'liveSpeaker',
+              value: {
+                stream: this.trtcClient.stream,
+                userId: this.trtcClient.stream.userId_,
+              },
+            },
+            {
+              key: 'liveStreamList',
+              value: [
+                ...this.live.liveStreamList,
+                Object.assign(this.trtcClient.stream, {
+                  isOpenMic: true,
+                  isOpenCamera: true,
+                }),
+              ],
+            },
+          ])
+          this.mainStreamList = this.filterLiveStream()
+          this.startMixStream()
+        },
+        (err) => {
+          ElMessage.error('直播失败，请重试')
+          console.warn('fail for anchor to publish stream', err)
+        }
+      )
     },
 
     /** 主播邀请直播 */
-    async onAnchorInvite () {},
+    async onAnchorInvite() {},
 
     /** 主播结束直播 */
-    async onAnchorStop () {
-
-      this.trtcClient.client?.leave()
-      this.trtcClient.client?.unpublish(this.trtcClient.stream)
-      this.trtcClient.stream?.stop()
-      this.$store.commit('live/setState', [{
-        key: 'liveStreamList',
-        value: this.filterLiveStream(this.trtcClient.stream.userId_)
-      }])
-      this.mainStreamList = this.filterLiveStream()
-      this.stopMixStream()
+    async onAnchorStop() {
+      this.clearLiveDataOfUser(true)
 
       await this.$store.dispatch({
         type: 'live/stopLive',
         payload: {
-          roomid: this.roomId
-        }
+          roomid: this.roomId,
+        },
       })
       ElMessage.success('直播已结束')
     },
 
     /** 主播设置主讲人 */
-    async onAnchorSetSpeaker ({ data }) {
+    async onAnchorSetSpeaker({ data }) {
       const { status } = await this.$store.dispatch({
         type: 'live/setMainSpeaker',
         payload: {
           roomid: this.roomId,
-          memberid: data?.userId_
-        }
+          memberid: data?.userId_,
+        },
       })
       if (!status) {
-        return 
+        return
       }
       this.startMixStream()
       ElMessage.success(`已将${data?.nick}设为主讲人`)
     },
 
     /** 嘉宾申请上麦 */
-    async onGuestApply () {
+    async onGuestApply() {
       await this.$store.dispatch({
         type: 'live/applyLive',
         payload: {
-          roomid: this.roomId
-        }
+          roomid: this.roomId,
+        },
       })
       ElMessage.success('上麦申请已发送')
     },
 
     /** 嘉宾开始上麦 */
-    onGuestStart () {
+    async onGuestStart() {
+      if (this.live.liveJoinStatus !== 1) {
+        await this.joinTrtc()
+      }
       this.$store.dispatch({
         type: 'live/guestStartLive',
         payload: {
-          roomid: this.roomId
+          roomid: this.roomId,
         },
-        callback: () => ElMessage.success('上麦成功')
+        callback: () => ElMessage.success('上麦成功'),
       })
 
-      this.trtcClient.client.publish(this.trtcClient.stream)
-      .then(async () => {
-        console.log('success for guest to publish stream~~~~~') 
+      this.trtcClient.client.publish(this.trtcClient.stream).then(
+        async () => {
+          console.log('success for guest to publish stream~~~~~')
 
-        this.$store.commit('live/setState', [{
-          key: 'liveStart',
-          value: true
-        },{
-          key: 'liveStreamList',
-          value: [...this.live.liveStreamList, Object.assign(this.trtcClient.stream, {
-            isOpenMic: false,
-            isOpenCamera: true
-          })]
-        }])
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveStart',
+              value: true,
+            },
+            {
+              key: 'liveStreamList',
+              value: [
+                ...this.live.liveStreamList,
+                Object.assign(this.trtcClient.stream, {
+                  isOpenMic: false,
+                  isOpenCamera: true,
+                }),
+              ],
+            },
+          ])
 
-        this.mainStreamList = this.filterLiveStream()
-        // 嘉宾上麦默认静音
-        this.trtcClient.stream.muteAudio()
-        // this.startMixStream()
-        await this.trtcClient.stream.stop()
-        this.$nextTick(() => {
-          this.tryToPlayStream(this.trtcClient.stream, `live_stream_${this.trtcClient.stream.userId_}`, {
-            muted: true
+          this.mainStreamList = this.filterLiveStream()
+          // 嘉宾上麦默认静音
+          this.trtcClient.stream.muteAudio()
+          // this.startMixStream()
+          await this.trtcClient.stream.stop()
+          this.$nextTick(() => {
+            this.tryToPlayStream(
+              this.trtcClient.stream,
+              `live_stream_${this.trtcClient.stream.userId_}`,
+              {
+                muted: true,
+              }
+            )
           })
-        })
-      }, (err) => {
-        ElMessage.error('上麦失败')
-        console.warn('fail for guest to publish stream', err)
-      })
+        },
+        (err) => {
+          ElMessage.error('上麦失败')
+          console.warn('fail for guest to publish stream', err)
+        }
+      )
     },
 
     /** 嘉宾下麦 */
-    async onGuestStop () {
-      this.trtcClient.client.leave()
-      this.trtcClient.client.unpublish(this.trtcClient.stream)
-      this.trtcClient.stream.stop()
-      this.$store.commit('live/setState', [{
-        key: 'liveStreamList',
-        value: this.filterLiveStream(this.trtcClient.stream.userId_)
-      }])
-      this.mainStreamList = this.filterLiveStream()
-      // this.startMixStream()
-
+    async onGuestStop() {
+      this.clearLiveDataOfUser(false)
       await this.$store.dispatch({
         type: 'live/guestStopLive',
         payload: {
           roomid: this.roomId,
-          memberid: this.user.userInfo?.imAccount
-        }
+          memberid: this.user.userInfo?.imAccount,
+        },
       })
       ElMessage.success('您已下麦')
     },
 
-    onLiveStreamMouse (type, item) {
+    onLiveStreamMouse(type, item) {
       const { role, imAccount } = this.user.user
       const isSelf = String(imAccount) === String(item.userId_)
       if (role !== 1 && !isSelf) {
-        return 
+        return
       }
       item.maskShow = type
     },
 
-    judgeAnchorOrSelf (payload) {
-      return String(payload.userId_) === String(this.user.user.imAccount) || this.user.user.role === 1
+    judgeAnchorOrSelf(payload) {
+      return (
+        String(payload.userId_) === String(this.user.user.imAccount) ||
+        this.user.user.role === 1
+      )
+    },
+
+    /** clear data of user after user stop live */
+    clearLiveDataOfUser(isAnchor) {
+      this.trtcClient.client.unpublish(this.trtcClient.stream).then(
+        () => {},
+        (err) => console.warn(err)
+      )
+      this.trtcClient.client.leave()
+      this.trtcClient.stream.stop()
+      this.$store.commit('live/setState', [
+        {
+          key: 'liveStreamList',
+          value: this.filterLiveStream(this.trtcClient.stream.userId_),
+        },
+        {
+          key: 'liveJoinStatus',
+          value: 0,
+        },
+      ])
+      this.mainStreamList = this.filterLiveStream()
+      isAnchor && this.stopMixStream()
+    },
+
+    /** destroy room & clear store of live */
+    destroyRoom() {
+      this.trtcClient.client?.unpublish(this.trtcClient.stream).then(
+        () => {},
+        (err) => console.warn(err)
+      )
+      this.trtcClient.client?.leave()
+      this.trtcClient.stream?.stop()
+      this.stopMixStream()
+      this.$store.commit('live/setState', [
+        {
+          key: 'liveStreamList',
+          value: [],
+        },
+        {
+          key: 'liveJoinStatus',
+          value: 0,
+        },
+        {
+          key: 'liveSpeaker',
+          value: {
+            userId: '',
+          },
+        },
+        {
+          key: 'liveStart',
+          value: false,
+        },
+      ])
+      this.mainStreamList = []
     },
 
     /** custom stream attribute before create */
-    customStream (stream, config) {
+    customStream(stream, config) {
       // can i use __proto__ here ?
       Object.entries(config).forEach(([key, value]) => {
         stream.__proto__[key] = value
@@ -738,25 +874,27 @@ export default {
     },
 
     /** try to play & handle error */
-    tryToPlayStream (stream, target, options={}) {
-      stream.play(target, options).then(()=>{
-        console.log('yes!!! success to play remote stream')
-      }, (err) => {
-        const errorCode = err?.getCode?.();
-        if (errorCode === 0x4043) {
-          // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
-          // stream.resume()
-        } 
-      })
-    }
-
+    tryToPlayStream(stream, target, options = {}) {
+      stream.play(target, options).then(
+        () => {
+          console.log('yes!!! success to play remote stream')
+        },
+        (err) => {
+          const errorCode = err?.getCode?.()
+          if (errorCode === 0x4043) {
+            // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
+            // stream.resume()
+          }
+        }
+      )
+    },
   },
-};
+}
 </script>
 <style lang="scss" scoped>
 .ofweek-live-container {
   .remote-view {
-    background: #2C2C2C;
+    background: #2c2c2c;
     .wrap-item {
       position: relative;
       overflow: hidden;
@@ -778,14 +916,14 @@ export default {
         font-size: 14px;
         color: #fff;
       }
-      .stream-cover{
+      .stream-cover {
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
       }
-      .stream-mask{
+      .stream-mask {
         position: absolute;
         top: 0;
         left: 0;
@@ -794,16 +932,16 @@ export default {
         z-index: 2;
         background: rgba(0, 0, 0, 0.75);
         transition: all 0.3s ease;
-        .mask-header{
+        .mask-header {
           overflow: hidden;
           white-space: nowrap;
           word-break: keep-all;
           text-overflow: ellipsis;
           margin: 10px 0 25px 0;
-          color:#fff;
+          color: #fff;
           font-size: 14px;
         }
-        .mask-menu{
+        .mask-menu {
           flex: 1;
           padding: 0 10px;
         }
@@ -815,20 +953,21 @@ export default {
         height: 24px;
         border-radius: 50%;
         margin-left: 10px;
-        background-color:#333333;
+        background-color: #333333;
         transition: all 0.3s ease;
-        &:first-child{
+        &:first-child {
           margin-left: 0;
         }
-        &.active,&:hover{
-          background-color:#E65E50;
+        &.active,
+        &:hover {
+          background-color: #e65e50;
         }
       }
     }
   }
   .live-main-view {
     background: red;
-    height: calc(100% * 9 / 16)
+    height: calc(100% * 9 / 16);
   }
 }
 </style>

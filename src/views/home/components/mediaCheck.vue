@@ -52,7 +52,11 @@
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="handleBtnClick(0)">刷新设备</el-button>
-        <el-button type="primary" @click="handleBtnClick(1)" :disabled="!cameras?.length || !mics?.length">确定</el-button
+        <el-button
+          type="primary"
+          @click="handleBtnClick(1)"
+          :disabled="!cameras?.length || !mics?.length"
+          >确定</el-button
         >
       </div>
     </template>
@@ -60,29 +64,34 @@
 </template>
 
 <script>
-import { ElMessage } from "element-plus";
+import { ElMessage } from 'element-plus'
 
 export default {
-  name: "mediaCheck",
+  name: 'mediaCheck',
 
   setup() {},
 
   watch: {
     visible: {
-      handler: function(val) {
+      handler: function (val) {
         if (!val) {
           this.cancelVoiceLevelCheck()
-          return;
+          return
         }
         this.initStream()
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
 
   props: {
     visible: {
       default: true,
+      type: Boolean,
+    },
+    // user is live
+    live: {
+      default: false,
       type: Boolean,
     },
     // trtc-client
@@ -100,17 +109,17 @@ export default {
   data() {
     return {
       mediaForm: {
-        cameraId: "",
-        micId: "",
+        cameraId: '',
+        micId: '',
       },
       timer: null,
       voiceLevel: 0,
       mics: [],
       cameras: [],
-    };
+    }
   },
 
-  emits: ["btnClick"],
+  emits: ['btnClick'],
 
   created() {},
 
@@ -122,7 +131,7 @@ export default {
 
       if (!cameraList?.length) {
         ElMessage.error('找不到摄像头，请插入摄像头重试')
-        return 
+        return
       }
 
       if (!micList?.length) {
@@ -135,22 +144,22 @@ export default {
           userId: this.user?.imAccount,
           video: true,
           audio: true,
-          settings: "720p",
-        });
+          settings: '720p',
+        })
 
         if (error) {
-          this.handleInitialStreamErr(error);
-          return;
+          this.handleInitialStreamErr(error)
+          return
         }
       }
 
       await this.client.stream.stop()
-      this.client.stream.play("mediaPreview", {
+      this.client.stream.play('mediaPreview', {
         muted: true,
-      });
-      this.voiceLevelCheck()  
-      this.cameras = cameraList;
-      this.mics = micList;
+      })
+      this.voiceLevelCheck()
+      this.cameras = cameraList
+      this.mics = micList
       this.mediaForm = {
         micId: this.client.getCurMic()?.deviceId,
         cameraId: this.client.getCurCamera()?.deviceId,
@@ -159,50 +168,54 @@ export default {
 
     handleInitialStreamErr(error) {
       switch (error.name) {
-        case "NotReadableError":
+        case 'NotReadableError':
           // 当系统或浏览器异常的时候，可能会出现此错误，您可能需要引导用户重启电脑/浏览器来尝试恢复。
           ElMessage.error(
-            "暂时无法访问摄像头/麦克风，请确保系统授予当前浏览器摄像头/麦克风权限，并且没有其他应用占用摄像头/麦克风"
-          );
-          break;
+            '暂时无法访问摄像头/麦克风，请确保系统授予当前浏览器摄像头/麦克风权限，并且没有其他应用占用摄像头/麦克风'
+          )
+          break
 
-        case "NotAllowedError":
-          ElMessage.error("摄像头或麦克风访问权限已被拒绝，请重新授权开启");
-          break;
+        case 'NotAllowedError':
+          ElMessage.error('摄像头或麦克风访问权限已被拒绝，请重新授权开启')
+          break
 
-        case "NotFoundError":
+        case 'NotFoundError':
           // 找不到摄像头或麦克风设备
-          ElMessage.error("找不到摄像头或麦克风设备，请插入设备后重试");
-          break;
+          ElMessage.error('找不到摄像头或麦克风设备，请插入设备后重试')
+          break
 
-        case "OverConstrainedError":
+        case 'OverConstrainedError':
           // "采集属性设置错误，如果您指定了 cameraId/microphoneId，请确保它们是一个有效的非空字符串"
-          ElMessage.error("设备无法访问，请确保当前没有其他应用请求访问摄像头/麦克风，并重试")
-          break;
+          ElMessage.error(
+            '设备无法访问，请确保当前没有其他应用请求访问摄像头/麦克风，并重试'
+          )
+          break
 
         default:
           ElMessage.error('直播媒体检测出现未知异常，请重试')
-          break;
+          break
       }
     },
 
     raqToCheckAudio() {
-      this.voiceLevel = this.client.stream?.getAudioLevel() * 100;
-      this.timer = window.requestAnimationFrame?.(this.raqToCheckAudio);
+      this.voiceLevel = this.client.stream?.getAudioLevel() * 100
+      this.timer = window.requestAnimationFrame?.(this.raqToCheckAudio)
     },
 
     voiceLevelCheck() {
       this.cancelVoiceLevelCheck()
-      this.timer = window.requestAnimationFrame?.(this.raqToCheckAudio);
+      this.timer = window.requestAnimationFrame?.(this.raqToCheckAudio)
     },
 
     cancelVoiceLevelCheck() {
-      window.cancelAnimationFrame?.(this.timer);
+      window.cancelAnimationFrame?.(this.timer)
       this.timer = null
     },
 
     async handleMediaChange(type, value) {
-      if (value === 'default'){ return }
+      if (value === 'default') {
+        return
+      }
       if (type === 'mic') {
         this.client.switchMic()
       } else {
@@ -210,7 +223,7 @@ export default {
         if (result) {
           await this.client.stream.stop()
           this.client.stream.play('mediaPreview')
-        } 
+        }
       }
     },
 
@@ -220,9 +233,9 @@ export default {
       } else {
         this.initStream()
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 
 <style lang="scss" scoped>
