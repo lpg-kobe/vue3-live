@@ -4,7 +4,7 @@
  */
 
 import TRTC from 'trtc-js-sdk'
-import { VITE_sdkAppId } from '../constants'
+import { ElMessageBox } from 'element-plus'
 
 export const TRTC_EVENT = {
 
@@ -12,6 +12,20 @@ export const TRTC_EVENT = {
 
 export default class WebTrtcLive {
   constructor(config) {
+
+    let support = true;
+    (async () => {
+      support = await this.isSupport()
+    })()
+    if (!support) {
+      // 确保提示弹窗层级最深
+      window.requestAnimationFrame(() => {
+        ElMessageBox.alert('当前浏览器不支持开启直播，建议更换chrome浏览器', '温馨提示', {
+          confirmButtonText: '知道了'
+        })
+      })
+    }
+
     this.event = TRTC_EVENT
     this.trtc = TRTC
     this.createClient({
@@ -22,68 +36,86 @@ export default class WebTrtcLive {
   }
 
   // 初始化trtc设置
-  initSetting () {
+  initSetting() {
 
   }
 
   /** get version */
-  getVersion () {
+  getVersion() {
     return TRTC.VERSION
   }
 
   // 获取摄像头列表
-  getCameras () {
+  getCameras() {
     return new Promise(resolve => {
       this.trtc.getCameras().then((data) => resolve(data), () => resolve([]))
     });
   }
 
+  // 获取当前使用的摄像头
+  getCurCamera() {
+    if (!this.stream) {
+      return {}
+    }
+    const videoTrack = this.stream.getVideoTrack?.()
+    return videoTrack?.getSettings?.() || {}
+  }
+
   // 获取麦克风设备列表
-  getMics () {
+  getMics() {
     return new Promise(resolve => {
       this.trtc.getMicrophones().then((data) => resolve(data), () => resolve([]))
     });
   }
 
+  // 获取当前使用的麦克风
+  getCurMic() {
+    if (!this.stream) {
+      return {}
+    }
+    const audioTrack = this.stream.getAudioTrack?.()
+    return audioTrack?.getSettings?.() || {}
+  }
+
   // browser support check
-  isSupport () {
+  isSupport() {
     return new Promise((resolve) => {
-      this.trtc.checkSystemRequirements().then(({ result }) => resolve(result), () => resolve(false))
+      TRTC.checkSystemRequirements().then(({ result }) => resolve(result), () => resolve(false))
     })
   }
 
   // share screen support check
-  isSupportShareScreen () {
-    return this.trtc.isScreenShareSupported()
+  isSupportShareScreen() {
+    return TRTC.isScreenShareSupported()
   }
 
-  switchCamera (id) {
+  switchCamera(id) {
     return new Promise((resolve) => {
       this.trtc.switchDevice('video', id).then(() => resolve(true), () => resolve(false))
     })
   }
 
-  switchMic () {
+  switchMic(id) {
     return new Promise((resolve) => {
       this.trtc.switchDevice('audio', id).then(() => resolve(true), () => resolve(false))
     })
   }
 
   /** create trtc client */
-  createClient (config) {
+  createClient(config) {
     this.client = TRTC.createClient(config)
     return this.client
   }
 
   /** create local preview stream */
-  createStream (config) {
+  createStream(config) {
     const { settings, ...streamConfig } = config
     return new Promise((resolve) => {
       if (!streamConfig?.userId) {
         resolve({
           stream: null,
           error: {
-            name: 'no config of stream'
+            name: 'noUserId'
           }
         })
       }
@@ -99,23 +131,23 @@ export default class WebTrtcLive {
   }
 
   /** 关闭所有音视频采集 */
-  clearMedia () {
+  clearMedia() {
 
   }
 
-  onClient (eventName, handler, context) {
+  onClient(eventName, handler, context) {
     this.client?.on(eventName, handler, context);
   }
 
-  offClient (eventName, handler, context) {
+  offClient(eventName, handler, context) {
     this.client?.off(eventName, handler, context);
   }
 
-  onStream (eventName, handler, context) {
+  onStream(eventName, handler, context) {
     this.client?.on(eventName, handler, context);
   }
 
-  offStream (eventName, handler, context) {
+  offStream(eventName, handler, context) {
     this.client?.off(eventName, handler, context);
   }
 }

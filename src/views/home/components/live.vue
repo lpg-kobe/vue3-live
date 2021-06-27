@@ -4,7 +4,7 @@
       :visible="mediaSelVisible"
       :client="trtcClient"
       :user="user.userInfo"
-      @btn-click="handleMediaSel"
+      @btn-click="mediaSelVisible = false"
     />
     <div v-if="mainStreamList.length" class="remote-view flex">
       <div class="wrap-item live-small-view" v-for="(item) in mainStreamList" :key="item.userId_" 
@@ -239,6 +239,7 @@ export default {
       eventEmitter.off(eventEmitter.event?.guest?.apply,this.onGuestApply)
       eventEmitter.off(eventEmitter.event?.guest?.stop,this.onGuestStop)
       this.imClient?.off(IM_EVENT?.msgReceive, this.onMsgReceive);
+      this.trtcClient?.stream?.off("*")
       this.trtcClient?.client?.off("*")
     },
 
@@ -476,12 +477,6 @@ export default {
           isOpenCamera: String(event.userId) === String(stream.userId_) ? true : stream.isOpenCamera
         }
       ))
-    },
-
-    handleMediaSel(ok) {
-      this.mediaSelVisible = false;
-      if (ok) {
-      }
     },
 
     // 处理上麦邀请

@@ -18,7 +18,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import { ElMessage } from 'element-plus'
 import ThumbView from '../../views/home/components/thumbView.vue'
 import { eventEmitter } from '../../utils/event'
 

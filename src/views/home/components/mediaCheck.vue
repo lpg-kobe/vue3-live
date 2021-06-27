@@ -4,7 +4,9 @@
     v-model="visible"
     width="30%"
     custom-class="ofweek-dialog"
-    @close="$emit('btnClick', 0)"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :show-close="false"
   >
     <div id="mediaPreview" class="stream-view"></div>
     <el-form :model="mediaForm" label-position="right">
@@ -47,9 +49,8 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="$emit('btnClick', 0)">取 消</el-button>
-        <el-button type="primary" @click="$emit('btnClick', 1)"
-          >确 定</el-button
+        <el-button @click="handleBtnClick(0)">刷新设备</el-button>
+        <el-button type="primary" @click="handleBtnClick(1)" :disabled="!cameras?.length || !mics?.length">确定</el-button
         >
       </div>
     </template>
@@ -57,102 +58,24 @@
 </template>
 
 <script>
-import { onMounted, watch, ref, toRefs } from "vue";
 import { ElMessage } from "element-plus";
 
 export default {
   name: "mediaCheck",
 
-  setup(props) {
-    let timer = ref(null);
-    let voiceLevel = ref(0);
-    const { client: trtcClient, user } = props;
-    const mics = ref([]);
-    const cameras = ref([]);
-    const { visible } = toRefs(props);
+  setup() {},
 
-    // check device
-    function onVisible() {
-      if (!visible.value) {
-        window.cancelAnimationFrame?.(timer.value);
-        return;
-      }
-      initStream();
-    }
-
-    async function initStream() {
-      if (!trtcClient.stream) {
-        const { error } = await trtcClient.createStream({
-          userId: user?.imAccount,
-          video: true,
-          audio: true,
-          settings: "720p",
-        });
-
-        if (error) {
-          handleGetUserMediaError(error);
+  watch: {
+    visible: {
+      handler: function(val) {
+        if (!val) {
+          this.cancelVoiceLevelCheck()
           return;
         }
-      }
-
-      await trtcClient.stream.stop()
-      trtcClient.stream.play("mediaPreview", {
-        muted: true,
-      });
-      timer.value = window.requestAnimationFrame?.(raqToCheckAudio);
-      cameras.value = await trtcClient.getCameras();
-      mics.value = await trtcClient.getMics();
+        this.initStream()
+      },
+      immediate: true
     }
-
-    /**
-     * error handle of create stream
-     * @param {Error} error
-     */
-    function handleGetUserMediaError(error) {
-      switch (error.name) {
-        case "NotReadableError":
-          // 当系统或浏览器异常的时候，可能会出现此错误，您可能需要引导用户重启电脑/浏览器来尝试恢复。
-          ElMessage.error(
-            "暂时无法访问摄像头/麦克风，请确保系统授予当前浏览器摄像头/麦克风权限，并且没有其他应用占用摄像头/麦克风"
-          );
-          break;
-
-        case "NotAllowedError":
-          ElMessage.error("摄像头或麦克风访问权限已被拒绝，请重新授权开启");
-          break;
-
-        case "NotFoundError":
-          // 找不到摄像头或麦克风设备
-          ElMessage.error("找不到摄像头或麦克风设备，请插入设备后重试");
-          break;
-
-        case "OverConstrainedError":
-          //"采集属性设置错误，如果您指定了 cameraId/microphoneId，请确保它们是一个有效的非空字符串"
-          break;
-
-        default:
-          ElMessage.error("初始化本地流时遇到未知错误, 请重试");
-          break;
-      }
-    }
-
-    function raqToCheckAudio() {
-      voiceLevel.value = trtcClient.stream?.getAudioLevel() * 100;
-      timer.value = window.requestAnimationFrame?.(raqToCheckAudio);
-    }
-
-    onMounted(onVisible);
-    watch(visible, onVisible);
-
-    return {
-      voiceLevel,
-      mics,
-      cameras,
-    };
-  },
-
-  data() {
-    return {};
   },
 
   props: {
@@ -178,6 +101,10 @@ export default {
         cameraId: "",
         micId: "",
       },
+      timer: null,
+      voiceLevel: 0,
+      mics: [],
+      cameras: [],
     };
   },
 
@@ -185,7 +112,101 @@ export default {
 
   created() {},
 
-  methods: {},
+  methods: {
+    async initStream() {
+      // you must may sure camera | mic all exist before create new stream & render to ui after analize success in order to get correct deviceId, error will be handle after that
+      const cameraList = await this.client.getCameras()
+      const micList = await this.client.getMics()
+
+      if (!cameraList?.length) {
+        ElMessage.error('找不到摄像头，请插入摄像头重试')
+        return 
+      }
+
+      if (!micList?.length) {
+        ElMessage.error('找不到麦克风，请插入麦克风后重试')
+        return
+      }
+
+      if (!this.client.stream) {
+        const { error } = await this.client.createStream({
+          userId: this.user?.imAccount,
+          video: true,
+          audio: true,
+          settings: "720p",
+        });
+
+        if (error) {
+          this.handleInitialStreamErr(error);
+          return;
+        }
+      }
+
+      await this.client.stream.stop()
+      this.client.stream.play("mediaPreview", {
+        muted: true,
+      });
+      this.voiceLevelCheck()  
+      this.cameras = cameraList;
+      this.mics = micList;
+      this.mediaForm = {
+        micId: this.client.getCurMic()?.deviceId,
+        cameraId: this.client.getCurCamera()?.deviceId,
+      }
+    },
+
+    handleInitialStreamErr(error) {
+      switch (error.name) {
+        case "NotReadableError":
+          // 当系统或浏览器异常的时候，可能会出现此错误，您可能需要引导用户重启电脑/浏览器来尝试恢复。
+          ElMessage.error(
+            "暂时无法访问摄像头/麦克风，请确保系统授予当前浏览器摄像头/麦克风权限，并且没有其他应用占用摄像头/麦克风"
+          );
+          break;
+
+        case "NotAllowedError":
+          ElMessage.error("摄像头或麦克风访问权限已被拒绝，请重新授权开启");
+          break;
+
+        case "NotFoundError":
+          // 找不到摄像头或麦克风设备
+          ElMessage.error("找不到摄像头或麦克风设备，请插入设备后重试");
+          break;
+
+        case "OverConstrainedError":
+          // "采集属性设置错误，如果您指定了 cameraId/microphoneId，请确保它们是一个有效的非空字符串"
+          ElMessage.error("设备无法访问，请确保当前没有其他应用请求访问摄像头/麦克风，并重试")
+          break;
+
+        default:
+          ElMessage.error('直播媒体检测出现未知异常，请重试')
+          break;
+      }
+    },
+
+    raqToCheckAudio() {
+      this.voiceLevel = this.client.stream?.getAudioLevel() * 100;
+      this.timer = window.requestAnimationFrame?.(this.raqToCheckAudio);
+    },
+
+    voiceLevelCheck() {
+      this.cancelVoiceLevelCheck()
+      this.timer = window.requestAnimationFrame?.(this.raqToCheckAudio);
+    },
+
+    cancelVoiceLevelCheck() {
+      window.cancelAnimationFrame?.(this.timer);
+      this.timer = null
+    },
+
+    handleBtnClick(sure) {
+      if (sure) {
+        this.$emit('btnClick')
+      } else {
+        this.initStream()
+      }
+    }
+  }
 };
 </script>
 
