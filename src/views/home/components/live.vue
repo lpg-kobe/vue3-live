@@ -606,6 +606,7 @@ export default {
     /** 主播结束直播 */
     async onAnchorStop () {
 
+      this.trtcClient.client?.leave()
       this.trtcClient.client?.unpublish(this.trtcClient.stream)
       this.trtcClient.stream?.stop()
       this.$store.commit('live/setState', [{
@@ -694,7 +695,7 @@ export default {
 
     /** 嘉宾下麦 */
     async onGuestStop () {
-      
+      this.trtcClient.client.leave()
       this.trtcClient.client.unpublish(this.trtcClient.stream)
       this.trtcClient.stream.stop()
       this.$store.commit('live/setState', [{

@@ -22,6 +22,7 @@
         <el-select
           v-model="mediaForm.cameraId"
           placeholder="请选择摄像头"
+          @change="handleMediaChange('camera', $event)"
           class="media-select"
         >
           <el-option
@@ -37,6 +38,7 @@
           v-model="mediaForm.micId"
           placeholder="请选择麦克风"
           class="media-select"
+          @change="handleMediaChange('mic', $event)"
         >
           <el-option
             v-for="item in mics"
@@ -197,6 +199,19 @@ export default {
     cancelVoiceLevelCheck() {
       window.cancelAnimationFrame?.(this.timer);
       this.timer = null
+    },
+
+    async handleMediaChange(type, value) {
+      if (value === 'default'){ return }
+      if (type === 'mic') {
+        this.client.switchMic()
+      } else {
+        const result = this.client.switchCamera()
+        if (result) {
+          await this.client.stream.stop()
+          this.client.stream.play('mediaPreview')
+        } 
+      }
     },
 
     handleBtnClick(sure) {

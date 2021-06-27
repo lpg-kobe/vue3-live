@@ -91,13 +91,13 @@ export default class WebTrtcLive {
 
   switchCamera(id) {
     return new Promise((resolve) => {
-      this.trtc.switchDevice('video', id).then(() => resolve(true), () => resolve(false))
+      this.stream.switchDevice('video', id).then(() => resolve(true), () => resolve(false))
     })
   }
 
   switchMic(id) {
     return new Promise((resolve) => {
-      this.trtc.switchDevice('audio', id).then(() => resolve(true), () => resolve(false))
+      this.stream.switchDevice('audio', id).then(() => resolve(true), () => resolve(false))
     })
   }
 
