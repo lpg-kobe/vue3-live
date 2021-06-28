@@ -1,6 +1,8 @@
 <template>
-  <slot v-if="imgStatus!==1" />
-  <img :src="src" :alt="alt" v-else />
+  <div>
+    <slot v-if="imgStatus !== 1" />
+    <img :src="src" :alt="alt" v-else />
+  </div>
 </template>
 
 <script>
@@ -13,34 +15,33 @@ export default {
     const imgStatus = ref(0)
     const { src } = toRefs(props)
 
-    function onImgChange () {
+    function onImgChange() {
       loadImage(src.value, (status) => {
         imgStatus.value = +status
       })
     }
 
     watch(src, onImgChange)
-  
+
     return {
-      imgStatus
+      imgStatus,
     }
   },
   props: {
     src: {
       type: String,
-      default: ''
+      default: '',
     },
     alt: {
       type: String,
-      default: ''
+      default: '',
     },
     class: {
       type: String,
-      default: ''
+      default: '',
     },
   },
-  methods: {
-  },
+  methods: {},
 }
 </script>
 
