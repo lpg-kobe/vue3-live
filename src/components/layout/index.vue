@@ -1,9 +1,35 @@
 <template>
   <header>
-    <el-button type="primary" @click="start">开始直播</el-button>
-    <el-button @click="stop">结束直播</el-button>
-    <el-button type="primary" @click="apply">申请上麦</el-button>
-    <el-button @click="offLine">下麦</el-button>
+    <el-button
+      type="primary"
+      @click="start"
+      :loading="live.liveToggleLoading"
+      v-show="!live.liveStart"
+      v-if="user.user.role === 1"
+      >开始直播</el-button
+    >
+    <el-button
+      @click="stop"
+      v-show="live.liveStart"
+      v-if="user.user.role === 1"
+      :loading="live.liveToggleLoading"
+      >结束直播</el-button
+    >
+    <el-button
+      type="primary"
+      @click="apply"
+      v-show="!live.liveStart"
+      v-if="user.user.role === 2"
+      :loading="live.liveToggleLoading"
+      >申请上麦</el-button
+    >
+    <el-button
+      @click="offLine"
+      v-show="live.liveStart"
+      v-if="user.user.role === 2"
+      :loading="live.liveToggleLoading"
+      >下麦</el-button
+    >
     <el-button @click="openMediaSetting">媒体设置</el-button>
   </header>
   <main>
@@ -11,7 +37,7 @@
       <router-view />
     </section>
     <section class="section-r">
-      <thumb-view v-if="liveStart"></thumb-view>
+      <thumb-view v-if="live.liveStart"></thumb-view>
     </section>
   </main>
 </template>
@@ -30,7 +56,8 @@ export default {
 
   computed: {
     ...mapState({
-      liveStart: ({ live: { liveStart } }) => liveStart,
+      live: ({ live }) => live,
+      user: ({ user }) => user,
     }),
   },
   methods: {

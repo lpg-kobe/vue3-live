@@ -1,7 +1,7 @@
 /**
  * @desc base modules of room
  */
-import { ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { getroom, entryroom, getcompleteinfo } from '../../../services/room'
 
 export default {
@@ -204,9 +204,9 @@ export default {
         // this.timLogin(isVisitor)
       } else {
         // 进房异常
-        ElMessageBox.alert(data?.message, '提示', {
+        ElMessageBox.alert(data?.message || '网络拥堵，请重新进入直播间', '提示', {
           confirmButtonText: '确定',
-          callback: () => window.close()
+          callback: () => window.location.reload()
         });
       }
 

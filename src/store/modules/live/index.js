@@ -27,8 +27,10 @@ export default {
     },
     // 当前主窗口视角 2 插播 1 ppt 0 本人画面
     liveMainView: 2,
-    // trtc join 状态
-    liveJoinStatus: 0
+    // trtc join 状态 0 fail 0.5 joining 1 success
+    liveJoinStatus: 0.5,
+    // 直播上下麦切换loading
+    liveToggleLoading: true
   },
   getters: {},
   mutations: {
@@ -69,18 +71,21 @@ export default {
     async startLive({ }, { payload, callback }) {
       const { status, data: { data } } = await startLive(payload)
       status && callback?.(data)
+      return { status }
     },
 
     // 嘉宾上麦
     async guestStartLive({ }, { payload, callback }) {
       const { status, data: { data } } = await guestStartLive(payload)
       status && callback?.(data)
+      return { status }
     },
 
     // 房间结束直播
     async stopLive({ }, { payload, callback }) {
       const { status, data: { data } } = await stopLive(payload)
       status && callback?.(data)
+      return { status }
     },
 
     // 房间设置主讲人
@@ -101,6 +106,7 @@ export default {
     async guestStopLive({ }, { payload, callback }) {
       const { status, data: { data } } = await guestStopLive(payload)
       status && callback?.(data)
+      return { status }
     },
 
     // 嘉宾申请上麦

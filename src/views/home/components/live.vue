@@ -1,6 +1,6 @@
 <template>
   <div class="ofweek-live-container flex-column">
-    <MediaCheck
+    <media-check
       :visible="mediaSelVisible"
       :client="trtcClient"
       :user="user.userInfo"
@@ -25,34 +25,7 @@
           v-show="!item.isOpenCamera"
           alt="cover"
         />
-        <div class="stream-mask flex-center" v-show="item.maskShow">
-          <div class="mask-menu flex-center">
-            <i
-              class="icon icon-user"
-              title="设为主讲"
-              v-if="user.user.role === 1"
-              @click="handleLiveMenuClick('speaker', item)"
-            ></i>
-            <i
-              :class="`icon icon-${item.isOpenCamera ? 'camera' : 'uncamera'}`"
-              v-if="judgeAnchorOrSelf(item)"
-              :title="`${item.isOpenCamera ? '关闭' : '开启'}摄像头`"
-              @click="handleLiveMenuClick('camera', item)"
-            ></i>
-            <i
-              :class="`icon icon-${item.isOpenMic ? 'mic' : 'unmic'}`"
-              v-if="judgeAnchorOrSelf(item)"
-              :title="`${item.isOpenMic ? '关闭' : '开启'}麦克风`"
-              @click="handleLiveMenuClick('mic', item)"
-            ></i>
-            <i
-              class="icon icon-hand"
-              v-if="judgeAnchorOrSelf(item)"
-              title="下麦"
-              @click="handleLiveMenuClick('live', item)"
-            ></i>
-          </div>
-        </div>
+        <stream-mask v-show="item.maskShow" :stream="item" />
       </div>
     </div>
     <div class="live-main-view flex-center">ppt</div>
@@ -75,9 +48,10 @@
 
 <script>
 import { mapState } from 'vuex'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { IM_EVENT } from '../../../sdk/imLive'
 import MediaCheck from './mediaCheck.vue'
+import StreamMask from './streamMask.vue'
 import Img from '../../../components/img/index.vue'
 import { eventEmitter } from '../../../utils/event'
 
@@ -87,6 +61,7 @@ export default {
   components: {
     MediaCheck,
     Img,
+    StreamMask,
   },
 
   data() {
@@ -130,6 +105,10 @@ export default {
             roomid: this.roomId,
           },
           callback: ({ data: { trtcPrivateSig } }) => {
+            this.$store.commit('live/setState', {
+              key: 'liveToggleLoading',
+              value: true,
+            })
             this.trtcClient.client
               .join({
                 roomId: Number(this.roomId),
@@ -139,18 +118,38 @@ export default {
               .then(
                 () => {
                   console.log('success to join trtc-room')
-                  this.$store.commit('live/setState', {
-                    key: 'liveJoinStatus',
-                    value: 1,
-                  })
+                  this.$store.commit('live/setState', [
+                    {
+                      key: 'liveJoinStatus',
+                      value: 1,
+                    },
+                    {
+                      key: 'liveToggleLoading',
+                      value: false,
+                    },
+                  ])
                   resolve(true)
                 },
                 (err) => {
                   console.error('fail to join trtc-room', err)
-                  this.$store.commit('live/setState', {
-                    key: 'liveJoinStatus',
-                    value: 0,
-                  })
+                  this.$store.commit('live/setState', [
+                    {
+                      key: 'liveJoinStatus',
+                      value: 0,
+                    },
+                    {
+                      key: 'liveToggleLoading',
+                      value: false,
+                    },
+                  ])
+                  ElMessageBox.alert(
+                    '网络异常导致进入直播间超时，请重新试试',
+                    '温馨提示',
+                    {
+                      confirmButtonText: '好的',
+                      callback: () => window.location.reload(),
+                    }
+                  )
                   resolve(false)
                 }
               )
@@ -239,26 +238,37 @@ export default {
         audioChannels: 2,
         mixUsers,
       }
-      this.trtcClient.client.startMixTranscode(mixConfig).then(
-        () => {
-          console.log('混流成功~~')
-        },
-        (err) => {
-          ElMessage.error('直播混流出现异常，请重试')
-          console.error('混流失败', err)
-        }
-      )
+      return new Promise((resolve) => {
+        this.trtcClient.client.startMixTranscode(mixConfig).then(
+          () => {
+            console.log('混流成功~~')
+            resolve(true)
+          },
+          (err) => {
+            console.error('混流失败~~', err)
+            resolve(false)
+          }
+        )
+      })
     },
 
+    /**
+     * @desc 停止混流
+     * @description 注意事项: 停止混流必须在混流发起者leave trtc之前, 否则会导致异常
+     */
     stopMixStream() {
-      this.trtcClient.client.stopMixTranscode().then(
-        () => {
-          console.log('success to stop mixstream')
-        },
-        (err) => {
-          console.warn('fail to stop mixstream', err)
-        }
-      )
+      return new Promise((resolve) => {
+        this.trtcClient.client.stopMixTranscode().then(
+          () => {
+            console.log('success to stop mixstream')
+            resolve(true)
+          },
+          (err) => {
+            console.warn('fail to stop mixstream', err)
+            resolve(false)
+          }
+        )
+      })
     },
 
     unbindEvent() {
@@ -567,52 +577,6 @@ export default {
       this.applyShow = false
     },
 
-    /** handle menu click of user live stream */
-    handleLiveMenuClick(type, payload) {
-      const actionMap = {
-        speaker: () => {
-          eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, payload)
-        },
-        mic: () => {
-          if (payload.isOpenMic) {
-            payload.muteAudio()
-            payload.isOpenMic = false
-          } else {
-            payload.unmuteAudio()
-            payload.isOpenMic = true
-          }
-        },
-        camera: () => {
-          if (payload.isOpenCamera) {
-            payload.muteVideo()
-            payload.isOpenCamera = false
-          } else {
-            payload.unmuteVideo()
-            payload.isOpenCamera = true
-          }
-        },
-        live: () => {
-          const isSelf =
-            String(payload.userId_) === String(this.user.user.imAccount)
-          const targetIsAnchor = payload.role === 1
-          if (isSelf) {
-            targetIsAnchor
-              ? eventEmitter.emit(eventEmitter.event.anchor.stop)
-              : eventEmitter.emit(eventEmitter.event.guest.stop)
-          } else {
-            this.$store.dispatch({
-              type: 'live/guestStopLive',
-              payload: {
-                roomid: this.roomId,
-                memberid: payload.userId_,
-              },
-            })
-          }
-        },
-      }
-      actionMap[type]?.()
-    },
-
     /** filter live stream by id */
     filterLiveStream(filterId = this.live.liveSpeaker?.userId) {
       return this.live.liveStreamList
@@ -636,6 +600,11 @@ export default {
       if (this.live.liveJoinStatus !== 1) {
         await this.joinTrtc()
       }
+
+      this.$store.commit('live/setState', {
+        key: 'liveToggleLoading',
+        value: true,
+      })
       this.$store.dispatch({
         type: 'live/startLive',
         payload: {
@@ -652,6 +621,10 @@ export default {
           console.log('success for anchor to publish stream~~~~~')
 
           this.$store.commit('live/setState', [
+            {
+              key: 'liveToggleLoading',
+              value: false,
+            },
             {
               key: 'liveStart',
               value: true,
@@ -678,6 +651,12 @@ export default {
           this.startMixStream()
         },
         (err) => {
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveToggleLoading',
+              value: false,
+            },
+          ])
           ElMessage.error('直播失败，请重试')
           console.warn('fail for anchor to publish stream', err)
         }
@@ -689,15 +668,18 @@ export default {
 
     /** 主播结束直播 */
     async onAnchorStop() {
+      this.$store.commit('live/setState', {
+        key: 'liveToggleLoading',
+        value: true,
+      })
       this.clearLiveDataOfUser(true)
-
-      await this.$store.dispatch({
+      this.$store.dispatch({
         type: 'live/stopLive',
         payload: {
           roomid: this.roomId,
         },
+        callback: () => ElMessage.success('直播已结束'),
       })
-      ElMessage.success('直播已结束')
     },
 
     /** 主播设置主讲人 */
@@ -764,7 +746,6 @@ export default {
           this.mainStreamList = this.filterLiveStream()
           // 嘉宾上麦默认静音
           this.trtcClient.stream.muteAudio()
-          // this.startMixStream()
           await this.trtcClient.stream.stop()
           this.$nextTick(() => {
             this.tryToPlayStream(
@@ -785,15 +766,19 @@ export default {
 
     /** 嘉宾下麦 */
     async onGuestStop() {
+      this.$store.commit('live/setState', {
+        key: 'liveToggleLoading',
+        value: true,
+      })
       this.clearLiveDataOfUser(false)
-      await this.$store.dispatch({
+      this.$store.dispatch({
         type: 'live/guestStopLive',
         payload: {
           roomid: this.roomId,
           memberid: this.user.userInfo?.imAccount,
         },
+        callback: () => ElMessage.success('您已下麦'),
       })
-      ElMessage.success('您已下麦')
     },
 
     onLiveStreamMouse(type, item) {
@@ -805,44 +790,39 @@ export default {
       item.maskShow = type
     },
 
-    judgeAnchorOrSelf(payload) {
-      return (
-        String(payload.userId_) === String(this.user.user.imAccount) ||
-        this.user.user.role === 1
-      )
-    },
-
     /** clear data of user after user stop live */
-    clearLiveDataOfUser(isAnchor) {
-      this.trtcClient.client.unpublish(this.trtcClient.stream).then(
-        () => {},
-        (err) => console.warn(err)
-      )
-      this.trtcClient.client.leave()
+    async clearLiveDataOfUser(isAnchor) {
+      isAnchor && (await this.stopMixStream())
+      await this.trtcClient.leaveRoom()
       this.trtcClient.stream.stop()
       this.$store.commit('live/setState', [
         {
           key: 'liveStreamList',
-          value: this.filterLiveStream(this.trtcClient.stream.userId_),
+          value: isAnchor
+            ? []
+            : this.filterLiveStream(this.trtcClient.stream.userId_),
         },
         {
           key: 'liveJoinStatus',
           value: 0,
         },
+        {
+          key: 'liveStart',
+          value: false,
+        },
+        {
+          key: 'liveToggleLoading',
+          value: false,
+        },
       ])
       this.mainStreamList = this.filterLiveStream()
-      isAnchor && this.stopMixStream()
     },
 
     /** destroy room & clear store of live */
-    destroyRoom() {
-      this.trtcClient.client?.unpublish(this.trtcClient.stream).then(
-        () => {},
-        (err) => console.warn(err)
-      )
-      this.trtcClient.client?.leave()
+    async destroyRoom() {
+      await this.stopMixStream()
+      await this.trtcClient.client?.leave()
       this.trtcClient.stream?.stop()
-      this.stopMixStream()
       this.$store.commit('live/setState', [
         {
           key: 'liveStreamList',
@@ -924,46 +904,6 @@ export default {
         top: 0;
         width: 100%;
         height: 100%;
-      }
-      .stream-mask {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 2;
-        background: rgba(0, 0, 0, 0.75);
-        transition: all 0.3s ease;
-        .mask-header {
-          overflow: hidden;
-          white-space: nowrap;
-          word-break: keep-all;
-          text-overflow: ellipsis;
-          margin: 10px 0 25px 0;
-          color: #fff;
-          font-size: 14px;
-        }
-        .mask-menu {
-          flex: 1;
-          padding: 0 10px;
-        }
-      }
-      .icon {
-        cursor: pointer;
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        margin-left: 10px;
-        background-color: #333333;
-        transition: all 0.3s ease;
-        &:first-child {
-          margin-left: 0;
-        }
-        &.active,
-        &:hover {
-          background-color: #e65e50;
-        }
       }
     }
   }

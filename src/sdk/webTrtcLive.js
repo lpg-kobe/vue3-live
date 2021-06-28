@@ -160,6 +160,19 @@ export default class WebTrtcLive {
 
   }
 
+  /** user leave after join trtc */
+  leaveRoom() {
+    return new Promise(resolve => {
+      this.client.leave().then(() => {
+        console.log('Success for user to leave room~~~')
+        resolve(true)
+      }, (err) => {
+        console.warn('Fail for user to leave room~~~', err)
+        resolve(false)
+      })
+    })
+  }
+
   onClient(eventName, handler, context) {
     this.client?.on(eventName, handler, context);
   }

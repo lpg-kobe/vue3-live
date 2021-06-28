@@ -11,19 +11,20 @@ import Speaker from './speaker.vue'
 export default {
   name: 'thumbView',
   components: {
-    Speaker
+    Speaker,
   },
   computed: {
     ...mapState({
-      live: ({ live }) => live
-    })
-  }
+      live: ({ live }) => live,
+    }),
+  },
 }
 </script>
 <style lang="scss" scoped>
 .thumb-view-container {
+  position: relative;
   height: calc(9 / 16 * 360px);
   width: 360px;
   overflow: hidden;
-  }
+}
 </style>
