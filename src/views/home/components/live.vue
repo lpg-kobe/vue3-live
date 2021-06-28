@@ -4,7 +4,7 @@
       :visible="mediaSelVisible"
       :client="trtcClient"
       :user="user.userInfo"
-      @btn-click="mediaSelVisible = false"
+      @btn-click="handleMediaSetEmit"
     />
     <div v-if="mainStreamList.length" class="remote-view flex">
       <div
@@ -779,6 +779,25 @@ export default {
         },
         callback: () => ElMessage.success('您已下麦'),
       })
+    },
+
+    /** handle click btn of media setting */
+    async handleMediaSetEmit() {
+      const userIsSpeaker =
+        String(this.live.liveSpeaker.userId) ===
+        String(this.user.user.imAccount)
+      const userIsLive = this.live.liveStreamList.find(
+        ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+      )
+
+      await this.trtcClient.stream.stop()
+      userIsLive &&
+        this.trtcClient.stream.play(
+          userIsSpeaker
+            ? 'speakerId'
+            : `live_stream_${this.user.user.imAccount}`
+        )
+      this.mediaSelVisible = false
     },
 
     onLiveStreamMouse(type, item) {

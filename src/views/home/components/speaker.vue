@@ -56,7 +56,7 @@ export default {
         this.speaker = Object.assign(
           newSpeaker,
           this.live.liveMembers.find(
-            ({ memberId }) => String(memberId) === String(newSpeaker.userId_)
+            ({ memberId }) => String(memberId) === String(newSpeaker?.userId_)
           )
         )
         // old stream must stop & replay in new dom if it has been play in other dom
