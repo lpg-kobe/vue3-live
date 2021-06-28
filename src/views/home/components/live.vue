@@ -262,6 +262,7 @@ export default {
     },
 
     unbindEvent() {
+      eventEmitter.off(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
       eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -278,6 +279,7 @@ export default {
     },
 
     bindEvent() {
+      eventEmitter.on(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
       eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -622,6 +624,11 @@ export default {
             ),
           })
         )
+    },
+
+    /** 打开媒体设置 */
+    onMediaSetting() {
+      this.mediaSelVisible = !this.mediaSelVisible
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */

@@ -40,32 +40,34 @@ export default {
 
   actions: {
     // register global event
-    registerEvent({ commit }, { payload }) {
-      Object.values(IM_EVENT).forEach(ele => {
-        Object.values(ele).forEach(event => {
-          eventEmitter.on(event, () => {
-            const actionMap = {
-              [IM_EVENT.loginExp]: () => {
-                removeUserSession()
-                replaceHistory('logout')
-              },
-              [IM_EVENT.kick]: () => {
-                if (window.location?.hash === '#/login' || window.location?.pathname === "/login") {
-                  return
+    registerEvent({ }, { }) {
+      Object.values(IM_EVENT).forEach(event => {
+        eventEmitter.on(event, () => {
+          const actionMap = {
+            [IM_EVENT.loginExp]: () => {
+              removeUserSession()
+              ElMessageBox.alert('登录已过期，请重新登录', '提示', {
+                confirmButtonText: '确定',
+                callback: () => {
+                  replaceHistory('login')
                 }
-                removeUserSession()
-                ElMessageBox.alert('您的账号在其它设备登录，您已下线', '提示', {
-                  confirmButtonText: '确定',
-                  callback: action => {
-                    replaceHistory('login')
-                  }
-                });
+              });
+            },
+            [IM_EVENT.kick]: () => {
+              if (window.location?.hash === '#/login' || window.location?.pathname === "/login") {
+                return
               }
+              removeUserSession()
+              ElMessageBox.alert('您的账号在其它设备登录，您已下线', '提示', {
+                confirmButtonText: '确定',
+                callback: () => {
+                  replaceHistory('login')
+                }
+              });
             }
-            actionMap[event]?.()
-          })
+          }
+          actionMap[event]?.()
         })
-
       })
     },
 

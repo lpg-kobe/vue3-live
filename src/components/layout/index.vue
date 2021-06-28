@@ -4,6 +4,7 @@
     <el-button @click="stop">结束直播</el-button>
     <el-button type="primary" @click="apply">申请上麦</el-button>
     <el-button @click="offLine">下麦</el-button>
+    <el-button @click="openMediaSetting">媒体设置</el-button>
   </header>
   <main>
     <section class="section-l">
@@ -47,6 +48,10 @@ export default {
 
     offLine() {
       eventEmitter.emit(eventEmitter.event?.guest?.stop)
+    },
+
+    openMediaSetting() {
+      eventEmitter.emit(eventEmitter.event?.live?.setMedia)
     },
   },
 }

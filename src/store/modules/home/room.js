@@ -204,16 +204,10 @@ export default {
         // this.timLogin(isVisitor)
       } else {
         // 进房异常
-        ElMessage.error(data.message)
-        if (data.code === -23) {
-          setTimeout(() => {
-            location.reload()
-          }, 3000)
-        } else {
-          setTimeout(() => {
-            location.href = 'https://live.ofweek.com/'
-          }, 3000)
-        }
+        ElMessageBox.alert(data?.message, '提示', {
+          confirmButtonText: '确定',
+          callback: () => window.close()
+        });
       }
 
       callback?.({ status, ...data })
