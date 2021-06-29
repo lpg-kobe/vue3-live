@@ -648,7 +648,7 @@ export default {
             isOpenMic:
               isMicToggle && String(userId) === String(stream.userId_)
                 ? isOpenMic
-                : stream.isOpenCamera,
+                : stream.isOpenMic,
             isOpenCamera:
               !isMicToggle && String(userId) === String(stream.userId_)
                 ? isOpenCamera

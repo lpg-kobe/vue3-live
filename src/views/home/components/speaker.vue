@@ -95,7 +95,7 @@ export default {
       }
       this.speaker = Object.assign(this.speaker, {
         isOpenMic: isMicToggle ? isOpenMic : this.speaker.isOpenMic,
-        isOpenCamera: !isMicToggle ? isOpenCamera : this.speaker.isOpenMic,
+        isOpenCamera: !isMicToggle ? isOpenCamera : this.speaker.isOpenCamera,
       })
     },
 
