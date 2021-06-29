@@ -879,7 +879,7 @@ export default {
     /** clear data of user after user stop live */
     async clearLiveDataOfUser(isAnchor) {
       // isAnchor && (await this.stopMixStream())
-      await this.trtcClient.leaveRoom()
+      await this.trtcClient.cancelPublish()
       this.trtcClient.stream.stop()
       this.$store.commit('live/setState', [
         {
@@ -906,7 +906,7 @@ export default {
         ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
       )
       if (userIsLive) {
-        await this.trtcClient.client?.leave()
+        await this.trtcClient.cancelPublish()
         this.trtcClient.stream?.stop()
       }
       this.$store.commit('live/setState', [
