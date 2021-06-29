@@ -406,10 +406,7 @@ export default {
 
             // 主播结束直播
             1723: () => {
-              const isSelf =
-                String(payloadData.handlerId) ===
-                String(this.user.user.imAccount)
-              !isSelf && this.destroyRoom()
+              this.destroyRoom()
             },
 
             // 嘉宾上麦
@@ -718,7 +715,7 @@ export default {
             },
           ])
           this.mainStreamList = this.filterLiveStream()
-          this.startMixStream()
+          // this.startMixStream()
         },
         (err) => {
           this.$store.commit('live/setState', [
@@ -764,7 +761,7 @@ export default {
       if (!status) {
         return
       }
-      this.startMixStream()
+      // this.startMixStream()
       ElMessage.success(`已将${data?.nick}设为主讲人`)
     },
 
@@ -881,7 +878,7 @@ export default {
 
     /** clear data of user after user stop live */
     async clearLiveDataOfUser(isAnchor) {
-      isAnchor && (await this.stopMixStream())
+      // isAnchor && (await this.stopMixStream())
       await this.trtcClient.leaveRoom()
       this.trtcClient.stream.stop()
       this.$store.commit('live/setState', [
@@ -905,8 +902,13 @@ export default {
 
     /** destroy room & clear store of live */
     async destroyRoom() {
-      await this.trtcClient.client?.leave()
-      this.trtcClient.stream?.stop()
+      const userIsLive = this.live.liveStreamList.some(
+        ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+      )
+      if (userIsLive) {
+        await this.trtcClient.client?.leave()
+        this.trtcClient.stream?.stop()
+      }
       this.$store.commit('live/setState', [
         {
           key: 'liveStreamList',
