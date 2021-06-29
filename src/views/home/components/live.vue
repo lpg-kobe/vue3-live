@@ -888,10 +888,10 @@ export default {
             ? []
             : this.filterLiveStream(this.trtcClient.stream.userId_),
         },
-        {
-          key: 'liveJoinStatus',
-          value: 0,
-        },
+        // {
+        //   key: 'liveJoinStatus',
+        //   value: 0,
+        // },
         {
           key: 'liveToggleLoading',
           value: false,
@@ -914,10 +914,10 @@ export default {
           key: 'liveStreamList',
           value: [],
         },
-        {
-          key: 'liveJoinStatus',
-          value: 0,
-        },
+        // {
+        //   key: 'liveJoinStatus',
+        //   value: 0,
+        // },
         {
           key: 'liveSpeaker',
           value: {
