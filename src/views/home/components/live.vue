@@ -638,8 +638,7 @@ export default {
      * @desc 直播间切换媒体设备开关
      * @param {type:String,userId:String,isOpenMic:Boolean,isOpenCamera:Boolean} Object
      */
-    onToggleMedia({ type, userId, isOpenMic, isOpenCamera }) {
-      debugger
+    onToggleMedia({ data: {type, userId, isOpenMic, isOpenCamera} }) {
       const isMicToggle = type === 'mic'
       const isSelf = String(userId) === String(this.user.user.imAccount)
       this.$store.commit('live/setState', {

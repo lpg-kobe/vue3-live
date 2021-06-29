@@ -6,7 +6,7 @@
       :loading="live.liveToggleLoading"
       v-show="
         !live.liveStreamList.some(
-          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+          ({ userId_ }) => String(userId_) === String(user.user.imAccount)
         )
       "
       v-if="user.user.role === 1"
@@ -16,7 +16,7 @@
       @click="stop"
       v-show="
         live.liveStreamList.some(
-          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+          ({ userId_ }) => String(userId_) === String(user.user.imAccount)
         )
       "
       v-if="user.user.role === 1"
@@ -28,7 +28,7 @@
       @click="apply"
       v-show="
         !live.liveStreamList.some(
-          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+          ({ userId_ }) => String(userId_) === String(user.user.imAccount)
         )
       "
       v-if="user.user.role === 2"
@@ -39,7 +39,7 @@
       @click="offLine"
       v-show="
         live.liveStreamList.some(
-          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+          ({ userId_ }) => String(userId_) === String(user.user.imAccount)
         )
       "
       v-if="user.user.role === 2"

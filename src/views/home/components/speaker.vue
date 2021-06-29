@@ -86,7 +86,7 @@ export default {
      * @desc 直播间切换媒体设备开关
      * @param {type:String,userId:String,isOpenMic:Boolean,isOpenCamera:Boolean} Object
      */
-    onToggleMedia({ type, userId, isOpenMic, isOpenCamera }) {
+    onToggleMedia({ data: { type, userId, isOpenMic, isOpenCamera } }) {
       const isMicToggle = type === 'mic'
       const targetIsSpeaker =
         String(userId) !== String(this.live.liveSpeaker.userId)
