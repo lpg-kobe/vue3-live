@@ -69,7 +69,7 @@ export default {
             payload: {
               roomid: this.roomId,
               memberid: payload.userId_,
-              miketype: +payload.isOpenMic,
+              miketype: +!payload.isOpenMic,
             },
           })
         },
@@ -84,7 +84,7 @@ export default {
             payload: {
               roomid: this.roomId,
               memberid: payload.userId_,
-              cameratype: +payload.isOpenCamera,
+              cameratype: +!payload.isOpenCamera,
             },
           })
         },

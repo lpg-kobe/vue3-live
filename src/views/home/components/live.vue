@@ -275,7 +275,7 @@ export default {
       eventEmitter.off(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
       eventEmitter.off(
         eventEmitter.event?.live?.toggleMedia,
-        this.onToggleMedia
+        this.onMediaToggle
       )
       eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
@@ -294,7 +294,7 @@ export default {
 
     bindEvent() {
       eventEmitter.on(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
-      eventEmitter.on(eventEmitter.event?.live?.toggleMedia, this.onToggleMedia)
+      eventEmitter.on(eventEmitter.event?.live?.toggleMedia, this.onMediaToggle)
       eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -638,7 +638,7 @@ export default {
      * @desc 直播间切换媒体设备开关
      * @param {type:String,userId:String,isOpenMic:Boolean,isOpenCamera:Boolean} Object
      */
-    onToggleMedia({ data: {type, userId, isOpenMic, isOpenCamera} }) {
+    onMediaToggle({ data: { type, userId, isOpenMic, isOpenCamera } }) {
       const isMicToggle = type === 'mic'
       const isSelf = String(userId) === String(this.user.user.imAccount)
       this.$store.commit('live/setState', {
