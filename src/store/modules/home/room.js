@@ -93,8 +93,9 @@ export default {
           })
         }
 
-        callback?.({ status, ...data })
+        callback?.(data)
       }
+      return { status, data}
     },
 
     async entryroom({ commit, dispatch }, { payload, callback }) {
@@ -132,9 +133,9 @@ export default {
         //     this.setTrtcPrivateSig(data.data.trtcPrivateSig)
         //   }
         // })
-
+        
         // 获取账号的要完善信息
-        await getcompleteinfo().then(({ data }) => {
+        await getcompleteinfo().then( ({ data }) => {
           if (data.code === 0) {
             // this.setUserInfo(data.data)
             let _name = ''
@@ -151,57 +152,6 @@ export default {
             }, { root: true })
           }
         })
-
-        // 获取房间信息
-        // dispatch({
-        //   type: 'getroom',
-        //   payload: {
-        //     roomid: 94
-        //   },
-        //   callback: () => {
-        //     // 是否完善名片
-        //     // if (state.user.user.isCompletedInfo === 0 && this.room.watchMode === 2 && this.liveStatus !== 1) {
-        //     //   setTimeout(() => {
-        //     //     commit('user/setState', {
-        //     //       key: 'cardShow',
-        //     //       value: true
-        //     //     }, { root: true })
-        //     //   }, this.room.delayLoginTime * 1000)
-        //     // }
-        //     return
-        //     // 用户心跳
-        //     let heartTimer = setInterval(() => {
-        //       heartbeat({
-        //         memberId: this.imAccount,
-        //         roomId: this.roomId,
-        //         time: new Date()
-        //       }).then(data => {
-        //         // 断网后网络恢复
-        //         if (this.networkBreak) {
-        //           window.location.reload();
-        //         }
-        //       }, error => {
-        //         this.$EventBus.$emit('chatAddErrorMsg', this.networkDisconnection)
-        //         if (!this.networkBreak) {
-        //           this.networkBreak = true
-        //         }
-        //       })
-        //     }, 8000)
-
-        //     // 被踢出
-        //     // this.$EventBus.$on('timKickOut',() => {
-        //     //   clearInterval(heartTimer)
-        //     // })
-
-        //     // ?为啥延迟100毫秒
-        //     setTimeout(() => {
-        //       this.initFinish = true
-        //     }, 100)
-        //   }
-        // })
-
-        // 登录TIM
-        // this.timLogin(isVisitor)
       } else {
         // 进房异常
         ElMessageBox.alert(data?.message || '网络拥堵，请重新进入直播间', '提示', {

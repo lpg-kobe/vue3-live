@@ -17,8 +17,6 @@ export default {
   state: {
     imClient: null,
     trtcClient: null,
-    // current router data
-    router: {}
   },
 
   getters: {

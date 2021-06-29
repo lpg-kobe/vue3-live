@@ -10,12 +10,34 @@ import { replaceHistory } from '../../../utils/tool'
 export default {
   namespaced: true,
   state: {
-    // 登录用户
     userInfo: getUserSession(),
-    // 房间用户
-    user: {}
+    userName: '',
+    user: {},
+    mainFormId: '',
+    closeNeedOut: false,
+    cardNeedOut: false,
+    loginShow: false,
+    phoneRegisterShow: false,
+    cardShow: false,
+    isForbit: false,
+    imAccount: '',
+    isVisitorLogin: false,
+    dialogShopVideo: false
   },
-  getters: {},
+  getters: {
+    userName: state => state.userName,
+    user: state => state.user,
+    mainFormId: state => state.mainFormId,
+    closeNeedOut: state => state.closeNeedOut,
+    cardNeedOut: state => state.cardNeedOut,
+    loginShow: state => state.loginShow,
+    phoneRegisterShow: state => state.phoneRegisterShow,
+    cardShow: state => state.cardShow,
+    isForbit: state => state.isForbit,
+    imAccount: state => state.imAccount,
+    isVisitorLogin: state => state.isVisitorLogin,
+    dialogShopVideo: state => state.dialogShopVideo,
+  },
   mutations: {
     setState(state, params) {
       if (Array.isArray(params)) {

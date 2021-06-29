@@ -3,202 +3,203 @@
  * @author pika
  */
 
-import TRTC from 'trtc-js-sdk'
-import { ElMessageBox } from 'element-plus'
-
-export const TRTC_EVENT = {
-
-};
-
-export default class WebTrtcLive {
-  constructor(config) {
-
-    let support = true;
-    (async () => {
-      support = await this.isSupport()
-    })()
-    if (!support) {
-      // 确保提示弹窗层级最深
-      window.requestAnimationFrame(() => {
-        ElMessageBox.alert('当前浏览器不支持开启直播，建议更换chrome浏览器', '温馨提示', {
-          confirmButtonText: '知道了'
-        })
-      })
-    }
-
-    this.event = TRTC_EVENT
-    this.stream = null
-    this.previewStream = null
-    this.trtc = TRTC
-    this.createClient({
-      ...config,
-      mode: 'live'
-    })
-    this.initSetting()
-  }
-
-  // 初始化trtc设置
-  initSetting() {
-
-  }
-
-  /** get version */
-  getVersion() {
-    return TRTC.VERSION
-  }
-
-  // 获取摄像头列表
-  getCameras() {
-    return new Promise(resolve => {
-      this.trtc.getCameras().then((data) => resolve(data), () => resolve([]))
-    });
-  }
-
-  // 获取当前使用的摄像头
-  getCurCamera() {
-    if (!this.stream) {
-      return {}
-    }
-    const videoTrack = this.stream.getVideoTrack?.()
-    return videoTrack?.getSettings?.() || {}
-  }
-
-  // 获取麦克风设备列表
-  getMics() {
-    return new Promise(resolve => {
-      this.trtc.getMicrophones().then((data) => resolve(data), () => resolve([]))
-    });
-  }
-
-  // 获取当前使用的麦克风
-  getCurMic() {
-    if (!this.stream) {
-      return {}
-    }
-    const audioTrack = this.stream.getAudioTrack?.()
-    return audioTrack?.getSettings?.() || {}
-  }
-
-  // browser support check
-  isSupport() {
-    return new Promise((resolve) => {
-      TRTC.checkSystemRequirements().then(({ result }) => resolve(result), () => resolve(false))
-    })
-  }
-
-  // share screen support check
-  isSupportShareScreen() {
-    return TRTC.isScreenShareSupported()
-  }
-
-  switchCamera(id) {
-    return new Promise((resolve) => {
-      this.stream.switchDevice('video', id).then(() => resolve(true), () => resolve(false))
-    })
-  }
-
-  switchMic(id) {
-    return new Promise((resolve) => {
-      this.stream.switchDevice('audio', id).then(() => resolve(true), () => resolve(false))
-    })
-  }
-
-  /** create trtc client */
-  createClient(config) {
-    this.client = TRTC.createClient(config)
-    return this.client
-  }
-
-  /** create default stream */
-  createStream(config) {
-    const { settings, ...streamConfig } = config
-    return new Promise((resolve) => {
-      if (!streamConfig?.userId) {
-        resolve({
-          stream: null,
-          error: {
-            name: 'noUserId'
-          }
-        })
-      }
-      this.stream = this.trtc.createStream(streamConfig)
-      this.stream.setVideoProfile(settings)
-      this.stream.initialize().then(() => resolve({
-        stream: this.stream
-      }), (error) => resolve({
-        stream: null,
-        error
-      }))
-    })
-  }
-
-  /** create preview stream */
-  createPreviewStream(config) {
-    const { settings, ...streamConfig } = config
-    return new Promise((resolve) => {
-      if (!streamConfig?.userId) {
-        resolve({
-          stream: null,
-          error: {
-            name: 'noUserId'
-          }
-        })
-      }
-      this.previewStream = this.trtc.createStream(streamConfig)
-      this.previewStream.setVideoProfile(settings)
-      this.previewStream.initialize().then(() => resolve({
-        stream: this.previewStream
-      }), (error) => resolve({
-        stream: null,
-        error
-      }))
-    })
-  }
-
-  /** 关闭所有音视频采集 */
-  clearMedia() {
-
-  }
-
-  /** user leave after join trtc */
-  leaveRoom() {
-    return new Promise(resolve => {
-      this.client.leave().then(() => {
-        console.log('Success for user to leave room~~~')
-        resolve(true)
-      }, (err) => {
-        console.warn('Fail for user to leave room~~~', err)
-        resolve(false)
-      })
-    })
-  }
-
-  /** 取消发布 */
-  cancelPublish(stream = this.stream) {
-    return new Promise(resolve => {
-      this.client.unpublish(stream).then(() => {
-        console.log('Success for user to unpublish stream~~~')
-        resolve(true)
-      }, (err) => {
-        console.warn('Fail for user to unpublish stream~~~', err)
-        resolve(false)
-      })
-    })
-  }
-
-  onClient(eventName, handler, context) {
-    this.client?.on(eventName, handler, context);
-  }
-
-  offClient(eventName, handler, context) {
-    this.client?.off(eventName, handler, context);
-  }
-
-  onStream(eventName, handler, context) {
-    this.client?.on(eventName, handler, context);
-  }
-
-  offStream(eventName, handler, context) {
-    this.client?.off(eventName, handler, context);
-  }
-}
+ import TRTC from 'trtc-js-sdk'
+ import { ElMessageBox } from 'element-plus'
+ 
+ export const TRTC_EVENT = {
+ 
+ };
+ 
+ export default class WebTrtcLive {
+   constructor(config) {
+ 
+     let support = true;
+     (async () => {
+       support = await this.isSupport()
+     })()
+     if (!support) {
+       // 确保提示弹窗层级最深
+       window.requestAnimationFrame(() => {
+         ElMessageBox.alert('当前浏览器不支持开启直播，建议更换chrome浏览器', '温馨提示', {
+           confirmButtonText: '知道了'
+         })
+       })
+     }
+ 
+     this.event = TRTC_EVENT
+     this.stream = null
+     this.previewStream = null
+     this.trtc = TRTC
+     this.createClient({
+       ...config,
+       mode: 'live'
+     })
+     this.initSetting()
+   }
+ 
+   // 初始化trtc设置
+   initSetting() {
+ 
+   }
+ 
+   /** get version */
+   getVersion() {
+     return TRTC.VERSION
+   }
+ 
+   // 获取摄像头列表
+   getCameras() {
+     return new Promise(resolve => {
+       this.trtc.getCameras().then((data) => resolve(data), () => resolve([]))
+     });
+   }
+ 
+   // 获取当前使用的摄像头
+   getCurCamera() {
+     if (!this.stream) {
+       return {}
+     }
+     const videoTrack = this.stream.getVideoTrack?.()
+     return videoTrack?.getSettings?.() || {}
+   }
+ 
+   // 获取麦克风设备列表
+   getMics() {
+     return new Promise(resolve => {
+       this.trtc.getMicrophones().then((data) => resolve(data), () => resolve([]))
+     });
+   }
+ 
+   // 获取当前使用的麦克风
+   getCurMic() {
+     if (!this.stream) {
+       return {}
+     }
+     const audioTrack = this.stream.getAudioTrack?.()
+     return audioTrack?.getSettings?.() || {}
+   }
+ 
+   // browser support check
+   isSupport() {
+     return new Promise((resolve) => {
+       TRTC.checkSystemRequirements().then(({ result }) => resolve(result), () => resolve(false))
+     })
+   }
+ 
+   // share screen support check
+   isSupportShareScreen() {
+     return TRTC.isScreenShareSupported()
+   }
+ 
+   switchCamera(id) {
+     return new Promise((resolve) => {
+       this.stream.switchDevice('video', id).then(() => resolve(true), () => resolve(false))
+     })
+   }
+ 
+   switchMic(id) {
+     return new Promise((resolve) => {
+       this.stream.switchDevice('audio', id).then(() => resolve(true), () => resolve(false))
+     })
+   }
+ 
+   /** create trtc client */
+   createClient(config) {
+     this.client = TRTC.createClient(config)
+     return this.client
+   }
+ 
+   /** create default stream */
+   createStream(config) {
+     const { settings, ...streamConfig } = config
+     return new Promise((resolve) => {
+       if (!streamConfig?.userId) {
+         resolve({
+           stream: null,
+           error: {
+             name: 'noUserId'
+           }
+         })
+       }
+       this.stream = this.trtc.createStream(streamConfig)
+       this.stream.setVideoProfile(settings)
+       this.stream.initialize().then(() => resolve({
+         stream: this.stream
+       }), (error) => resolve({
+         stream: null,
+         error
+       }))
+     })
+   }
+ 
+   /** create preview stream */
+   createPreviewStream(config) {
+     const { settings, ...streamConfig } = config
+     return new Promise((resolve) => {
+       if (!streamConfig?.userId) {
+         resolve({
+           stream: null,
+           error: {
+             name: 'noUserId'
+           }
+         })
+       }
+       this.previewStream = this.trtc.createStream(streamConfig)
+       this.previewStream.setVideoProfile(settings)
+       this.previewStream.initialize().then(() => resolve({
+         stream: this.previewStream
+       }), (error) => resolve({
+         stream: null,
+         error
+       }))
+     })
+   }
+ 
+   /** 关闭所有音视频采集 */
+   clearMedia() {
+ 
+   }
+ 
+   /** user leave after join trtc */
+   leaveRoom() {
+     return new Promise(resolve => {
+       this.client.leave().then(() => {
+         console.log('Success for user to leave room~~~')
+         resolve(true)
+       }, (err) => {
+         console.warn('Fail for user to leave room~~~', err)
+         resolve(false)
+       })
+     })
+   }
+ 
+   /** 取消发布 */
+   cancelPublish(stream = this.stream) {
+     return new Promise(resolve => {
+       this.client.unpublish(stream).then(() => {
+         console.log('Success for user to unpublish stream~~~')
+         resolve(true)
+       }, (err) => {
+         console.warn('Fail for user to unpublish stream~~~', err)
+         resolve(false)
+       })
+     })
+   }
+ 
+   onClient(eventName, handler, context) {
+     this.client?.on(eventName, handler, context);
+   }
+ 
+   offClient(eventName, handler, context) {
+     this.client?.off(eventName, handler, context);
+   }
+ 
+   onStream(eventName, handler, context) {
+     this.client?.on(eventName, handler, context);
+   }
+ 
+   offStream(eventName, handler, context) {
+     this.client?.off(eventName, handler, context);
+   }
+ }
+ 

@@ -8,10 +8,14 @@ export default defineConfig({
   server: {
     // host: 'https://newlivewap.ofweek.com/',
     https: true,
-    open: true,
     proxy: {
       '/web': {
         target: 'https://livetest.ofweek.com/api',
+        changeOrigin: true,
+        rewrite: path => path
+      },
+      '/uploadImg': {
+        target: 'https://livetest.ofweek.com/api/fileremote',
         changeOrigin: true,
         rewrite: path => path
       }
