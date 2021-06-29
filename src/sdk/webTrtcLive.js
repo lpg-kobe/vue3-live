@@ -176,7 +176,7 @@ export default class WebTrtcLive {
   /** 取消发布 */
   cancelPublish(stream = this.stream) {
     return new Promise(resolve => {
-      this.client.unpublish().then(() => {
+      this.client.unpublish(stream).then(() => {
         console.log('Success for user to unpublish stream~~~')
         resolve(true)
       }, (err) => {
