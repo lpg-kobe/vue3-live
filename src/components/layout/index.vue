@@ -4,13 +4,21 @@
       type="primary"
       @click="start"
       :loading="live.liveToggleLoading"
-      v-show="!live.liveStart"
+      v-show="
+        !live.liveStreamList.some(
+          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+        )
+      "
       v-if="user.user.role === 1"
       >开始直播</el-button
     >
     <el-button
       @click="stop"
-      v-show="live.liveStart"
+      v-show="
+        live.liveStreamList.some(
+          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+        )
+      "
       v-if="user.user.role === 1"
       :loading="live.liveToggleLoading"
       >结束直播</el-button
@@ -18,14 +26,22 @@
     <el-button
       type="primary"
       @click="apply"
-      v-show="!live.liveStart"
+      v-show="
+        !live.liveStreamList.some(
+          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+        )
+      "
       v-if="user.user.role === 2"
       :loading="live.liveToggleLoading"
       >申请上麦</el-button
     >
     <el-button
       @click="offLine"
-      v-show="live.liveStart"
+      v-show="
+        live.liveStreamList.some(
+          ({ userId_ }) => String(userId_) === String(this.user.user.imAccount)
+        )
+      "
       v-if="user.user.role === 2"
       :loading="live.liveToggleLoading"
       >下麦</el-button
