@@ -273,6 +273,10 @@ export default {
 
     unbindEvent() {
       eventEmitter.off(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
+      eventEmitter.off(
+        eventEmitter.event?.live?.toggleMedia,
+        this.onToggleMedia
+      )
       eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -290,6 +294,7 @@ export default {
 
     bindEvent() {
       eventEmitter.on(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
+      eventEmitter.on(eventEmitter.event?.live?.toggleMedia, this.onToggleMedia)
       eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -419,6 +424,17 @@ export default {
                 isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
               }
             },
+            // 直播中媒体设备开关消息
+            1728: () => {
+              const { isOpenCamera, isOpenMike } = payloadData
+              const isMicToggle = isOpenMike !== null
+              eventEmitter.emit(eventEmitter.event.live.toggleMedia, {
+                type: isMicToggle ? 'mic' : 'camera',
+                userId: payloadData.memberId,
+                isOpenMic: isMicToggle ? isOpenMike : null,
+                isOpenCamera: isMicToggle ? null : isOpenCamera,
+              })
+            },
           }
           codeAction[msgCode]?.()
         }
@@ -506,47 +522,63 @@ export default {
     },
 
     onRemoteMuteAudio(event) {
-      this.mainStreamList = this.mainStreamList.map((stream) =>
-        Object.assign(stream, {
-          isOpenMic:
-            String(event.userId) === String(stream.userId_)
-              ? false
-              : stream.isOpenMic,
-        })
-      )
+      this.$store.commit('live/setState', {
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.map((stream) =>
+          Object.assign(stream, {
+            isOpenMic:
+              String(event.userId) === String(stream.userId_)
+                ? false
+                : stream.isOpenMic,
+          })
+        ),
+      })
+      this.mainStreamList = this.filterLiveStream()
     },
 
     onRemoteUnmuteAudio(event) {
-      this.mainStreamList = this.mainStreamList.map((stream) =>
-        Object.assign(stream, {
-          isOpenMic:
-            String(event.userId) === String(stream.userId_)
-              ? true
-              : stream.isOpenMic,
-        })
-      )
+      this.$store.commit('live/setState', {
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.map((stream) =>
+          Object.assign(stream, {
+            isOpenMic:
+              String(event.userId) === String(stream.userId_)
+                ? true
+                : stream.isOpenMic,
+          })
+        ),
+      })
+      this.mainStreamList = this.filterLiveStream()
     },
 
     onRemoteMuteVideo(event) {
-      this.mainStreamList = this.mainStreamList.map((stream) =>
-        Object.assign(stream, {
-          isOpenCamera:
-            String(event.userId) === String(stream.userId_)
-              ? false
-              : stream.isOpenCamera,
-        })
-      )
+      this.$store.commit('live/setState', {
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.map((stream) =>
+          Object.assign(stream, {
+            isOpenCamera:
+              String(event.userId) === String(stream.userId_)
+                ? false
+                : stream.isOpenCamera,
+          })
+        ),
+      })
+      this.mainStreamList = this.filterLiveStream()
     },
 
     onRemoteUnmuteVideo(event) {
-      this.mainStreamList = this.mainStreamList.map((stream) =>
-        Object.assign(stream, {
-          isOpenCamera:
-            String(event.userId) === String(stream.userId_)
-              ? true
-              : stream.isOpenCamera,
-        })
-      )
+      this.$store.commit('live/setState', {
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.map((stream) =>
+          Object.assign(stream, {
+            isOpenCamera:
+              String(event.userId) === String(stream.userId_)
+                ? true
+                : stream.isOpenCamera,
+          })
+        ),
+      })
+      this.mainStreamList = this.filterLiveStream()
     },
 
     // 处理上麦邀请
@@ -582,17 +614,57 @@ export default {
       return this.live.liveStreamList
         .filter(({ userId_ }) => String(userId_) !== String(filterId))
         .map((stream) =>
-          Object.assign(stream, {
-            ...this.live.liveMembers.find(
-              ({ memberId }) => String(memberId) === String(stream.userId_)
-            ),
-          })
+          Object.assign(
+            stream,
+            {
+              ...this.live.liveMembers.find(
+                ({ memberId }) => String(memberId) === String(stream.userId_)
+              ),
+            },
+            {
+              isOpenMic: stream.isOpenMic,
+              isOpenCamera: stream.isOpenCamera,
+            }
+          )
         )
     },
 
     /** 打开媒体设置 */
     onMediaSetting() {
       this.mediaSelVisible = !this.mediaSelVisible
+    },
+
+    /**
+     * @desc 直播间切换媒体设备开关
+     * @param {type:String,userId:String,isOpenMic:Boolean,isOpenCamera:Boolean} Object
+     */
+    onToggleMedia({ type, userId, isOpenMic, isOpenCamera }) {
+      debugger
+      const isMicToggle = type === 'mic'
+      const isSelf = String(userId) === String(this.user.user.imAccount)
+      this.$store.commit('live/setState', {
+        key: 'liveStreamList',
+        value: this.live.liveStreamList.map((stream) =>
+          Object.assign(stream, {
+            isOpenMic:
+              isMicToggle && String(userId) === String(stream.userId_)
+                ? isOpenMic
+                : stream.isOpenCamera,
+            isOpenCamera:
+              !isMicToggle && String(userId) === String(stream.userId_)
+                ? isOpenCamera
+                : stream.isOpenCamera,
+          })
+        ),
+      })
+      isSelf &&
+        this.trtcClient.stream &&
+        this.trtcClient.stream[
+          isMicToggle
+            ? [isOpenMic ? 'unmuteAudio' : 'muteAudio']
+            : [isOpenCamera ? 'unmuteVideo' : 'muteVideo']
+        ]?.()
+      this.mainStreamList = this.filterLiveStream()
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */
@@ -619,7 +691,6 @@ export default {
       this.trtcClient.client.publish(this.trtcClient.stream).then(
         () => {
           console.log('success for anchor to publish stream~~~~~')
-
           this.$store.commit('live/setState', [
             {
               key: 'liveToggleLoading',

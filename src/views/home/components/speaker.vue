@@ -22,6 +22,7 @@
 <script>
 /** 互动直播主讲人控件 */
 import { mapState } from 'vuex'
+import { eventEmitter } from '../../../utils/event'
 import { exitFullScreen, fullScreenEle } from '../../../utils/tool'
 import StreamMask from './streamMask.vue'
 
@@ -30,7 +31,10 @@ export default {
   components: {
     StreamMask,
   },
-  created() {},
+  created() {
+    this.unbindEvent()
+    this.bindEvent()
+  },
   data() {
     return {
       speakerMaskShow: false,
@@ -53,12 +57,11 @@ export default {
         const newSpeaker = this.live.liveStreamList.find(
           ({ userId_ }) => String(userId_) === String(nVal)
         )
-        this.speaker = Object.assign(
-          newSpeaker,
-          this.live.liveMembers.find(
+        this.speaker = Object.assign(newSpeaker, {
+          nick: this.live.liveMembers.find(
             ({ memberId }) => String(memberId) === String(newSpeaker?.userId_)
-          )
-        )
+          )?.nick,
+        })
         // old stream must stop & replay in new dom if it has been play in other dom
         await oldSpeaker?.stop()
         await newSpeaker?.stop()
@@ -71,6 +74,31 @@ export default {
     },
   },
   methods: {
+    unbindEvent() {
+      eventEmitter.off(eventEmitter.event.live.toggleMedia, this.onToggleMedia)
+    },
+
+    bindEvent() {
+      eventEmitter.on(eventEmitter.event.live.toggleMedia, this.onToggleMedia)
+    },
+
+    /**
+     * @desc 直播间切换媒体设备开关
+     * @param {type:String,userId:String,isOpenMic:Boolean,isOpenCamera:Boolean} Object
+     */
+    onToggleMedia({ type, userId, isOpenMic, isOpenCamera }) {
+      const isMicToggle = type === 'mic'
+      const targetIsSpeaker =
+        String(userId) !== String(this.live.liveSpeaker.userId)
+      if (!targetIsSpeaker) {
+        return
+      }
+      this.speaker = Object.assign(this.speaker, {
+        isOpenMic: isMicToggle ? isOpenMic : this.speaker.isOpenMic,
+        isOpenCamera: !isMicToggle ? isOpenCamera : this.speaker.isOpenMic,
+      })
+    },
+
     onLiveStreamMouse(visible) {
       const { role, imAccount } = this.user.user
       const isSelf = String(imAccount) === String(this.speaker.userId_)

@@ -59,22 +59,34 @@ export default {
           eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, payload)
         },
         mic: () => {
-          if (payload.isOpenMic) {
-            payload.muteAudio()
-            payload.isOpenMic = false
-          } else {
-            payload.unmuteAudio()
-            payload.isOpenMic = true
-          }
+          eventEmitter.emit(eventEmitter.event.live.toggleMedia, {
+            type: 'mic',
+            userId: payload.userId_,
+            isOpenMic: !payload.isOpenMic,
+          })
+          this.$store.dispatch({
+            type: 'live/toggleMedia',
+            payload: {
+              roomid: this.roomId,
+              memberid: payload.userId_,
+              miketype: +payload.isOpenMic,
+            },
+          })
         },
         camera: () => {
-          if (payload.isOpenCamera) {
-            payload.muteVideo()
-            payload.isOpenCamera = false
-          } else {
-            payload.unmuteVideo()
-            payload.isOpenCamera = true
-          }
+          eventEmitter.emit(eventEmitter.event.live.toggleMedia, {
+            type: 'camera',
+            userId: payload.userId_,
+            isOpenCamera: !payload.isOpenCamera,
+          })
+          this.$store.dispatch({
+            type: 'live/toggleMedia',
+            payload: {
+              roomid: this.roomId,
+              memberid: payload.userId_,
+              cameratype: +payload.isOpenCamera,
+            },
+          })
         },
         live: () => {
           const isSelf =

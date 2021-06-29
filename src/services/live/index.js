@@ -74,10 +74,10 @@ export function setSpeaker(payload) {
   )
 }
 
-// 开关摄像头
-export function toggleCamera(payload) {
+// 摄像头 | 麦克风开关
+export function toggleMedia(payload) {
   return request(
-    `/web/room/broatroomcamera?${qs.stringify(payload)}`,
+    `/web/room/setcameraandmike?${qs.stringify(payload)}`,
   )
 }
 

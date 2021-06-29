@@ -5,7 +5,7 @@ import {
   stopLive,
   applyLive,
   setSpeaker,
-  toggleCamera,
+  toggleMedia,
   guestStartLive,
   guestStopLive,
   inviteLive,
@@ -95,9 +95,9 @@ export default {
       return { status, data }
     },
 
-    // 摄像头开关
-    async toggleCamera({ }, { payload, callback }) {
-      const { status, data: { data } } = await toggleCamera(payload)
+    // 直播中媒体设备开关
+    async toggleMedia({ }, { payload, callback }) {
+      const { status, data: { data } } = await toggleMedia(payload)
       status && callback?.(data)
       return { status, data }
     },
