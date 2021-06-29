@@ -89,7 +89,7 @@ export default {
     onToggleMedia({ data: { type, userId, isOpenMic, isOpenCamera } }) {
       const isMicToggle = type === 'mic'
       const targetIsSpeaker =
-        String(userId) !== String(this.live.liveSpeaker.userId)
+        String(userId) === String(this.live.liveSpeaker.userId)
       if (!targetIsSpeaker) {
         return
       }
