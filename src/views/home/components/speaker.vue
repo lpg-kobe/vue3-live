@@ -57,7 +57,7 @@ export default {
         const newSpeaker = this.live.liveStreamList.find(
           ({ userId_ }) => String(userId_) === String(nVal)
         )
-        this.speaker = Object.assign(newSpeaker, {
+        this.speaker = Object.assign(newSpeaker || {}, {
           nick: this.live.liveMembers.find(
             ({ memberId }) => String(memberId) === String(newSpeaker?.userId_)
           )?.nick,

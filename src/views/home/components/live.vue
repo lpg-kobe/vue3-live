@@ -896,10 +896,6 @@ export default {
           value: 0,
         },
         {
-          key: 'liveStart',
-          value: false,
-        },
-        {
           key: 'liveToggleLoading',
           value: false,
         },
@@ -909,7 +905,6 @@ export default {
 
     /** destroy room & clear store of live */
     async destroyRoom() {
-      await this.stopMixStream()
       await this.trtcClient.client?.leave()
       this.trtcClient.stream?.stop()
       this.$store.commit('live/setState', [

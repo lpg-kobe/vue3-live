@@ -6,7 +6,7 @@
         title="设为主讲"
         v-if="
           user.user.role === 1 &&
-          String(stream.userId_) !== String(user.user.imAccount)
+          String(stream.userId_) !== String(live.liveSpeaker.userId)
         "
         @click="handleIconClick('speaker', stream)"
       ></i>
@@ -42,6 +42,7 @@ export default {
   computed: {
     ...mapState({
       user: ({ user }) => user,
+      live: ({ live }) => live,
       roomId: ({ router: { params } }) => params?.roomId,
     }),
   },

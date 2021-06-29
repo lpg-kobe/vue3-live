@@ -69,17 +69,17 @@ export function debounce(
   fn,
   wait,
   immediate,
-  context
+  ...args
 ) {
   wait = wait || 250;
   let timer = null;
   return function () {
     if (immediate) {
-      fn.apply(this, [...arguments, context]);
+      fn.apply(this, [...args]);
     }
     clearTimeout(timer);
     timer = setTimeout(() => {
-      fn.apply(this, [...arguments, context]);
+      fn.apply(this, [...args]);
     }, wait);
   };
 }
