@@ -257,6 +257,7 @@ export default {
         eventEmitter.event?.live?.toggleMedia,
         this.onMediaToggle
       )
+      eventEmitter.off(eventEmitter.event?.live?.playStream, this.onPlayStream)
       eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -275,6 +276,7 @@ export default {
     bindEvent() {
       eventEmitter.on(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
       eventEmitter.on(eventEmitter.event?.live?.toggleMedia, this.onMediaToggle)
+      eventEmitter.on(eventEmitter.event?.live?.playStream, this.onPlayStream)
       eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -315,7 +317,11 @@ export default {
           const codeAction = {
             // 直播间结束
             1027: () => {
-              this.destroyRoom()
+              // 后台结束流会自动断开，直播间trtc所有操作无需干预，只管清空页面状态
+              ElMessageBox.alert('直播间已结束', '温馨提示', {
+                confirmButtonText: '好的',
+                callback: () => window.location.reload(),
+              })
             },
 
             // 邀请直播消息
@@ -398,7 +404,7 @@ export default {
                 String(payloadData.guestId) == String(this.user.user.imAccount)
               if (payloadData.isAuthorStopLive) {
                 // 主播推送当前嘉宾下麦
-                isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
+                isGuestSelf && this.clearLiveDataOfUser(false)
               }
             },
             // 直播中媒体设备开关消息
@@ -438,44 +444,46 @@ export default {
     async onGetRemoteStream(event) {
       let isSpeaker = false
       const { stream } = event
+      const remoteIsInList = this.live.liveStreamList.some(
+        ({ userId_ }) => String(userId_) === String(stream.userId_)
+      )
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
-        const { status, data } = await this.$store.dispatch({
+        const { data } = await this.$store.dispatch({
           type: 'live/getMembers',
           payload: {
             roomid: this.roomId,
           },
         })
 
-        if (!status) {
-          return
-        }
-
-        const mainSpeaker = data.find(({ isMainSpeaker }) => isMainSpeaker)
+        const mainSpeaker = data?.find(({ isMainSpeaker }) => isMainSpeaker)
         this.$store.commit('live/setState', {
           key: 'liveSpeaker',
           value: {
-            userId: mainSpeaker.memberId,
+            userId: mainSpeaker?.memberId,
           },
         })
-        isSpeaker = String(mainSpeaker.memberId) === String(stream.userId_)
+        isSpeaker = String(mainSpeaker?.memberId) === String(stream.userId_)
       } else {
         isSpeaker =
           String(this.live.liveSpeaker.userId) === String(stream.userId_)
       }
 
-      this.$store.commit('live/setState', [
-        {
+      if (!remoteIsInList) {
+        this.$store.commit('live/setState', {
           key: 'liveStreamList',
           value: [
             ...this.live.liveStreamList,
             Object.assign(stream, {
-              isOpenMic: isSpeaker,
+              isOpenMic: true,
               isOpenCamera: true,
             }),
           ],
-        },
+        })
+      }
+
+      this.$store.commit('live/setState', [
         {
           key: 'liveStart',
           value: true,
@@ -484,13 +492,28 @@ export default {
 
       this.mainStreamList = this.filterLiveStream()
       this.$nextTick(() => {
-        !isSpeaker &&
+        if (isSpeaker) {
+          // only play once if stream haven`t played in dom & other will be handle in component of speaker
+          !stream.isPlaying?.() && this.tryToPlayStream(stream, 'speakerId')
+        } else {
           this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
+        }
       })
     },
 
     onStreamRemoved(event) {
       const { stream } = event
+      // removed stream must stop & replay in new dom if it has been play in other dom
+      stream?.stop?.()
+      const remoteIsSpeaker =
+        String(stream.userId_) === String(this.live.liveSpeaker.userId)
+      // 主播收回移除的主讲权
+      if (this.user.user.role === 1 && remoteIsSpeaker) {
+        eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
+          userId_: this.user.user.imAccount,
+          nick: this.user.user.nick,
+        })
+      }
       this.$store.commit('live/setState', {
         key: 'liveStreamList',
         value: this.filterLiveStream(stream.userId_),
@@ -643,6 +666,14 @@ export default {
       this.mainStreamList = this.filterLiveStream()
     },
 
+    /**
+     * @desc on play stream event emit
+     * @param {Object} stream 直播流 target 播放元素
+     **/
+    onPlayStream({ data: { stream, target } }) {
+      this.tryToPlayStream(stream, target)
+    },
+
     /** 主播开始直播，主播上麦默认主讲人 */
     async onAnchorStart() {
       if (this.live.liveJoinStatus !== 1) {
@@ -710,10 +741,10 @@ export default {
       )
     },
 
-    /** 主播邀请直播 */
+    /** 主播邀请直播，仅当前主播用户可操作 */
     async onAnchorInvite() {},
 
-    /** 主播结束直播 */
+    /** 主播结束直播，仅当前主播用户可操作 */
     async onAnchorStop() {
       this.$store.commit('live/setState', {
         key: 'liveToggleLoading',
@@ -729,7 +760,7 @@ export default {
       })
     },
 
-    /** 主播设置主讲人 */
+    /** 主播设置主讲人，仅当前主播用户可操作 */
     async onAnchorSetSpeaker({ data }) {
       const { status } = await this.$store.dispatch({
         type: 'live/setMainSpeaker',
@@ -742,21 +773,21 @@ export default {
         return
       }
       // this.startMixStream()
-      ElMessage.success(`已将${data?.nick}设为主讲人`)
+      ElMessage.success(`${data?.nick}已成为新的主讲人`)
     },
 
-    /** 嘉宾申请上麦 */
+    /** 嘉宾申请上麦，仅当前嘉宾用户可操作 */
     async onGuestApply() {
       await this.$store.dispatch({
         type: 'live/applyLive',
         payload: {
           roomid: this.roomId,
         },
+        callback: () => ElMessage.success('上麦申请已发送'),
       })
-      ElMessage.success('上麦申请已发送')
     },
 
-    /** 嘉宾开始上麦 */
+    /** 嘉宾开始上麦，仅当前嘉宾用户可操作 */
     async onGuestStart() {
       if (this.live.liveJoinStatus !== 1) {
         await this.joinTrtc()
@@ -811,12 +842,13 @@ export default {
       )
     },
 
-    /** 嘉宾下麦 */
+    /** 嘉宾下麦，仅当前嘉宾用户可操作 */
     async onGuestStop() {
       this.$store.commit('live/setState', {
         key: 'liveToggleLoading',
         value: true,
       })
+
       this.clearLiveDataOfUser(false)
       this.$store.dispatch({
         type: 'live/guestStopLive',
@@ -857,27 +889,49 @@ export default {
     },
 
     /** clear data of user after user stop live */
-    async clearLiveDataOfUser(isAnchor) {
-      // isAnchor && (await this.stopMixStream())
-      await this.trtcClient.cancelPublish()
-      this.trtcClient.stream.stop()
-      this.$store.commit('live/setState', [
-        {
-          key: 'liveStreamList',
-          value: isAnchor
-            ? []
-            : this.filterLiveStream(this.trtcClient.stream.userId_),
-        },
-        // {
-        //   key: 'liveJoinStatus',
-        //   value: 0,
-        // },
-        {
-          key: 'liveToggleLoading',
-          value: false,
-        },
-      ])
-      this.mainStreamList = this.filterLiveStream()
+    clearLiveDataOfUser(isAnchor) {
+      return new Promise(async (resolve) => {
+        const userIsSpeaker =
+          String(this.user.user.imAccount) ===
+          String(this.live.liveSpeaker.userId)
+        await this.trtcClient.cancelPublish()
+        this.trtcClient.stream.stop()
+
+        if (isAnchor) {
+          // await this.stopMixStream()
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveStreamList',
+              value: [],
+            },
+          ])
+        } else {
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveStreamList',
+              value: this.filterLiveStream(this.trtcClient.stream.userId_),
+            },
+          ])
+          // 嘉宾下麦归还主讲人至主播
+          userIsSpeaker &&
+            this.$store.commit('live/setState', {
+              key: 'liveSpeaker',
+              value: {
+                userId: this.live.liveMembers.find(({ role }) => role === 1)
+                  ?.memberId,
+              },
+            })
+        }
+
+        this.mainStreamList = this.filterLiveStream()
+        this.$store.commit('live/setState', [
+          {
+            key: 'liveToggleLoading',
+            value: false,
+          },
+        ])
+        resolve('success to clear live data of user...')
+      })
     },
 
     /** destroy room & clear store of live */
@@ -894,10 +948,6 @@ export default {
           key: 'liveStreamList',
           value: [],
         },
-        // {
-        //   key: 'liveJoinStatus',
-        //   value: 0,
-        // },
         {
           key: 'liveSpeaker',
           value: {
@@ -923,18 +973,27 @@ export default {
 
     /** try to play & handle error */
     tryToPlayStream(stream, target, options = {}) {
-      stream.play(target, options).then(
-        () => {
-          console.log('yes!!! success to play remote stream')
-        },
-        (err) => {
-          const errorCode = err?.getCode?.()
-          if (errorCode === 0x4043) {
-            // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
-            // stream.resume()
-          }
+      return new Promise((resolve) => {
+        if (!document.getElementById(target)) {
+          resolve(false)
+          return
         }
-      )
+        stream.play(target, options).then(
+          () => {
+            resolve(true)
+            console.log('yes!!! success to play remote stream')
+          },
+          (err) => {
+            resolve(false)
+            console.warn('ohh~~ fail to play remote video')
+            const errorCode = err?.getCode?.()
+            if (errorCode === 0x4043) {
+              // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
+              // stream.resume()
+            }
+          }
+        )
+      })
     },
   },
 }
@@ -957,7 +1016,6 @@ export default {
         white-space: nowrap;
         word-break: keep-all;
         text-overflow: ellipsis;
-        z-index: 4;
         top: 10px;
         left: 10px;
         width: calc(100% - 10px);

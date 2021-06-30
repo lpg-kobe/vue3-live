@@ -118,7 +118,7 @@ export default {
       this.$store.dispatch({
         type: 'user/sendSms',
         payload: {
-          mobile: this.smsForm.phone,
+          mobile: this.smsForm.mobile,
         },
         callback: () => {
           ElMessage.success('验证码已发送')

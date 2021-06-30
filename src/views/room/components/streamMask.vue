@@ -1,5 +1,5 @@
 <template>
-  <div class="stream-mask flex-center">
+  <div class="stream-mask flex-center" v-if="judgeAnchorOrSelf(stream)">
     <div class="mask-menu flex-center">
       <i
         class="icon icon-user"
@@ -12,19 +12,21 @@
       ></i>
       <i
         :class="`icon icon-${stream.isOpenCamera ? 'camera' : 'uncamera'}`"
-        v-if="judgeAnchorOrSelf(stream)"
         :title="`${stream.isOpenCamera ? '关闭' : '开启'}摄像头`"
         @click="handleIconClick('camera', stream)"
       ></i>
       <i
         :class="`icon icon-${stream.isOpenMic ? 'mic' : 'unmic'}`"
-        v-if="judgeAnchorOrSelf(stream)"
         :title="`${stream.isOpenMic ? '关闭' : '开启'}麦克风`"
         @click="handleIconClick('mic', stream)"
       ></i>
       <i
         class="icon icon-hand"
-        v-if="judgeAnchorOrSelf(stream)"
+        v-if="
+          user.user.role === 1
+            ? String(stream.userId_) !== String(user.user.imAccount)
+            : String(stream.userId_) === String(user.user.imAccount)
+        "
         title="下麦"
         @click="handleIconClick('live', stream)"
       ></i>
@@ -93,11 +95,19 @@ export default {
           const isSelf =
             String(payload.userId_) === String(this.user.user.imAccount)
           const targetIsAnchor = payload.role === 1
+          const targetIsSpeaker =
+            String(payload.userId_) === String(this.live.liveSpeaker?.userId)
           if (isSelf) {
             targetIsAnchor
               ? eventEmitter.emit(eventEmitter.event.anchor.stop)
               : eventEmitter.emit(eventEmitter.event.guest.stop)
           } else {
+            // 主播推送嘉宾下麦并夺回主讲权
+            targetIsSpeaker &&
+              eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
+                userId_: this.user.user.imAccount,
+                nick: this.user.user.nick,
+              })
             this.$store.dispatch({
               type: 'live/guestStopLive',
               payload: {

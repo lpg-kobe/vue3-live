@@ -6,13 +6,18 @@
     @mouseout="onLiveStreamMouse(0)"
   >
     <div id="speakerId"></div>
-    <div class="controll-layer">
+    <div
+      class="controll-layer"
+      v-if="String(speaker.userId_) === String(user.user.imAccount)"
+    >
       <!-- <i class="icon icon-switch" @click="handleIconClick('switch')"></i> -->
       <i
         class="icon icon-full-screen"
         @click="handleIconClick('screen')"
         title="全屏"
       ></i>
+    </div>
+    <div class="stream-label">
       <label class="label-name">{{ speaker.nick }}</label>
     </div>
     <stream-mask v-show="speakerMaskShow" :stream="speaker" />
@@ -65,10 +70,19 @@ export default {
         // old stream must stop & replay in new dom if it has been play in other dom
         await oldSpeaker?.stop()
         await newSpeaker?.stop()
+        // 主讲人跟视频流列表画面交换
         this.$nextTick(() => {
-          oldSpeaker?.play(`live_stream_${oldSpeaker.userId_}`)
+          oldSpeaker &&
+            eventEmitter.emit(eventEmitter.event.live.playStream, {
+              stream: oldSpeaker,
+              target: `live_stream_${oldSpeaker.userId_}`,
+            })
+          newSpeaker &&
+            eventEmitter.emit(eventEmitter.event.live.playStream, {
+              stream: newSpeaker,
+              target: 'speakerId',
+            })
         })
-        newSpeaker?.play('speakerId')
       },
       immediate: true,
     },
@@ -130,20 +144,19 @@ export default {
 
 <style lang="scss" scoped>
 .ofweek-speaker {
+  .stream-label {
+    font-size: 14px;
+    color: #fff;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+  }
   .controll-layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-
-    .label-name {
-      font-size: 14px;
-      color: #fff;
-      position: absolute;
-      left: 10px;
-      bottom: 10px;
-    }
 
     .icon {
       z-index: 10;
