@@ -1,5 +1,5 @@
 <template>
-  <div class="ofweek-live-container flex-column">
+  <div class="ofweek-live-wrap flex-column">
     <media-check
       :visible="mediaSelVisible"
       :client="trtcClient"
@@ -28,7 +28,9 @@
         <stream-mask v-show="item.maskShow" :stream="item" />
       </div>
     </div>
-    <div class="live-main-view flex-center">ppt</div>
+    <div class="live-main-view flex-center">
+      <!-- <ppt /> -->
+    </div>
     <el-dialog
       title="提示"
       :close-on-click-modal="false"
@@ -61,11 +63,12 @@
 <script>
 import { mapState } from 'vuex'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { IM_EVENT } from '../../../sdk/imLive'
-import MediaCheck from './mediaCheck.vue'
-import StreamMask from './streamMask.vue'
-import Img from '../../../components/img/index.vue'
-import { eventEmitter } from '../../../utils/event'
+import { IM_EVENT } from '../../../../sdk/imLive'
+import MediaCheck from '../mediaCheck.vue'
+import StreamMask from '../streamMask.vue'
+import Ppt from '../ppt/index.vue'
+import Img from '../../../../components/img/index.vue'
+import { eventEmitter } from '../../../../utils/event'
 
 export default {
   name: 'live',
@@ -73,6 +76,7 @@ export default {
   components: {
     MediaCheck,
     Img,
+    Ppt,
     StreamMask,
   },
 
@@ -91,7 +95,6 @@ export default {
 
   created() {
     this.joinTrtc()
-    this.initLive()
     this.unbindEvent()
     this.bindEvent()
   },
@@ -167,41 +170,6 @@ export default {
               )
           },
         })
-      })
-    },
-
-    // init live data before do anything, will move other in feature
-    initLive() {
-      this.$store.dispatch({
-        type: 'room/getroom',
-        payload: {
-          roomid: this.roomId,
-        },
-      })
-      this.$store.dispatch({
-        type: 'live/getMembers',
-        payload: {
-          roomid: this.roomId,
-        },
-        callback: (members) => {
-          // init room speaker
-          const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
-          this.$store.commit('live/setState', {
-            key: 'liveSpeaker',
-            value: {
-              ...speaker,
-              userId: speaker.memberId,
-            },
-          })
-        },
-      })
-
-      // get user in room, will move feature
-      this.$store.dispatch({
-        type: 'room/entryroom',
-        payload: {
-          roomid: this.roomId,
-        },
       })
     },
 
@@ -972,7 +940,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.ofweek-live-container {
+.ofweek-live-wrap {
   .remote-view {
     background: #2c2c2c;
     .wrap-item {
@@ -1006,8 +974,8 @@ export default {
     }
   }
   .live-main-view {
-    background: red;
-    height: calc(100% * 9 / 16);
+    min-height: 460px;
+    // height: calc(100% * 9 / 16);
   }
 }
 </style>

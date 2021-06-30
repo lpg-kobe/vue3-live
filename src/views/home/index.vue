@@ -1,18 +1,13 @@
-<template>
-  <Live />
-</template>
+<template></template>
 <script>
-import { mapState } from "vuex";
-import Live from "./components/live.vue";
+import { mapState } from 'vuex'
 export default {
-  name: "home",
-  components: {
-    Live,
-  },
+  name: 'home',
+  components: {},
   computed: {
-    ...mapState([""]),
+    ...mapState(['']),
   },
   created() {},
-};
+}
 </script>
  

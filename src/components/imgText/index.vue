@@ -1,50 +1,75 @@
 <template>
-  <div class="container_tiem">
-
+  <div class="wrap-container">
     <div class="tabs">
       <ul>
-        <li v-for="(item, index) in tab" :class="{active: active === item.menuType}" @click="clickTab(item.menuType)" :key="index" :title="tabTransEn(item.menuType)">{{ tabTransEn(item.menuType) }}</li>
+        <li
+          v-for="(item, index) in tab"
+          :class="{ active: active === item.menuType }"
+          @click="clickTab(item.menuType)"
+          :key="index"
+          :title="tabTransEn(item.menuType)"
+        >
+          {{ tabTransEn(item.menuType) }}
+        </li>
       </ul>
-      <div class="fr questionnaire_btn" @click="showQuesListDialog" v-show="questionnaireBtnShow"><span class="dot">{{ $t('questionnaire.survey') }}</span></div>
+      <div
+        class="fr questionnaire_btn"
+        @click="showQuesListDialog"
+        v-show="questionnaireBtnShow"
+      >
+        <span class="dot">{{ $t('questionnaire.survey') }}</span>
+      </div>
     </div>
 
     <div v-show="active === 6" class="tabs_con">
-      <introduce/>
+      <introduce />
     </div>
 
     <div v-show="active === 2" class="tabs_con">
-      <img-text-list :data="imgTextDataList" :isLoading="imgTextLoading" :isOver="imgTextIsover"/>
+      <img-text-list
+        :data="imgTextDataList"
+        :isLoading="imgTextLoading"
+        :isOver="imgTextIsover"
+      />
     </div>
 
     <div v-show="active === 4" class="tabs_con">
-      <product/>
+      <product />
     </div>
 
     <div v-show="active === 5" class="tabs_con">
-      <download :data="downloadDataList" :isLoading="downloadLoading" :isOver="downloadIsover"/>
+      <download
+        :data="downloadDataList"
+        :isLoading="downloadLoading"
+        :isOver="downloadIsover"
+      />
     </div>
-
   </div>
 </template>
 
 <script>
-import { IM_EVENT } from "../../sdk/imLive"
+import { IM_EVENT } from '../../sdk/imLive'
 import imgTextList from './imgText.vue'
 import product from './product.vue'
 import download from './download.vue'
 import introduce from './introduce.vue'
 // import question from './components/question'
 import { mapState, mapGetters, mapMutations } from 'vuex'
-import { imagetextGetmoremsg, getroomdata, getQuestionnaireOne, getRoomQuestionnaireList } from '../../services/room/index.js'
+import {
+  imagetextGetmoremsg,
+  getroomdata,
+  getQuestionnaireOne,
+  getRoomQuestionnaireList,
+} from '../../services/room/index.js'
 export default {
   name: 'imgText',
-  data () {
+  data() {
     return {
       defineTab: [
         { menuType: 6, name: '活动介绍', sort: 0 },
         { menuType: 2, name: '图文直播', sort: 0 },
         { menuType: 4, name: '产品展示', sort: 0 },
-        { menuType: 5, name: '资料下载', sort: 0 }
+        { menuType: 5, name: '资料下载', sort: 0 },
       ],
       tab: [],
       active: 0,
@@ -65,12 +90,12 @@ export default {
       quesListRequireData: [],
       questionDialog: false,
       questionData: {},
-      questionnaireBtnShow: false
+      questionnaireBtnShow: false,
     }
   },
   computed: {
     ...mapState({
-      imClient: ({ imClient }) => imClient
+      imClient: ({ imClient }) => imClient,
     }),
     ...mapGetters({
       roomId: 'room/roomId',
@@ -78,8 +103,8 @@ export default {
       isVisitorLogin: 'user/isVisitorLogin',
       liveStatus: 'room/liveStatus',
       phoneRegisterShow: 'user/phoneRegisterShow',
-      user: 'user/user'
-    })
+      user: 'user/user',
+    }),
   },
   components: {
     imgTextList,
@@ -90,25 +115,25 @@ export default {
   },
   methods: {
     ...mapMutations([
-      'setDialogShopVideo',
+      // 'setDialogShopVideo',
       'openLogin',
-      'openCard'
+      'openCard',
     ]),
-    clickTab (index) {
+    clickTab(index) {
       this.active = index
     },
-    tabTransEn (type) {
+    tabTransEn(type) {
       switch (type) {
-        case 2 :
+        case 2:
           return this.$t('menu.type2')
           break
-        case 4 :
+        case 4:
           return this.$t('menu.type4')
           break
-        case 5 :
+        case 5:
           return this.$t('menu.type5')
           break
-        case 6 :
+        case 6:
           if (this.roomId === '211') {
             return 'Presentation'
           } else {
@@ -117,11 +142,15 @@ export default {
           break
       }
     },
-    getImgTextData () {
+    getImgTextData() {
       if (this.imgTextIsover) return
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.imgTextLoading = true
-        imagetextGetmoremsg({ msgId: this.imgTextMsgId, roomId: this.roomId, size: 20 }).then(({ data }) => {
+        imagetextGetmoremsg({
+          msgId: this.imgTextMsgId,
+          roomId: this.roomId,
+          size: 20,
+        }).then(({ data }) => {
           let res = data
           let _arr = res.data
           if (_arr.length < 20) {
@@ -137,13 +166,16 @@ export default {
         })
       })
     },
-    getDownloadData () {
+    getDownloadData() {
       if (this.downloadIsover) return
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         this.downloadLoading = true
         getroomdata(this.downloadQuery).then(({ data }) => {
           let res = data
-          if (res.data.totalPage === this.downloadQuery.pagenum || res.data.totalPage === 0) {
+          if (
+            res.data.totalPage === this.downloadQuery.pagenum ||
+            res.data.totalPage === 0
+          ) {
             this.downloadIsover = true
           } else {
             this.downloadQuery.pagenum++
@@ -155,22 +187,30 @@ export default {
       })
     },
     scrollTop() {
-      return Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+      return Math.max(
+        document.body.scrollTop,
+        document.documentElement.scrollTop
+      )
     },
-    documentHeight () {
-      return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);
+    documentHeight() {
+      return Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      )
     },
-    windowHeight () {
-      return (document.compatMode == "CSS1Compat") ? document.documentElement.clientHeight : document.body.clientHeight;
+    windowHeight() {
+      return document.compatMode == 'CSS1Compat'
+        ? document.documentElement.clientHeight
+        : document.body.clientHeight
     },
-    compare (property) {
-      return function(a,b) {
-        var value1 = a[property];
-        var value2 = b[property];
+    compare(property) {
+      return function (a, b) {
+        var value1 = a[property]
+        var value2 = b[property]
         return value2 - value1
       }
     },
-    showQuesListDialog () {
+    showQuesListDialog() {
       if (this.isVisitorLogin) {
         this.openLogin(false)
         return
@@ -184,47 +224,49 @@ export default {
       } else if (this.quesListData.length > 1) {
         this.quesListDialog = true
         if (this.quesListRequireData.includes(1)) {
-          this.setDialogShopVideo(true)
+          // this.setDialogShopVideo(true)
         }
       }
     },
-    beforeCloseQuesList (done) {
+    beforeCloseQuesList(done) {
       // 列表中有必填问卷
       if (this.quesListRequireData.includes(1)) {
         this.$confirm(this.$t('common.closeQuit'), this.$t('common.hint'), {
           confirmButtonText: this.$t('common.affirm'),
           cancelButtonText: this.$t('common.cancel'),
-          type: "warning",
-        }).then(() => {
-
-        }).catch(action => {
-          if (action === 'cancel') {
-            window.location.href = 'https://live.ofweek.com/'
-          }
+          type: 'warning',
         })
+          .then(() => {})
+          .catch((action) => {
+            if (action === 'cancel') {
+              window.location.href = 'https://live.ofweek.com/'
+            }
+          })
       } else {
-        this.setDialogShopVideo(false)
+        // this.setDialogShopVideo(false)
         done()
       }
     },
-    showQuestion (id) {
+    showQuestion(id) {
       if (this.user.isCompletedInfo === 0) {
         this.openCard(false)
         return
       }
-      getQuestionnaireOne({roomid: this.roomId, questionnaireid: id}).then(({ data }) => {
-        let res = data
-        this.questionData = res.data
-        if (this.questionData.questionnaireType === 1) {
-          this.setDialogShopVideo(true)
+      getQuestionnaireOne({ roomid: this.roomId, questionnaireid: id }).then(
+        ({ data }) => {
+          let res = data
+          this.questionData = res.data
+          if (this.questionData.questionnaireType === 1) {
+            // this.setDialogShopVideo(true)
+          }
+          this.quesListDialog = false
+          this.questionDialog = true
         }
-        this.quesListDialog = false
-        this.questionDialog = true
-      })
+      )
     },
-    closeQuestionDialog () {
+    closeQuestionDialog() {
       this.questionDialog = false
-      this.setDialogShopVideo(false)
+      // this.setDialogShopVideo(false)
       if (this.quesListRequireData.includes(1)) {
         this.showQuesListDialog()
       }
@@ -232,7 +274,7 @@ export default {
         this.questionnaireBtnShow = true
       }
     },
-    quesChange (val) {
+    quesChange(val) {
       this.quesListData.forEach((item, index) => {
         if (item.questionnaireId == val) {
           this.quesListData.splice(index, 1)
@@ -245,39 +287,39 @@ export default {
     },
     bindEvent() {
       if (!this.imClient) {
-        return;
+        return
       }
-      this.imClient.on(IM_EVENT?.msgReceive, this.onMsgReceive);
+      this.imClient.on(IM_EVENT?.msgReceive, this.onMsgReceive)
     },
 
     onMsgReceive({ data }) {
       try {
         for (let i = 0, len = data.length; i < len; i++) {
-          const msg = data[i];
-          const payloadData = JSON.parse(msg.payload?.data);
+          const msg = data[i]
+          const payloadData = JSON.parse(msg.payload?.data)
           let msgCode = payloadData.msgCode
           if (payloadData.roomId != this.roomId) {
             return
           }
           switch (String(msgCode)) {
             // 广播图文直播消息
-            case "1001":
+            case '1001':
               console.log('广播图文直播消息1001')
               console.log(payloadData)
               this.imgTextDataList.unshift(payloadData)
               break
 
             // 删除图文消息
-            case "1016":
+            case '1016':
               console.log('删除图文消息1016')
               console.log(payloadData)
-              this.imgTextDataList = this.imgTextDataList.filter(item => {
-                return item.msgId == payloadData.msgId ? false : true;
+              this.imgTextDataList = this.imgTextDataList.filter((item) => {
+                return item.msgId == payloadData.msgId ? false : true
               })
               break
 
             // 更新图文消息
-            case "1022":
+            case '1022':
               console.log('更新图文消息1022')
               console.log(payloadData)
               this.imgTextDataList.forEach((item, index) => {
@@ -289,11 +331,15 @@ export default {
               })
               break
             // 发送直播间问卷
-            case "1026":
+            case '1026':
               console.log('发送直播间问卷1026')
               console.log(payloadData)
               // 已答过该问卷
-              if (payloadData.alreadyMemberIds.includes(Number(this.user.imAccount))) {
+              if (
+                payloadData.alreadyMemberIds.includes(
+                  Number(this.user.imAccount)
+                )
+              ) {
                 return
               }
               // 如果登录了且已经完善名片直接显示问卷
@@ -302,27 +348,35 @@ export default {
               }
               // 判断列表中是否已存在
               let _arr = this.quesListData.some((item, index) => {
-                return item.questionnaireId == payloadData.questionnaireDto.questionnaireId
+                return (
+                  item.questionnaireId ==
+                  payloadData.questionnaireDto.questionnaireId
+                )
               })
               if (!_arr) {
                 this.quesListData.push({
                   isSend: 1,
                   questionnaireId: payloadData.questionnaireDto.questionnaireId,
-                  questionnaireIntroduction: payloadData.questionnaireDto.questionnaireIntroduction,
-                  questionnaireTitle: payloadData.questionnaireDto.questionnaireTitle,
-                  questionnaireType: payloadData.questionnaireDto.questionnaireType
+                  questionnaireIntroduction:
+                    payloadData.questionnaireDto.questionnaireIntroduction,
+                  questionnaireTitle:
+                    payloadData.questionnaireDto.questionnaireTitle,
+                  questionnaireType:
+                    payloadData.questionnaireDto.questionnaireType,
                 })
-                this.quesListRequireData.push(payloadData.questionnaireDto.questionnaireType)
+                this.quesListRequireData.push(
+                  payloadData.questionnaireDto.questionnaireType
+                )
               }
               break
           }
         }
       } catch (err) {
-        console.warn("fail to pass msg of im");
+        console.warn('fail to pass msg of im')
       }
-    }
+    },
   },
-  created () {
+  created() {
     this.bindEvent()
     // 显示后台配置的tab菜单
     this.room.menulist.forEach((item) => {
@@ -341,8 +395,8 @@ export default {
       let _questionnaireDtoList = this.room.questionnaireDtoList
 
       if (this.isVisitorLogin) {
-        getRoomQuestionnaireList({roomid: this.roomId}).then(res => {
-          let list = res.data.filter(item => {
+        getRoomQuestionnaireList({ roomid: this.roomId }).then((res) => {
+          let list = res.data.filter((item) => {
             return item.isSend === 1
           })
           if (list.length > 0) {
@@ -362,7 +416,11 @@ export default {
             this.questionnaireBtnShow = true
           }
 
-          if (this.quesListData.length == 1 && this.user.isCompletedInfo === 1 && !this.phoneRegisterShow) {
+          if (
+            this.quesListData.length == 1 &&
+            this.user.isCompletedInfo === 1 &&
+            !this.phoneRegisterShow
+          ) {
             this.showQuestion(this.quesListData[0].questionnaireId)
           } else if (this.quesListData.length > 1) {
             this.showQuesListDialog()
@@ -379,25 +437,28 @@ export default {
     setTimeout(() => {
       window.onscroll = () => {
         // console.log(this.scrollTop(),this.windowHeight(),this.documentHeight())
-        if(this.scrollTop() + this.windowHeight() >= (this.documentHeight() - 50)){
+        if (
+          this.scrollTop() + this.windowHeight() >=
+          this.documentHeight() - 50
+        ) {
           // console.log('bottom')
-            if (this.active === 2) {
-              if (this.imgTextIsover || this.imgTextLoading) {
-                return
-              } else {
-                this.getImgTextData()
-              }
-            } else if (this.active === 5) {
-              if (this.downloadIsover || this.downloadLoading) {
-                return
-              } else {
-                this.getDownloadData()
-              }
+          if (this.active === 2) {
+            if (this.imgTextIsover || this.imgTextLoading) {
+              return
+            } else {
+              this.getImgTextData()
             }
+          } else if (this.active === 5) {
+            if (this.downloadIsover || this.downloadLoading) {
+              return
+            } else {
+              this.getDownloadData()
+            }
+          }
         }
       }
     }, 1)
-  }
+  },
 }
 </script>
 
@@ -406,8 +467,8 @@ export default {
   max-width: 160px;
   height: 34px;
   margin-top: 8px;
-  border:1px solid #2691E9;
-  border-radius:4px;
+  border: 1px solid #2691e9;
+  border-radius: 4px;
   font-size: 0;
   text-align: center;
   cursor: pointer;
@@ -416,7 +477,7 @@ export default {
     display: inline-block;
     width: 100%;
     font-size: 14px;
-    color: #2691E9;
+    color: #2691e9;
     line-height: 32px;
     padding: 0 5px 0 30px;
     background: url(../../assets/wj_icon.png) no-repeat 6px center;
@@ -436,7 +497,7 @@ export default {
       line-height: 32px;
 
       .ques-list-require {
-        color: #E65E50;
+        color: #e65e50;
       }
     }
   }

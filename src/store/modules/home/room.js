@@ -95,12 +95,11 @@ export default {
 
         callback?.(data)
       }
-      return { status, data}
+      return { status, data }
     },
 
-    async entryroom({ commit, dispatch }, { payload, callback }) {
+    async entryroom({ commit }, { payload, callback }) {
       const { status, data } = await entryroom(payload)
-      console.log(data, 'entryroom进入房间成功')
 
       if (status) {
         // 保存用户信息
@@ -133,9 +132,9 @@ export default {
         //     this.setTrtcPrivateSig(data.data.trtcPrivateSig)
         //   }
         // })
-        
+
         // 获取账号的要完善信息
-        await getcompleteinfo().then( ({ data }) => {
+        await getcompleteinfo().then(({ data }) => {
           if (data.code === 0) {
             // this.setUserInfo(data.data)
             let _name = ''

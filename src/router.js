@@ -4,7 +4,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { getUserSession } from './utils/session'
 import Home from './views/home/index.vue'
-import Room from './views/home/room.vue'
+import Room from './views/room/index.vue'
 import Login from './views/login/index.vue'
 import store from './store'
 import { VITE_publicPath } from './constants'
@@ -16,8 +16,8 @@ const router = createRouter({
     path: '/',
     name: 'home',
     meta: {
-      initIm: true,
-      initTrtc: true,
+      initIm: false,
+      initTrtc: false,
     },
     component: Home
   }, {
@@ -33,7 +33,7 @@ const router = createRouter({
     name: 'room',
     meta: {
       initIm: true,
-      initTrtc: false,
+      initTrtc: true,
     },
     component: Room
   }]
@@ -60,6 +60,10 @@ function initRouterMeta(to) {
   })
   initIm && store.dispatch({
     type: 'initIm',
+    payload: {}
+  })
+  initTrtc && store.dispatch({
+    type: 'initTrtc',
     payload: {}
   })
 }

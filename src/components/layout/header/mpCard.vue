@@ -1,11 +1,19 @@
 <template>
   <div class="card-shadow" v-show="cardShow">
     <div class="card-dialog">
-      <div class="iconfont card-dialog-close" @click="closeCardFn">&#xe615;</div>
+      <div class="iconfont card-dialog-close" @click="closeCardFn">
+        &#xe615;
+      </div>
       <h3 class="card-title">{{ $t('card.cardTitle') }}</h3>
       <div class="iconfont triangle">&#xe616;</div>
       <div class="card-bd">
-        <el-form :model="cardData" :rules="rules" ref="cardForm" label-width="130px" class="card-form">
+        <el-form
+          :model="cardData"
+          :rules="rules"
+          ref="cardForm"
+          label-width="130px"
+          class="card-form"
+        >
           <el-form-item :label="$t('card.nickName')" prop="nick">
             <el-input v-model="cardData.nick"></el-input>
           </el-form-item>
@@ -24,35 +32,80 @@
           <el-form-item :label="$t('card.position')" prop="department">
             <el-input v-model="cardData.department"></el-input>
           </el-form-item>
-          <el-form-item :label="$t('card.countries1')" prop="address" required :validate-event="false">
-            <el-select class="card-select" v-model="cardData.address.countryCode" :placeholder="$t('card.countries2')" :validate-event="false">
-              <el-option v-for="(item, index) of countryList" :key="index" :label="item.valueDescription" :value="item.value"></el-option>
+          <el-form-item
+            :label="$t('card.countries1')"
+            prop="address"
+            required
+            :validate-event="false"
+          >
+            <el-select
+              class="card-select"
+              v-model="cardData.address.countryCode"
+              :placeholder="$t('card.countries2')"
+              :validate-event="false"
+            >
+              <el-option
+                v-for="(item, index) of countryList"
+                :key="index"
+                :label="item.valueDescription"
+                :value="item.value"
+              ></el-option>
             </el-select>
-            <el-select class="card-select" v-model="cardData.address.provinceCode" :placeholder="$t('card.province')" :validate-event="false" :disabled="disabled1">
-              <el-option v-for="(item, index) of provinceList" :key="index" :label="item.valueDescription" :value="item.value"></el-option>
+            <el-select
+              class="card-select"
+              v-model="cardData.address.provinceCode"
+              :placeholder="$t('card.province')"
+              :validate-event="false"
+              :disabled="disabled1"
+            >
+              <el-option
+                v-for="(item, index) of provinceList"
+                :key="index"
+                :label="item.valueDescription"
+                :value="item.value"
+              ></el-option>
             </el-select>
-            <el-select class="card-select" v-model="cardData.address.cityCode" :placeholder="$t('card.city')" :validate-event="false" :disabled="disabled2">
-              <el-option v-for="(item, index) of cityList" :key="index" :label="item.name" :value="item.name"></el-option>
+            <el-select
+              class="card-select"
+              v-model="cardData.address.cityCode"
+              :placeholder="$t('card.city')"
+              :validate-event="false"
+              :disabled="disabled2"
+            >
+              <el-option
+                v-for="(item, index) of cityList"
+                :key="index"
+                :label="item.name"
+                :value="item.name"
+              ></el-option>
             </el-select>
           </el-form-item>
           <el-form-item :label="$t('card.address')" prop="detail">
             <el-input v-model="cardData.address.detail"></el-input>
           </el-form-item>
         </el-form>
-        <div class="card-sub-btn" @click="cardSendBtn">{{ $t('card.submit') }}</div>
+        <div class="card-sub-btn" @click="cardSendBtn">
+          {{ $t('card.submit') }}
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { getcountry, getprovince, getcompleteinfo, updatecompleteinfo, checkmemberphoneoremail } from '../../services/room/index.js'
+import {
+  getcountry,
+  getprovince,
+  getcompleteinfo,
+  updatecompleteinfo,
+  checkmemberphoneoremail,
+} from '../../../services/room/index.js'
 import { cityData } from '@/assets/js/city-data'
 import { mapGetters, mapMutations } from 'vuex'
-import { async } from 'q';
+import { async } from 'q'
 export default {
   name: 'mpCard',
-  data () {
+  data() {
     var validateAddress = (rule, value, callback) => {
       if (!this.cardData.address.countryCode) {
         // 请选择国家
@@ -73,7 +126,7 @@ export default {
       }
     }
     var validatePhone = (rule, value, callback) => {
-      if (!(/^1[3456789]\d{9}$/.test(value))) {
+      if (!/^1[3456789]\d{9}$/.test(value)) {
         // 手机号格式不正确
         callback(new Error(this.$t('card.phoneErr')))
       } else {
@@ -97,8 +150,8 @@ export default {
           countryCode: '',
           provinceCode: '',
           cityCode: '',
-          detail: ''
-        }
+          detail: '',
+        },
       },
       countryList: [],
       provinceList: [],
@@ -107,87 +160,108 @@ export default {
       rules: {
         nick: [
           // 请输入昵称
-          { required: true, message: this.$t('card.enter') + this.$t('card.nickName'), trigger: 'blur' },
+          {
+            required: true,
+            message: this.$t('card.enter') + this.$t('card.nickName'),
+            trigger: 'blur',
+          },
           // 昵称不能包含特殊字符
-          { pattern: /^[\u4E00-\u9FA5A-Za-z0-9]+$/, message: this.$t('card.nickErr'), trigger: 'blur' }
+          {
+            pattern: /^[\u4E00-\u9FA5A-Za-z0-9]+$/,
+            message: this.$t('card.nickErr'),
+            trigger: 'blur',
+          },
         ],
         email: [
           // 请输入邮箱
-          { required: true, message: this.$t('card.enter') + this.$t('card.email'), trigger: 'blur' },
+          {
+            required: true,
+            message: this.$t('card.enter') + this.$t('card.email'),
+            trigger: 'blur',
+          },
           // 邮箱格式不正确
-          { type: 'email', message: this.$t('card.emailErr')},
-          { validator: validateEmail, trigger: 'blur' }
+          { type: 'email', message: this.$t('card.emailErr') },
+          { validator: validateEmail, trigger: 'blur' },
         ],
         mobilePhone: [
           // 请输入手机号
-          { required: true, message: this.$t('card.enter') + this.$t('card.phone'), trigger: 'blur' },
-          { validator: validatePhone }
+          {
+            required: true,
+            message: this.$t('card.enter') + this.$t('card.phone'),
+            trigger: 'blur',
+          },
+          { validator: validatePhone },
         ],
         name: [
           // 请输入姓名
-          { required: true, message: this.$t('card.enter') + this.$t('card.name'), trigger: 'blur' }
+          {
+            required: true,
+            message: this.$t('card.enter') + this.$t('card.name'),
+            trigger: 'blur',
+          },
         ],
         company: [
           // 请输入公司名称
-          { required: true, message: this.$t('card.enter') + this.$t('card.company'), trigger: 'blur' }
+          {
+            required: true,
+            message: this.$t('card.enter') + this.$t('card.company'),
+            trigger: 'blur',
+          },
         ],
         department: [
           // 请输入职位/部门
-          { required: true, message: this.$t('card.enter') + this.$t('card.position'), trigger: 'blur' }
+          {
+            required: true,
+            message: this.$t('card.enter') + this.$t('card.position'),
+            trigger: 'blur',
+          },
         ],
-        address: [
-          { validator: validateAddress }
-        ]
-      }
+        address: [{ validator: validateAddress }],
+      },
     }
   },
   computed: {
-    ...mapGetters([
-      'cardShow',
-      'cardNeedOut'
-    ]),
-    countryCode () {
+    ...mapGetters(['cardShow', 'cardNeedOut']),
+    countryCode() {
       return this.cardData.address.countryCode
     },
-    provinceCode () {
+    provinceCode() {
       return this.cardData.address.provinceCode
     },
-    disabled1 () {
+    disabled1() {
       return this.cardData.address.countryCode === 'zh_CN' ? false : true
     },
-    disabled2 () {
+    disabled2() {
       return this.cardData.address.provinceCode ? false : true
-    }
+    },
   },
   watch: {
-    provinceCode (val) {
-      this.cityData.forEach(item => {
+    provinceCode(val) {
+      this.cityData.forEach((item) => {
         if (val === item.val) {
           this.cityList = item.city
         }
       })
       this.cardData.address.cityCode = ''
     },
-    countryList (val) {
+    countryList(val) {
       console.log(val, 'val')
     },
-    countryCode (val) {
+    countryCode(val) {
       if (val !== 'zh_CN') {
         this.cardData.address.provinceCode = ''
         this.cardData.address.cityCode = ''
       }
-    }
+    },
   },
   methods: {
-    ...mapMutations([
-      'closeCard'
-    ]),
-    closeCardFn () {
+    ...mapMutations(['closeCard']),
+    closeCardFn() {
       if (this.cardNeedOut) {
         this.$confirm(this.$t('common.closeQuit'), this.$t('common.hint'), {
           confirmButtonText: this.$t('common.affirm'),
           cancelButtonText: this.$t('common.cancel'),
-          type: "warning",
+          type: 'warning',
         }).then(() => {
           window.location.href = 'https://live.ofweek.com/'
         })
@@ -195,8 +269,8 @@ export default {
         this.closeCard()
       }
     },
-    checkPhoneFn (phone, callback) {
-      checkmemberphoneoremail({phoneOremail: phone, type: 1}).then(res => {
+    checkPhoneFn(phone, callback) {
+      checkmemberphoneoremail({ phoneOremail: phone, type: 1 }).then((res) => {
         if (res.code === 0) {
           return callback()
         } else if (res.code === 1) {
@@ -207,8 +281,8 @@ export default {
         }
       })
     },
-    checkEmailFn (phone, callback) {
-      checkmemberphoneoremail({phoneOremail: phone, type: 2}).then(res => {
+    checkEmailFn(phone, callback) {
+      checkmemberphoneoremail({ phoneOremail: phone, type: 2 }).then((res) => {
         if (res.code === 0) {
           return callback()
         } else if (res.code === 1) {
@@ -219,38 +293,38 @@ export default {
         }
       })
     },
-    async getcountry () {
-      getcountry().then(res => {
+    async getcountry() {
+      getcountry().then((res) => {
         console.log(res, 'sss')
         if (res.code === 0) {
           this.countryList = res.data
         }
       })
     },
-    async getprovince () {
-      getprovince().then(res => {
+    async getprovince() {
+      getprovince().then((res) => {
         if (res.code === 0) {
           this.provinceList = res.data
         }
       })
     },
-    getcompleteinfo () {
-      getcompleteinfo().then(res => {
+    getcompleteinfo() {
+      getcompleteinfo().then((res) => {
         if (res.code === 0) {
           let citytxt = res.data.address.cityCode
           this.cardData = res.data
           setTimeout(() => {
             this.cardData.address.cityCode = citytxt
-          }, 300);
+          }, 300)
         } else if (res.code === -8) {
           // this.$message.error(res.message)
         }
       })
     },
-    cardSendBtn () {
+    cardSendBtn() {
       this.$refs.cardForm.validate((valid) => {
         if (valid) {
-          updatecompleteinfo(this.cardData).then(res => {
+          updatecompleteinfo(this.cardData).then((res) => {
             if (res.code === 0) {
               location.reload()
             } else {
@@ -261,34 +335,87 @@ export default {
           return false
         }
       })
-    }
+    },
   },
-  created () {
+  created() {
     this.cityData = cityData
     this.getcountry().then(() => {
       this.getprovince().then(() => {
         this.getcompleteinfo()
       })
     })
-  }
+  },
 }
 </script>
 
 <style lang="scss" scoped>
-.card-shadow{ display: block; position: fixed; left: 0; top: 0; z-index: 1000; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-.card-dialog{ position: fixed; left: 50%; top: 50%; width: 600px; margin: 0 0 0 -175px; transform: translateY(-50%); font: normal 14px/1.5 "Microsoft Yahei"; letter-spacing: 1px; }
-.card-dialog a:link, .card-dialog a:visited{ color: #108EE9; text-decoration: none; }
-.card-dialog a:hover{ color: #CC0000; text-decoration: underline; }
-.card-dialog-close{ position: absolute;right: 0; top: 0; width: 24px; height: 24px; text-align: center; line-height: 24px; font-size: 14px; color: #fff; cursor: pointer; }
-.card-title{ padding: 0; margin: 0 auto 10px; text-align: center; font-weight: normal; font-size: 16px; color: #fff; }
-.card-dialog .triangle{ text-align: center; color: #fff; margin-bottom: -3px; line-height: 1; }
-.card-bd{ overflow: hidden; padding: 24px; background: #fff; border-radius: 10px; }
+.card-shadow {
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+.card-dialog {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 600px;
+  margin: 0 0 0 -175px;
+  transform: translateY(-50%);
+  font: normal 14px/1.5 'Microsoft Yahei';
+  letter-spacing: 1px;
+}
+.card-dialog a:link,
+.card-dialog a:visited {
+  color: #108ee9;
+  text-decoration: none;
+}
+.card-dialog a:hover {
+  color: #cc0000;
+  text-decoration: underline;
+}
+.card-dialog-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  text-align: center;
+  line-height: 24px;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+}
+.card-title {
+  padding: 0;
+  margin: 0 auto 10px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 16px;
+  color: #fff;
+}
+.card-dialog .triangle {
+  text-align: center;
+  color: #fff;
+  margin-bottom: -3px;
+  line-height: 1;
+}
+.card-bd {
+  overflow: hidden;
+  padding: 24px;
+  background: #fff;
+  border-radius: 10px;
+}
 
 .card-sub-btn {
   width: 200px;
   height: 40px;
   color: #fff;
-  background: #CC0000;
+  background: #cc0000;
   border: 0;
   border-radius: 4px;
   outline: none;

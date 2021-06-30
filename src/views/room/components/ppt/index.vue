@@ -1,8 +1,8 @@
 <template>
   <div :class="['ppt-list', { 'small-type': placeType === 2 }]">
-    <img :src="speechPageUrl" alt="">
+    <img :src="speechPageUrl" alt="" />
     <div class="ppt_num">
-      <span>{{speechPageNum}}</span>
+      <span>{{ speechPageNum }}</span>
     </div>
 
     <div class="ppt-full-btn" @click="fullOn" v-show="placeType === 1"></div>
@@ -10,40 +10,43 @@
     <div class="ppt-full-wrap" v-show="pptIsFull">
       <i class="el-icon-close" @click="fullOff"></i>
       <div class="ppt-full-block">
-        <img :src="speechPageUrl" alt="">
+        <img :src="speechPageUrl" alt="" />
       </div>
     </div>
 
     <!-- 插播视频 -->
     <div class="insert_video_box" v-show="isOpenInsert">
-      <img class="video_cover" :src="room.bgUrl" alt="">
+      <img class="video_cover" :src="room.bgUrl" alt="" />
       <div id="insert_video_box" v-show="insertVideoShow"></div>
     </div>
     <!-- 播放按钮 -->
-    <div class="insert_video_play_icon" v-if="showInsertVideoPlayIcon && insertVideoShow" @click="videoPlayFn"></div>
+    <div
+      class="insert_video_play_icon"
+      v-if="showInsertVideoPlayIcon && insertVideoShow"
+      @click="videoPlayFn"
+    ></div>
   </div>
 </template>
 
 <script>
-import TIM from 'tim-js-sdk'
 import { mapGetters, mapMutations } from 'vuex'
-import { getroominstallvideo } from '../../services/room/index.js'
+import { getroominstallvideo } from '../../../../services/room/index.js'
 export default {
   name: 'livePpt',
-  data () {
+  data() {
     return {
       speechPageNum: -1,
       speechPageUrl: '',
       pptIsFull: false,
       insertVideoPlayer: null, // 插播视频播放器实例
       insertVideoShow: false, // 显示插播视频
-      showInsertVideoPlayIcon: false
+      showInsertVideoPlayIcon: false,
     }
   },
   props: {
     placeType: {
-      type: Number
-    }
+      type: Number,
+    },
   },
   computed: {
     ...mapGetters({
@@ -53,34 +56,33 @@ export default {
       isOpenLive: 'room/isOpenLive',
       isOpenInsert: 'room/isOpenInsert',
       isOpenSpeech: 'room/isOpenSpeech',
-      dialogShopVideo: 'user/dialogShopVideo'
-    })
+      dialogShopVideo: 'user/dialogShopVideo',
+    }),
   },
   methods: {
-    ...mapMutations([
-      'setIsOpenInsert'
-    ]),
-    fullOn () {
+    ...mapMutations(['setIsOpenInsert']),
+    fullOn() {
       this.pptIsFull = true
-      document.getElementsByTagName("body")[0].style.cssText='height:100%;overflow:hidden;'
+      document.getElementsByTagName('body')[0].style.cssText =
+        'height:100%;overflow:hidden;'
     },
-    fullOff () {
+    fullOff() {
       this.pptIsFull = false
-      document.getElementsByTagName("body")[0].style.cssText=''
+      document.getElementsByTagName('body')[0].style.cssText = ''
     },
     /**
      * @method creatVideoPlayer 创建回顾视频
      * @param {Number} playType 0:顺序播放，1：列表循环
      */
-    creatVideoPlayer (options) {
-      let {videoList, curIndex = 0, playType = 1} = options
+    creatVideoPlayer(options) {
+      let { videoList, curIndex = 0, playType = 1 } = options
       let playerOption = {
-        "mp4": videoList[curIndex],
-        "width": 820,
-        "height": 460,
-        "autoplay": true,
-        "listener": (msg) => {
-          if (msg.type == "ended") {
+        mp4: videoList[curIndex],
+        width: 820,
+        height: 460,
+        autoplay: true,
+        listener: (msg) => {
+          if (msg.type == 'ended') {
             if (curIndex >= videoList.length - 1) {
               if (playType === 1) {
                 curIndex = 0
@@ -95,36 +97,36 @@ export default {
               this.insertVideoPlayer.load(videoList[curIndex])
             }
           }
-          if (msg.type == "loadeddata") {
+          if (msg.type == 'loadeddata') {
             console.log('insert loadeddata')
             this.showInsertVideoPlayIcon = true
           }
-          if (msg.type == "play") {
+          if (msg.type == 'play') {
             console.log('play')
             this.showInsertVideoPlayIcon = false
           }
-          if (msg.type == "playing") {
+          if (msg.type == 'playing') {
             console.log('playing')
             this.showInsertVideoPlayIcon = false
           }
-        }
+        },
       }
       this.insertVideoShow = true
-      this.insertVideoPlayer =  new TcPlayer('insert_video_box', playerOption)
+      this.insertVideoPlayer = new TcPlayer('insert_video_box', playerOption)
 
       if (this.dialogShopVideo) {
-        this.insertVideoShow = false;
-        this.insertVideoPlayer.pause();
+        this.insertVideoShow = false
+        this.insertVideoPlayer.pause()
       }
     },
-    videoPlayFn () {
+    videoPlayFn() {
       if (this.showInsertVideoPlayIcon) {
         this.insertVideoPlayer.play()
         this.showInsertVideoPlayIcon = false
         this.$EventBus.$emit('insertVideoPlay')
       }
     },
-    destroyInsertPlayer () {
+    destroyInsertPlayer() {
       if (this.insertVideoPlayer !== null) {
         this.insertVideoShow = false
         this.insertVideoPlayer.destroy()
@@ -133,15 +135,15 @@ export default {
       }
     },
   },
-  mounted () {
+  mounted() {
     // this.$EventBus.$on('liveVideoPlay', this.videoPlayFn)
     if (this.isOpenSpeech === 1) {
       this.speechPageNum = this.room.speechDataDto.speechPageNum
       this.speechPageUrl = this.room.speechDataDto.speechPageUrl
     }
 
-    const pptMsgEvent = event => {
-      event.data.forEach(eventItem => {
+    const pptMsgEvent = (event) => {
+      event.data.forEach((eventItem) => {
         const payloadData = JSON.parse(eventItem.payload.data)
         if (payloadData.roomId != this.roomId) {
           return
@@ -172,7 +174,7 @@ export default {
             this.destroyInsertPlayer()
 
             let urlList = []
-            payloadData.videoUrlDtoList.forEach(item => {
+            payloadData.videoUrlDtoList.forEach((item) => {
               urlList.push(item.url)
             })
 
@@ -180,9 +182,9 @@ export default {
             this.creatVideoPlayer({
               videoList: urlList,
               curIndex: 0,
-              playType: payloadData.type
+              playType: payloadData.type,
             })
-            break;
+            break
 
           // 停止插播视频广播消息
           case 1718:
@@ -191,7 +193,7 @@ export default {
 
             this.destroyInsertPlayer()
             this.setIsOpenInsert(0)
-            break;
+            break
         }
       })
     }
@@ -199,9 +201,9 @@ export default {
 
     // 是否开启插播视频
     if (this.isOpenInsert === 1 && this.liveStatus === 2) {
-      getroominstallvideo(this.roomId).then(res => {
+      getroominstallvideo(this.roomId).then((res) => {
         let urlList = []
-        res.data.videoUrlDtoList.forEach(item => {
+        res.data.videoUrlDtoList.forEach((item) => {
           urlList.push(item.url)
         })
 
@@ -220,18 +222,18 @@ export default {
     // })
   },
   watch: {
-    dialogShopVideo (val) {
+    dialogShopVideo(val) {
       if (this.insertVideoPlayer) {
         if (val) {
-          this.insertVideoShow = false;
-          this.insertVideoPlayer.pause();
+          this.insertVideoShow = false
+          this.insertVideoPlayer.pause()
         } else {
-          this.insertVideoPlayer.play();
-          this.insertVideoShow = true;
+          this.insertVideoPlayer.play()
+          this.insertVideoShow = true
         }
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -257,7 +259,7 @@ export default {
     font-size: 14px;
     line-height: 20px;
     border-radius: 20px;
-    background: rgba(255, 255, 255, .6);
+    background: rgba(255, 255, 255, 0.6);
     transform: translateX(-50%);
     user-select: none;
   }
@@ -364,12 +366,13 @@ export default {
     padding: 0 10px;
     line-height: 32px;
     text-align: center;
-    color: #1F1F1F;
+    color: #1f1f1f;
     border-radius: 32px;
     background: rgba(255, 255, 255, 0.5);
     user-select: none;
 
-    .speech_next, .speech_prev {
+    .speech_next,
+    .speech_prev {
       font-size: 16px;
       padding: 5px;
       cursor: pointer;

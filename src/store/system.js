@@ -9,7 +9,7 @@ import { removeUserSession } from '../utils/session'
 import { replaceHistory } from '../utils/tool'
 import { eventEmitter } from '../utils/event'
 import ImSdk, { IM_EVENT } from '../sdk/imLive'
-import WebTrtcLive, { TRTC_EVENT } from '../sdk/webTrtcLive'
+import WebTrtcLive from '../sdk/webTrtcLive'
 import { VITE_sdkAppId } from '../constants';
 
 export default {
@@ -17,6 +17,7 @@ export default {
   state: {
     imClient: null,
     trtcClient: null,
+    router: null,
   },
 
   getters: {

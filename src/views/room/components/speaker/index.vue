@@ -22,14 +22,14 @@
 <script>
 /** 互动直播主讲人控件 */
 import { mapState } from 'vuex'
-import { eventEmitter } from '../../../utils/event'
-import { exitFullScreen, fullScreenEle } from '../../../utils/tool'
-import StreamMask from './streamMask.vue'
+import { eventEmitter } from '../../../../utils/event'
+import { exitFullScreen, fullScreenEle } from '../../../../utils/tool'
+import streamMask from '../streamMask.vue'
 
 export default {
   name: 'mainSpeaker',
   components: {
-    StreamMask,
+    streamMask,
   },
   created() {
     this.unbindEvent()

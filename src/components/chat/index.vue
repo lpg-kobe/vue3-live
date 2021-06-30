@@ -1,25 +1,32 @@
 <template>
-  <div class="container_tiem">
-
+  <div class="wrap-container">
     <div class="tabs right_tabs">
       <ul>
-        <li v-for="(item, index) in tab" :class="{active: active === item.menuType}" v-show="item.menuType !== 7" @click="clickTab(item.menuType, index)" :key="index" :title="tabTransEn(item.menuType)">{{ tabTransEn(item.menuType) }}</li>
+        <li
+          v-for="(item, index) in tab"
+          :class="{ active: active === item.menuType }"
+          v-show="item.menuType !== 7"
+          @click="clickTab(item.menuType, index)"
+          :key="index"
+          :title="tabTransEn(item.menuType)"
+        >
+          {{ tabTransEn(item.menuType) }}
+        </li>
       </ul>
-      <div class="fr hot_num">{{pv}}</div>
+      <div class="fr hot_num">{{ pv }}</div>
     </div>
 
     <div v-show="active === 1" class="tabs_con">
-      <chat-list ref="chat"/>
+      <chat-list ref="chat" />
     </div>
 
     <div v-show="active === 3" class="tabs_con">
-      <question ref="question"/>
+      <question ref="question" />
     </div>
 
     <div v-show="active === 9" class="tabs_con">
-      <member/>
+      <member />
     </div>
-
   </div>
 </template>
 
@@ -30,51 +37,51 @@ import question from './question.vue'
 import member from './member.vue'
 export default {
   name: 'chat',
-  data () {
+  data() {
     return {
       defineTab: [
         { menuType: 1, name: '互动区', sort: 0 },
         { menuType: 3, name: '问答区', sort: 0 },
-        { menuType: 7, name: '图片直播', sort: 0 }
+        { menuType: 7, name: '图片直播', sort: 0 },
       ],
       tab: [],
       active: 0,
-      hasShow: false
+      hasShow: false,
     }
   },
   components: {
     chatList,
     question,
-    member
+    member,
   },
   computed: {
     ...mapGetters({
       room: 'room/room',
       roomId: 'room/roomId',
       user: 'user/user',
-      pv: 'room/pv'
-    })
+      pv: 'room/pv',
+    }),
   },
   methods: {
-    tabTransEn (type) {
+    tabTransEn(type) {
       switch (type) {
-        case 1 :
+        case 1:
           if (this.roomId === '211') {
             return 'Discussion en ligne'
           } else {
             return this.$t('menu.type1')
           }
           break
-        case 3 :
+        case 3:
           return this.$t('menu.type3')
           break
-        case 9 :
+        case 9:
           return this.$t('menu.type9')
           break
       }
     },
     // tab切换
-    clickTab (index, index2) {
+    clickTab(index, index2) {
       this.active = index
       if (this.hasShow === false && index2 != 0) {
         if (index === 1) {
@@ -94,15 +101,15 @@ export default {
         }
       }
     },
-    compare (property) {
-      return function(a,b) {
-        var value1 = a[property];
-        var value2 = b[property];
+    compare(property) {
+      return function (a, b) {
+        var value1 = a[property]
+        var value2 = b[property]
         return value2 - value1
       }
-    }
+    },
   },
-  created () {
+  created() {
     console.log(this.room, 1212)
     this.room.menulist.forEach((item) => {
       this.defineTab.forEach((item2) => {
@@ -124,9 +131,7 @@ export default {
       this.active = this.tab[0].menuType
     }
   },
-  mounted () {
-
-  }
+  mounted() {},
 }
 </script>
 

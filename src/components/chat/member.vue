@@ -3,21 +3,50 @@
     <div class="member_block">
       <el-scrollbar>
         <ul>
-          <li v-for="(item, index) of list" :key="index" class="member_item">
-            <span><span :class="{'member-red': item.role == 1, 'member-blue': item.online}">{{item.nick}}</span> {{ item.role === 1 || item.role === 2 ? `[${item.identity}]` : '' }}</span>
+          <li
+            v-for="(item, index) of live.liveMembers"
+            :key="index"
+            class="member_item"
+          >
+            <span
+              ><span
+                :class="{
+                  'member-red': item.role == 1,
+                  'member-blue': item.online,
+                }"
+                >{{ item.nick }}</span
+              >
+              {{
+                item.role === 1 || item.role === 2 ? `[${item.identity}]` : ''
+              }}</span
+            >
             <div class="member_control">
               <i class="el-icon-user-solid" v-show="item.isMainSpeaker"></i>
-              <i :class="['member_control_mic', { light: item.isLiving == 1 }]"></i>
-              <el-dropdown class="black_dropdown" @command="handleCommand" trigger="click">
+              <i
+                :class="['member_control_mic', { light: item.isLiving == 1 }]"
+              ></i>
+              <el-dropdown
+                class="black_dropdown"
+                @command="handleCommand"
+                trigger="click"
+              >
                 <span class="el-dropdown-link">
                   <i class="member_control_more"></i>
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu class="chat-el-dropdown">
-                    <el-dropdown-item :command="commandPara(item, 'a')">设为主讲</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'b')">取消主讲</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'c')">邀请上麦</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'd')">下麦</el-dropdown-item>
+                    <el-dropdown-item :command="commandPara(item, 'a')"
+                      >设为主讲</el-dropdown-item
+                    >
+                    <el-dropdown-item :command="commandPara(item, 'b')"
+                      >取消主讲</el-dropdown-item
+                    >
+                    <el-dropdown-item :command="commandPara(item, 'c')"
+                      >邀请上麦</el-dropdown-item
+                    >
+                    <el-dropdown-item :command="commandPara(item, 'd')"
+                      >下麦</el-dropdown-item
+                    >
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -30,63 +59,63 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { getroomanthorandguestlist } from '../../services/room/index.js'
+import { mapState } from 'vuex'
 export default {
   name: 'member',
-  data () {
+  data() {
     return {
       list: [],
-      liveId: ''
+      liveId: '',
     }
   },
   computed: {
-    ...mapGetters({
-      room: 'room/room',
-      roomId: 'room/roomId',
-      user: 'user/user',
-      imAccount: 'user/imAccount',
-      liveStatus: 'room/liveStatus'
-    })
+    ...mapState({
+      user: ({ user }) => user,
+      live: ({ live }) => live,
+      room: ({ room }) => room,
+      roomId: ({ router: { params } }) => params?.roomId,
+    }),
   },
   methods: {
-    getData () {
-      getroomanthorandguestlist({roomid: this.roomId}).then(({ data }) => {
-        let res = data
-        this.list = res.data
+    fetchMembers() {
+      this.$store.dispatch({
+        type: 'live/getMembers',
+        payload: {
+          roomid: this.roomId,
+        },
+        callback: (members) => {
+          // init room speaker
+          const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
+          this.$store.commit('live/setState', {
+            key: 'liveSpeaker',
+            value: {
+              ...speaker,
+              userId: speaker.memberId,
+            },
+          })
+        },
       })
     },
-    compareProp (prop) {
-      return function (a, b) {
-        var val1 = a[prop];
-        var val2 = b[prop];
-        return val1 - val2;
-      }
-    },
-    commandPara (item, type) {
+
+    commandPara(item, type) {
       return {
         info: item,
-        type
+        type,
       }
     },
-    handleCommand (command) {
+
+    handleCommand(command) {
       switch (command.type) {
         case 'a':
           // 设为主讲
           console.log(command.info)
-          break;
+          break
       }
-    }
+    },
   },
-  created () {
-    
+  created() {
+    this.fetchMembers()
   },
-  mounted () {
-    this.getData()
-    let timer = setInterval(() => {
-      this.getData()
-    }, 2000);
-  }
 }
 </script>
 
@@ -103,7 +132,7 @@ export default {
     height: 57px;
     padding: 10px 13px 10px 0;
     font-size: 0;
-    border-bottom: 1px solid #EBEBEB;
+    border-bottom: 1px solid #ebebeb;
 
     > span {
       font-size: 14px;
@@ -116,7 +145,7 @@ export default {
         color: #53a8ff;
       }
       .member-red {
-        color: #E65E50;
+        color: #e65e50;
       }
     }
 

@@ -4,9 +4,9 @@
 
 <script>
 export default {
-  name: "app",
+  name: 'app',
   setup() {
     // this api use in global, don`t do other thing on this
   },
-};
+}
 </script>

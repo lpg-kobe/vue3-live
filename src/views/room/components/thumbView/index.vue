@@ -1,17 +1,17 @@
 <template>
   <div class="thumb-view-container">
-    <Speaker v-if="live.liveMainView !== 0" />
+    <speaker v-if="live.liveMainView !== 0" />
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import Speaker from './speaker.vue'
+import speaker from '../speaker/index.vue'
 
 export default {
   name: 'thumbView',
   components: {
-    Speaker,
+    speaker,
   },
   computed: {
     ...mapState({
