@@ -29,14 +29,26 @@
       </div>
     </div>
     <div class="live-main-view flex-center">ppt</div>
-    <el-dialog title="提示" v-model="applyShow">
+    <el-dialog
+      title="提示"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+      v-model="applyShow"
+    >
       <p>{{ applyMsg.auditerNick }}申请上麦</p>
       <template #footer>
         <el-button @click="handleGuestApply(0)">拒绝</el-button>
         <el-button type="primary" @click="handleGuestApply(1)">同意</el-button>
       </template>
     </el-dialog>
-    <el-dialog title="提示" v-model="inviteShow">
+    <el-dialog
+      title="提示"
+      v-model="inviteShow"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
       <p>{{ inviteMsg.inviterNick }}邀请您上麦</p>
       <template #footer>
         <el-button @click="handleInvite(0)">拒绝</el-button>
