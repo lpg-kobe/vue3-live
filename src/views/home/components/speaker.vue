@@ -70,10 +70,19 @@ export default {
         // old stream must stop & replay in new dom if it has been play in other dom
         await oldSpeaker?.stop()
         await newSpeaker?.stop()
+        // 主讲人跟视频流列表画面交换
         this.$nextTick(() => {
-          oldSpeaker?.play(`live_stream_${oldSpeaker.userId_}`)
+          oldSpeaker &&
+            eventEmitter.emit(eventEmitter.event.live.playStream, {
+              stream: oldSpeaker,
+              target: `live_stream_${oldSpeaker.userId_}`,
+            })
+          newSpeaker &&
+            eventEmitter.emit(eventEmitter.event.live.playStream, {
+              stream: newSpeaker,
+              target: 'speakerId',
+            })
         })
-        newSpeaker?.play('speakerId')
       },
       immediate: true,
     },

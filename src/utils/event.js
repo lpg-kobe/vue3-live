@@ -28,6 +28,7 @@ export const EVENTENUM = {
     joinFail: 'FAIL_TO_JOIN_TRTC',
     setMedia: 'OPEN_MEDIA_SETTING', // 媒体设置
     toggleMedia: 'TOGGLE_MEDIA', // 切换麦克风|摄像头开关
+    playStream: 'PLAY_STREAM', // 尝试播放直播流
   },
   login: {
     expire: 'LOGIN_EXPIRE',

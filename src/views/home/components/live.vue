@@ -277,6 +277,7 @@ export default {
         eventEmitter.event?.live?.toggleMedia,
         this.onMediaToggle
       )
+      eventEmitter.off(eventEmitter.event?.live?.playStream, this.onPlayStream)
       eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -295,6 +296,7 @@ export default {
     bindEvent() {
       eventEmitter.on(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
       eventEmitter.on(eventEmitter.event?.live?.toggleMedia, this.onMediaToggle)
+      eventEmitter.on(eventEmitter.event?.live?.playStream, this.onPlayStream)
       eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -468,18 +470,14 @@ export default {
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
-        const { status, data } = await this.$store.dispatch({
+        const { data } = await this.$store.dispatch({
           type: 'live/getMembers',
           payload: {
             roomid: this.roomId,
           },
         })
 
-        if (!status) {
-          return
-        }
-
-        const mainSpeaker = data.find(({ isMainSpeaker }) => isMainSpeaker)
+        const mainSpeaker = data?.find(({ isMainSpeaker }) => isMainSpeaker)
         this.$store.commit('live/setState', {
           key: 'liveSpeaker',
           value: {
@@ -498,7 +496,7 @@ export default {
           value: [
             ...this.live.liveStreamList,
             Object.assign(stream, {
-              isOpenMic: isSpeaker,
+              isOpenMic: true,
               isOpenCamera: true,
             }),
           ],
@@ -514,8 +512,11 @@ export default {
 
       this.mainStreamList = this.filterLiveStream()
       this.$nextTick(() => {
-        !isSpeaker &&
+        if (isSpeaker) {
+          !stream.isPlaying?.() && this.tryToPlayStream(stream, 'speakerId')
+        } else {
           this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
+        }
       })
     },
 
@@ -682,6 +683,14 @@ export default {
             : [isOpenCamera ? 'unmuteVideo' : 'muteVideo']
         ]?.()
       this.mainStreamList = this.filterLiveStream()
+    },
+
+    /**
+     * @desc on play stream event emit
+     * @param {Object} stream 直播流 target 播放元素
+     **/
+    onPlayStream({ stream, target }) {
+      this.tryToPlayStream(stream, target)
     },
 
     /** 主播开始直播，主播上麦默认主讲人 */
@@ -983,18 +992,27 @@ export default {
 
     /** try to play & handle error */
     tryToPlayStream(stream, target, options = {}) {
-      stream.play(target, options).then(
-        () => {
-          console.log('yes!!! success to play remote stream')
-        },
-        (err) => {
-          const errorCode = err?.getCode?.()
-          if (errorCode === 0x4043) {
-            // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
-            // stream.resume()
-          }
+      return new Promise((resolve) => {
+        if (!document.getElementById(target)) {
+          resolve(false)
+          return
         }
-      )
+        stream.play(target, options).then(
+          () => {
+            resolve(true)
+            console.log('yes!!! success to play remote stream')
+          },
+          (err) => {
+            resolve(false)
+            console.warn('ohh~~ fail to play remote video')
+            const errorCode = err?.getCode?.()
+            if (errorCode === 0x4043) {
+              // TODO PLAY_NOT_ALLOWED,引导用户手势操作并调用 stream.resume 恢复音视频播放
+              // stream.resume()
+            }
+          }
+        )
+      })
     },
   },
 }
