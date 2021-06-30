@@ -335,7 +335,11 @@ export default {
           const codeAction = {
             // 直播间结束
             1027: () => {
-              this.destroyRoom()
+              // 后台结束流会自动断开，直播间trtc所有操作无需干预，只管清空页面状态
+              ElMessageBox.alert('直播间已结束', '温馨提示', {
+                confirmButtonText: '好的',
+                callback: () => window.location.reload(),
+              })
             },
 
             // 邀请直播消息
@@ -1013,7 +1017,6 @@ export default {
         white-space: nowrap;
         word-break: keep-all;
         text-overflow: ellipsis;
-        z-index: 4;
         top: 10px;
         left: 10px;
         width: calc(100% - 10px);

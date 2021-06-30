@@ -16,6 +16,8 @@
         @click="handleIconClick('screen')"
         title="全屏"
       ></i>
+    </div>
+    <div class="stream-label">
       <label class="label-name">{{ speaker.nick }}</label>
     </div>
     <stream-mask v-show="speakerMaskShow" :stream="speaker" />
@@ -133,20 +135,19 @@ export default {
 
 <style lang="scss" scoped>
 .ofweek-speaker {
+  .stream-label {
+    font-size: 14px;
+    color: #fff;
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+  }
   .controll-layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-
-    .label-name {
-      font-size: 14px;
-      color: #fff;
-      position: absolute;
-      left: 10px;
-      bottom: 10px;
-    }
 
     .icon {
       z-index: 10;
