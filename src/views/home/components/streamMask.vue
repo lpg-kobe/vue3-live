@@ -1,5 +1,5 @@
 <template>
-  <div class="stream-mask flex-center">
+  <div class="stream-mask flex-center" v-if="judgeAnchorOrSelf(stream)">
     <div class="mask-menu flex-center">
       <i
         class="icon icon-user"
@@ -12,13 +12,11 @@
       ></i>
       <i
         :class="`icon icon-${stream.isOpenCamera ? 'camera' : 'uncamera'}`"
-        v-if="judgeAnchorOrSelf(stream)"
         :title="`${stream.isOpenCamera ? '关闭' : '开启'}摄像头`"
         @click="handleIconClick('camera', stream)"
       ></i>
       <i
         :class="`icon icon-${stream.isOpenMic ? 'mic' : 'unmic'}`"
-        v-if="judgeAnchorOrSelf(stream)"
         :title="`${stream.isOpenMic ? '关闭' : '开启'}麦克风`"
         @click="handleIconClick('mic', stream)"
       ></i>

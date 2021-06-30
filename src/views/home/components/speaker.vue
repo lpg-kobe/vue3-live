@@ -6,7 +6,10 @@
     @mouseout="onLiveStreamMouse(0)"
   >
     <div id="speakerId"></div>
-    <div class="controll-layer">
+    <div
+      class="controll-layer"
+      v-if="String(speaker.userId_) === String(user.user.imAccount)"
+    >
       <!-- <i class="icon icon-switch" @click="handleIconClick('switch')"></i> -->
       <i
         class="icon icon-full-screen"
