@@ -418,7 +418,7 @@ export default {
                 String(payloadData.guestId) == String(this.user.user.imAccount)
               if (payloadData.isAuthorStopLive) {
                 // 主播推送当前嘉宾下麦
-                isGuestSelf && eventEmitter.emit(eventEmitter.event.guest.stop)
+                isGuestSelf && this.clearLiveDataOfUser(false)
               }
             },
             // 直播中媒体设备开关消息
@@ -517,6 +517,15 @@ export default {
 
     onStreamRemoved(event) {
       const { stream } = event
+      const remoteIsSpeaker =
+        String(stream.userId_) === String(this.live.liveSpeaker.userId)
+      // 主播收回移除的主讲权
+      if (this.user.user.role === 1 && remoteIsSpeaker) {
+        eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
+          userId_: this.user.user.imAccount,
+          nick: this.user.user.nick,
+        })
+      }
       this.$store.commit('live/setState', {
         key: 'liveStreamList',
         value: this.filterLiveStream(stream.userId_),
