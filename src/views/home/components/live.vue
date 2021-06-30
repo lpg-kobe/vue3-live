@@ -513,6 +513,7 @@ export default {
       this.mainStreamList = this.filterLiveStream()
       this.$nextTick(() => {
         if (isSpeaker) {
+          // only play once if stream haven`t played in dom & other will be handle in component of speaker
           !stream.isPlaying?.() && this.tryToPlayStream(stream, 'speakerId')
         } else {
           this.tryToPlayStream(stream, `live_stream_${stream.userId_}`)
