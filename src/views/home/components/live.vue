@@ -689,7 +689,7 @@ export default {
      * @desc on play stream event emit
      * @param {Object} stream 直播流 target 播放元素
      **/
-    onPlayStream({ stream, target }) {
+    onPlayStream({ data: { stream, target } }) {
       this.tryToPlayStream(stream, target)
     },
 
