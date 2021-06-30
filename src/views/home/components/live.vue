@@ -517,6 +517,8 @@ export default {
 
     onStreamRemoved(event) {
       const { stream } = event
+      // removed stream must stop & replay in new dom if it has been play in other dom
+      stream?.stop?.()
       const remoteIsSpeaker =
         String(stream.userId_) === String(this.live.liveSpeaker.userId)
       // 主播收回移除的主讲权
