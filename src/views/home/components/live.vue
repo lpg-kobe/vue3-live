@@ -907,7 +907,7 @@ export default {
               value: this.filterLiveStream(this.trtcClient.stream.userId_),
             },
           ])
-          // 嘉宾归还主讲人至主播
+          // 嘉宾下麦归还主讲人至主播
           userIsSpeaker &&
             this.$store.commit('live/setState', {
               key: 'liveSpeaker',
