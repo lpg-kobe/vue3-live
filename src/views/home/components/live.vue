@@ -458,6 +458,9 @@ export default {
     async onGetRemoteStream(event) {
       let isSpeaker = false
       const { stream } = event
+      const remoteIsInList = this.live.liveStreamList.some(
+        ({ userId_ }) => String(userId_) === String(stream.userId_)
+      )
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
@@ -476,17 +479,17 @@ export default {
         this.$store.commit('live/setState', {
           key: 'liveSpeaker',
           value: {
-            userId: mainSpeaker.memberId,
+            userId: mainSpeaker?.memberId,
           },
         })
-        isSpeaker = String(mainSpeaker.memberId) === String(stream.userId_)
+        isSpeaker = String(mainSpeaker?.memberId) === String(stream.userId_)
       } else {
         isSpeaker =
           String(this.live.liveSpeaker.userId) === String(stream.userId_)
       }
 
-      this.$store.commit('live/setState', [
-        {
+      if (!remoteIsInList) {
+        this.$store.commit('live/setState', {
           key: 'liveStreamList',
           value: [
             ...this.live.liveStreamList,
@@ -495,7 +498,10 @@ export default {
               isOpenCamera: true,
             }),
           ],
-        },
+        })
+      }
+
+      this.$store.commit('live/setState', [
         {
           key: 'liveStart',
           value: true,
@@ -730,10 +736,10 @@ export default {
       )
     },
 
-    /** 主播邀请直播 */
+    /** 主播邀请直播，仅当前主播用户可操作 */
     async onAnchorInvite() {},
 
-    /** 主播结束直播 */
+    /** 主播结束直播，仅当前主播用户可操作 */
     async onAnchorStop() {
       this.$store.commit('live/setState', {
         key: 'liveToggleLoading',
@@ -749,7 +755,7 @@ export default {
       })
     },
 
-    /** 主播设置主讲人 */
+    /** 主播设置主讲人，仅当前主播用户可操作 */
     async onAnchorSetSpeaker({ data }) {
       const { status } = await this.$store.dispatch({
         type: 'live/setMainSpeaker',
@@ -762,21 +768,21 @@ export default {
         return
       }
       // this.startMixStream()
-      ElMessage.success(`已将${data?.nick}设为主讲人`)
+      ElMessage.success(`${data?.nick}已成为新的主讲人`)
     },
 
-    /** 嘉宾申请上麦 */
+    /** 嘉宾申请上麦，仅当前嘉宾用户可操作 */
     async onGuestApply() {
       await this.$store.dispatch({
         type: 'live/applyLive',
         payload: {
           roomid: this.roomId,
         },
+        callback: () => ElMessage.success('上麦申请已发送'),
       })
-      ElMessage.success('上麦申请已发送')
     },
 
-    /** 嘉宾开始上麦 */
+    /** 嘉宾开始上麦，仅当前嘉宾用户可操作 */
     async onGuestStart() {
       if (this.live.liveJoinStatus !== 1) {
         await this.joinTrtc()
@@ -831,12 +837,13 @@ export default {
       )
     },
 
-    /** 嘉宾下麦 */
+    /** 嘉宾下麦，仅当前嘉宾用户可操作 */
     async onGuestStop() {
       this.$store.commit('live/setState', {
         key: 'liveToggleLoading',
         value: true,
       })
+
       this.clearLiveDataOfUser(false)
       this.$store.dispatch({
         type: 'live/guestStopLive',
@@ -877,27 +884,49 @@ export default {
     },
 
     /** clear data of user after user stop live */
-    async clearLiveDataOfUser(isAnchor) {
-      // isAnchor && (await this.stopMixStream())
-      await this.trtcClient.cancelPublish()
-      this.trtcClient.stream.stop()
-      this.$store.commit('live/setState', [
-        {
-          key: 'liveStreamList',
-          value: isAnchor
-            ? []
-            : this.filterLiveStream(this.trtcClient.stream.userId_),
-        },
-        // {
-        //   key: 'liveJoinStatus',
-        //   value: 0,
-        // },
-        {
-          key: 'liveToggleLoading',
-          value: false,
-        },
-      ])
-      this.mainStreamList = this.filterLiveStream()
+    clearLiveDataOfUser(isAnchor) {
+      return new Promise(async (resolve) => {
+        const userIsSpeaker =
+          String(this.user.user.imAccount) ===
+          String(this.live.liveSpeaker.userId)
+        await this.trtcClient.cancelPublish()
+        this.trtcClient.stream.stop()
+
+        if (isAnchor) {
+          // await this.stopMixStream()
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveStreamList',
+              value: [],
+            },
+          ])
+        } else {
+          this.$store.commit('live/setState', [
+            {
+              key: 'liveStreamList',
+              value: this.filterLiveStream(this.trtcClient.stream.userId_),
+            },
+          ])
+          // 嘉宾归还主讲人至主播
+          userIsSpeaker &&
+            this.$store.commit('live/setState', {
+              key: 'liveSpeaker',
+              value: {
+                userId: this.live.liveMembers.find(({ role }) => role === 1)
+                  ?.memberId,
+              },
+            })
+        }
+
+        this.mainStreamList = this.filterLiveStream()
+        this.$store.commit('live/setState', [
+          {
+            key: 'liveToggleLoading',
+            value: false,
+          },
+        ])
+        resolve('success to clear live data of user...')
+      })
     },
 
     /** destroy room & clear store of live */
@@ -914,10 +943,6 @@ export default {
           key: 'liveStreamList',
           value: [],
         },
-        // {
-        //   key: 'liveJoinStatus',
-        //   value: 0,
-        // },
         {
           key: 'liveSpeaker',
           value: {
