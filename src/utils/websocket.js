@@ -40,8 +40,7 @@ export function websocketSend (agentData) {
     websock.send(agentData)
   }
   if (websock.readyState === websock.CLOSED) { // websock.CLOSED = 3 
-    console.log('websock.readyState=3')
-    ElMessage.error('ws连接异常，请稍候重试')
+    ElMessage.error('ws连接异常，请稍候重试 onsend')
     errorCallback()
   }
 }

@@ -35,6 +35,7 @@ export default {
   data() {
     return {
       initFinish: false,
+      query: null
     }
   },
   components: {
@@ -65,18 +66,18 @@ export default {
       console.log(data.data)
     },
     wsError () {
-      console.log('ws链接失败')
+      sendWebsocket( this.query, this.wsMessage, this.wsError)
     },
     requstWs () {
       closeWebsocket()
-      let query = {
+      this.query = {
         groupid: String(this.roomId),
         memberid: String(this.user.user.imAccount),
         type: '2',
         token: Cookies.get('userToken')
       }
       // 发起ws请求
-      sendWebsocket( query, this.wsMessage, this.wsError)
+      sendWebsocket( this.query, this.wsMessage, this.wsError)
       // 每隔5秒发一次心跳
       setInterval(() => {
         websocketSend('ping')
