@@ -32,7 +32,7 @@
                 }}</span>
               </span>
               <el-dropdown
-                class="black_dropdown"
+                class="black-dropdown"
                 trigger="click"
                 @command="handleCommand"
                 v-if="user.role === 1 || user.role === 2"

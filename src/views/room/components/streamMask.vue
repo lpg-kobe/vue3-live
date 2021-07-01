@@ -59,7 +59,12 @@ export default {
     handleIconClick(type, payload) {
       const actionMap = {
         speaker: () => {
-          eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, payload)
+          eventEmitter.emit(
+            eventEmitter.event.anchor.setSpeaker,
+            Object.assign(payload, {
+              userId: payload.userId_,
+            })
+          )
         },
         mic: () => {
           this.$store.dispatch({
@@ -92,30 +97,12 @@ export default {
           })
         },
         live: () => {
-          const isSelf =
-            String(payload.userId_) === String(this.user.user.imAccount)
-          const targetIsAnchor = payload.role === 1
-          const targetIsSpeaker =
-            String(payload.userId_) === String(this.live.liveSpeaker?.userId)
-          if (isSelf) {
-            targetIsAnchor
-              ? eventEmitter.emit(eventEmitter.event.anchor.stop)
-              : eventEmitter.emit(eventEmitter.event.guest.stop)
-          } else {
-            // 主播推送嘉宾下麦并夺回主讲权
-            targetIsSpeaker &&
-              eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
-                userId_: this.user.user.imAccount,
-                nick: this.user.user.nick,
-              })
-            this.$store.dispatch({
-              type: 'live/guestStopLive',
-              payload: {
-                roomid: this.roomId,
-                memberid: payload.userId_,
-              },
+          eventEmitter.emit(
+            eventEmitter.event.live.stopLive,
+            Object.assign(payload, {
+              userId: payload.userId_,
             })
-          }
+          )
         },
       }
       actionMap[type]?.()

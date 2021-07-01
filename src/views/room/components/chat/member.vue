@@ -1,50 +1,96 @@
 <template>
-  <div class="member_list">
-    <div class="member_block">
+  <div class="ofweek-member-list">
+    <div class="member-block">
       <el-scrollbar>
         <ul>
           <li
             v-for="(item, index) of live.liveMembers"
             :key="index"
-            class="member_item"
+            :class="[
+              'member-item',
+              {
+                self: +item.memberId === +user.user.imAccount,
+                'on-line': item.online,
+              },
+            ]"
           >
-            <span
-              ><span
-                :class="{
-                  'member-red': item.role == 1,
-                  'member-blue': item.online,
-                }"
-                >{{ item.nick }}</span
-              >
-              {{
+            <label>
+              <span>{{ item.nick }}</span>
+              <span>{{
                 item.role === 1 || item.role === 2 ? `[${item.identity}]` : ''
-              }}</span
-            >
-            <div class="member_control">
-              <i class="el-icon-user-solid" v-show="item.isMainSpeaker"></i>
+              }}</span>
+            </label>
+            <div class="member-control">
               <i
-                :class="['member_control_mic', { light: item.isLiving == 1 }]"
+                class="icon icon-speaker"
+                v-show="+item.memberId === +live.liveSpeaker.userId"
+              ></i>
+              <i
+                v-show="
+                  live.liveStreamList.some(
+                    ({ userId_ }) => +userId_ === +item.memberId
+                  )
+                "
+                class="icon icon-online"
+              ></i>
+              <i
+                v-show="
+                  !live.liveStreamList.some(
+                    ({ userId_ }) => +userId_ === +item.memberId
+                  )
+                "
+                class="icon icon-offline"
               ></i>
               <el-dropdown
-                class="black_dropdown"
-                @command="handleCommand"
-                trigger="click"
+                v-if="memberHasMenu(item)"
+                class="black-dropdown align-middle"
+                @command="handleMemberClick(item, $event)"
               >
                 <span class="el-dropdown-link">
-                  <i class="member_control_more"></i>
+                  <i class="icon member-control-more"></i>
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu class="chat-el-dropdown">
-                    <el-dropdown-item :command="commandPara(item, 'a')"
+                    <el-dropdown-item
+                      command="speaker"
+                      v-if="
+                        live.liveStreamList.some(
+                          ({ userId_ }) => +item.memberId === +userId_
+                        ) &&
+                        user.user.role === 1 &&
+                        +item.memberId !== +live.liveSpeaker.userId
+                      "
                       >设为主讲</el-dropdown-item
                     >
-                    <el-dropdown-item :command="commandPara(item, 'b')"
-                      >取消主讲</el-dropdown-item
-                    >
-                    <el-dropdown-item :command="commandPara(item, 'c')"
+                    <el-dropdown-item
+                      command="invite"
+                      v-if="
+                        +user.user.role === 1 &&
+                        +user.user.imAccount !== +item.memberId &&
+                        !live.liveStreamList.some(
+                          ({ userId_ }) => +item.memberId === +userId_
+                        )
+                      "
                       >邀请上麦</el-dropdown-item
                     >
-                    <el-dropdown-item :command="commandPara(item, 'd')"
+                    <el-dropdown-item
+                      command="apply"
+                      v-if="
+                        user.user.role === 2 &&
+                        +user.user.imAccount === +item.memberId &&
+                        !live.liveStreamList.some(
+                          ({ userId_ }) => +item.memberId === +userId_
+                        )
+                      "
+                      >申请上麦</el-dropdown-item
+                    >
+                    <el-dropdown-item
+                      command="live"
+                      v-if="
+                        user.user.role === 1
+                          ? +item.memberId !== +user.user.imAccount
+                          : +item.memberId === +user.user.imAccount
+                      "
                       >下麦</el-dropdown-item
                     >
                   </el-dropdown-menu>
@@ -60,14 +106,20 @@
 
 <script>
 import { mapState } from 'vuex'
+import { eventEmitter } from '../../../../utils/event'
+import { loopToInterval } from '../../../../utils/tool'
 export default {
   name: 'member',
   data() {
     return {
-      list: [],
-      liveId: '',
+      timer: null,
     }
   },
+
+  created() {
+    this.init()
+  },
+
   computed: {
     ...mapState({
       user: ({ user }) => user,
@@ -76,91 +128,132 @@ export default {
       roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
+
   methods: {
+    async init() {
+      const { status, data: members } = await this.fetchMembers()
+
+      if (status) {
+        // init room speaker
+        const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
+        this.$store.commit('live/setState', {
+          key: 'liveSpeaker',
+          value: {
+            ...speaker,
+            userId: speaker.memberId,
+          },
+        })
+      }
+
+      // interval to get memberlist in order to update online status & other
+      loopToInterval(this.fetchMembers, this.timer, 6 * 1000)
+    },
+
     fetchMembers() {
-      this.$store.dispatch({
+      return this.$store.dispatch({
         type: 'live/getMembers',
         payload: {
           roomid: this.roomId,
         },
-        callback: (members) => {
-          // init room speaker
-          const speaker = members.find(({ isMainSpeaker }) => isMainSpeaker)
-          this.$store.commit('live/setState', {
-            key: 'liveSpeaker',
-            value: {
-              ...speaker,
-              userId: speaker.memberId,
-            },
-          })
-        },
       })
     },
 
-    commandPara(item, type) {
-      return {
-        info: item,
-        type,
+    memberHasMenu(member) {
+      const isAnchor = +this.user.user.role === 1
+      const targetIsAnchor = +member.role === 1
+      const targetIsSelf = +member.role === +this.user.user.imAccount
+      const targetIsSpeaker = +member.memberId === +this.live.liveSpeaker.userId
+      if (!member.online) {
+        return false
+      }
+      if (isAnchor) {
+        return targetIsAnchor ? !targetIsSpeaker : true
+      } else {
+        return targetIsAnchor ? false : targetIsSelf
       }
     },
 
-    handleCommand(command) {
-      switch (command.type) {
-        case 'a':
-          // 设为主讲
-          console.log(command.info)
-          break
+    handleMemberClick(member, menu) {
+      const actionMap = {
+        speaker: () => {
+          eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
+            userId: member.memberId,
+            nick: member.nick,
+          })
+        },
+        invite: () => {
+          eventEmitter.emit(eventEmitter.event.anchor.invite, {
+            userId: member.memberId,
+          })
+        },
+        apply: () => {
+          eventEmitter.emit(eventEmitter.event.guest.apply)
+        },
+        live: () => {
+          eventEmitter.emit(eventEmitter.event.live.stopLive, {
+            ...member,
+            userId: member.memberId,
+          })
+        },
       }
+      actionMap[menu]?.()
     },
-  },
-  created() {
-    this.fetchMembers()
   },
 }
 </script>
 
 <style lang="scss" scoped>
-.member_list {
+.ofweek-member-list {
   padding: 0 9px 0 23px;
 
   ul {
     padding-right: 14px;
   }
 
-  .member_item {
+  .member-item {
     width: 100%;
     height: 57px;
     padding: 10px 13px 10px 0;
     font-size: 0;
     border-bottom: 1px solid #ebebeb;
 
-    > span {
-      font-size: 14px;
-      line-height: 35px;
-      > span {
-        color: grey;
-      }
-
-      .member-blue {
-        color: #53a8ff;
-      }
-      .member-red {
+    &.self {
+      > label {
         color: #e65e50;
+      }
+      &.on-line {
+        > label {
+          color: #e65e50;
+        }
       }
     }
 
-    .member_control {
+    &.on-line {
+      > label {
+        color: #2691e9;
+      }
+    }
+
+    > label {
+      font-size: 14px;
+      line-height: 35px;
+      color: #808080;
+    }
+
+    .member-control {
       float: right;
       height: 35px;
       line-height: 35px;
 
-      i {
+      .icon {
         position: relative;
         display: inline-block;
         margin-left: 12px;
         cursor: pointer;
         vertical-align: middle;
         font-style: normal;
+        .icon-speaker {
+        }
       }
       .control_cursor {
         cursor: default;
@@ -169,23 +262,24 @@ export default {
   }
 }
 
-.member_control_ban {
+.member-control-ban {
   width: 26px;
   height: 18px;
   background: url(../../../../assets/jinyan.png) no-repeat center center;
   background-size: 100% 100%;
 }
 
-.member_control_mic {
-  width: 22px;
-  height: 22px;
-  background: url(../../../../assets/mic_ban.png) no-repeat center center;
+.icon {
+  width: 16px;
+  height: 16px;
+  &.icon-online {
+    background-size: 14px;
+  }
+  &.icon-offline {
+    background-size: 20px;
+  }
 }
-.member_control_mic.light {
-  background: url(../../../../assets/mic.png) no-repeat center center;
-}
-
-.member_control_more {
+.member-control-more {
   width: 14px;
   height: 12px;
   background: url(../../../../assets/more.png) no-repeat center center;
@@ -230,7 +324,7 @@ export default {
     }
   }
 }
-.member_block {
+.member-block {
   height: 485px;
 
   >>> .el-scrollbar {
