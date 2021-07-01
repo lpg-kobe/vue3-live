@@ -20,6 +20,10 @@
                 class="ques_con"
                 v-html="item.content.replace(/\n/g, '<br>')"
               ></div>
+              <div class="question_control" v-show="user.role === 1 || user.role === 2">
+                <span class="grey_btn" @click="deleteQuestion(item)" v-show="user.role !== 2">{{ $t('common.delete') }}</span>
+                <span @click="showAnswerDialog(item)">{{ $t('question.btnAnswer') }}</span>
+              </div>
             </div>
             <div
               class="question_answer_box"
@@ -47,6 +51,10 @@
                   class="ques_con"
                   v-html="items.content.replace(/\n/g, '<br>')"
                 ></div>
+                <div class="question_control" v-show="user.role === 1 || items.senderId == user.imAccount">
+                  <span class="grey_btn" @click="deleteQuestion(items)">{{ $t('common.delete') }}</span>
+                  <span @click="showUpdateDialog(item, items)">{{ $t('question.btnChange') }}</span>
+                </div>
               </div>
             </div>
           </li>
@@ -98,6 +106,35 @@
         }}</el-button>
       </div>
     </div>
+
+    <!-- 文字解答 -->
+    <el-dialog
+      :title="$t('question.textAnswer')"
+      v-model="answerDialog.visible"
+      width="40%">
+      <p><span style="color: #2691E9;">[{{ $t('question.quesText') }}]</span>&emsp;<span>{{ answerDialog.question }}</span></p>
+      <textarea class="question_textarea" rows="8" v-model="answerDialog.textareaText"></textarea>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="answerFn">{{ $t('common.affirm') }}</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 修改答案 -->
+    <el-dialog
+      title="文字解答"
+      v-model="updateDialog.visible"
+      width="40%">
+      <p><span style="color: #2691E9;">[{{ $t('question.quesText') }}]</span>&emsp;<span>{{ updateDialog.question }}</span></p>
+      <p style="margin-top: 10px;"><span style="color: #E65E50;">[{{ $t('question.myAnswer') }}]</span>&emsp;<span style="color: #808080;">{{ updateDialog.answer }}</span></p>
+      <textarea class="question_textarea" rows="8" v-model="updateDialog.textareaText"></textarea>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="updateAnswer">{{ $t('common.affirm') }}</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -121,6 +158,21 @@ export default {
       loadOver: false,
       sendData: '',
       questionId: 0,
+      answerDialog: {
+        visible: false,
+        textareaText: '',
+        question: '',
+        msgId: '',
+        roomId: ''
+      },
+      updateDialog: {
+        visible: false,
+        textareaText: '',
+        question: '',
+        answer: '',
+        msgId: '',
+        roomId: ''
+      }
     }
   },
   computed: {
@@ -153,7 +205,6 @@ export default {
           size: 50,
         }).then(({ data }) => {
           let res = data
-          console.log(res, 'question')
           if (res.data.length < 50) {
             this.loadOver = true
           }
@@ -164,7 +215,6 @@ export default {
           }
 
           this.dataList = this.dataList.concat(_arr)
-          console.log(this.dataList)
           this.loading = false
           this.$nextTick(() => {
             resolve(_arr.length)
@@ -246,6 +296,81 @@ export default {
           this.send()
         }
       }
+    },
+    deleteQuestion (item) {
+      this.$confirm('确认删除?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        questionDeletemsg({ msgId: item.msgId, roomId: item.roomId }).then(({ data }) => {
+          let res = data
+          if (res.code === 0) {
+            this.$message.success('删除成功')
+          } else {
+            this.$message.error(res.message)
+          }
+        })
+      })
+    },
+    showAnswerDialog (item) {
+      this.answerDialog.textareaText = ''
+      this.answerDialog.question = item.content
+      this.answerDialog.msgId = item.msgId
+      this.answerDialog.roomId = item.roomId
+      this.answerDialog.visible = true
+    },
+    showUpdateDialog (item, items) {
+      this.updateDialog.textareaText = ''
+      this.updateDialog.question = item.content
+      this.updateDialog.answer = items.content
+      this.updateDialog.msgId = items.msgId
+      this.updateDialog.roomId = items.roomId
+      this.updateDialog.visible = true
+    },
+    answerFn () {
+      if (this.answerDialog.textareaText.length < 1) {
+        this.$message.error('请输入回答')
+        return
+      }
+      questionSendmsg({
+        content: {
+          content: encodeURI(this.answerDialog.textareaText),
+          msgType: 1
+        },
+        questionId: this.answerDialog.msgId,
+        roomId: this.answerDialog.roomId,
+        senderId: this.imAccount,
+        type: 2
+      }).then(({ data }) => {
+        let res = data
+        this.answerDialog.visible = false
+        if (res.code === 0) {
+          this.$message.success('回答成功')
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    },
+    updateAnswer () {
+      if (this.updateDialog.textareaText.length < 1) {
+        this.$message.error('请输入回答')
+        return
+      }
+      questionUpdateanswer({
+        content: encodeURI(this.updateDialog.textareaText),
+        answerId: this.updateDialog.msgId,
+        roomId: this.updateDialog.roomId,
+        senderId: this.imAccount
+      }).then(({ data }) => {
+        let res = data
+        this.updateDialog.visible = false
+        if (res.code === 0) {
+          this.$message.success('修改成功')
+        } else {
+          this.$message.error(res.message)
+        }
+      })
     },
     bindEvent() {
       if (!this.imClient) {

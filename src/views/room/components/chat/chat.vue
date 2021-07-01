@@ -19,34 +19,38 @@
           <!-- compere 主持人样式 -->
           <li class="chat_item" v-for="(item, index) of dataList" :key="index">
             <div class="chat_user_box">
+              <!-- 进入直播间信息 -->
               <span
                 class="chat_user_name compere"
                 v-if="item.identity === 'enterMsg'"
               >
                 {{ item.nick }}{{ $t('chat.enter') }}
               </span>
+              <!-- 错误信息 -->
               <span
                 class="chat_user_name chat_error_msg"
                 v-if="item.identity === 'errorMsg'"
               >
                 {{ item.content }}
               </span>
-              <span
-                :class="[
-                  'chat_user_name',
-                  { compere: item.role === 1 || item.role === 2 },
-                ]"
-                v-if="
-                  item.identity !== 'enterMsg' && item.identity !== 'errorMsg'
-                "
-              >
-                <!-- {{ item.nick }} -->
-                {{ item.nick.replace(/^游客/, $t('head.visitor')) }}
-                <!-- identity -->
-                <span v-if="item.role === 1 || item.role === 2">{{
-                  `[${langToIdentity(item.identity)}]`
-                }}</span>
-              </span>
+              <!-- 聊天信息 -->
+              <el-dropdown class="black_dropdown" trigger="click" @command="handleCommand" v-if="user.role === 1 || user.role === 2">
+                <span class="el-dropdown-link">
+                  <span :class="['chat_user_name', 'point_style', {compere: item.role === 1 || item.role === 2}]" v-if="item.identity !== 'enterMsg' && item.identity !== 'errorMsg'">
+                    {{item.nick.replace(/^游客/, $t('head.visitor'))}}
+                    <span v-if="item.role === 1 || item.role === 2">{{ `[${ langToIdentity(item.identity) }]` }}</span>
+                  </span>
+                </span>
+                <template #dropdown>
+                  <el-dropdown-menu class="chat-el-dropdown">
+                    <el-dropdown-item :command="commandPara(item, 'a')" v-show="item.senderId !== Number(imAccount)">回复聊天</el-dropdown-item>
+                    <el-dropdown-item :command="commandPara(item, 'b')" v-show="(item.senderId === Number(imAccount)) || user.role === 1">删除聊天</el-dropdown-item>
+                    <el-dropdown-item :command="commandPara(item, 'c')" v-show="item.senderId !== Number(imAccount) && item.isForbit === 2 && user.role === 1">禁言用户</el-dropdown-item>
+                    <el-dropdown-item :command="commandPara(item, 'd')" v-show="item.senderId !== Number(imAccount) && item.isForbit === 1 && user.role === 1">解除禁言</el-dropdown-item>
+                    <el-dropdown-item :command="commandPara(item, 'e')" v-show="item.senderId !== Number(imAccount) && user.role === 1 && item.role !== 6">踢出用户</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
             <p
               v-if="item.type === 1"
@@ -381,7 +385,117 @@ export default {
         this.$refs.chatscroll.toBottom()
       })
     },
-
+    commandPara (item, type) {
+      return {
+        info: item,
+        type
+      }
+    },
+    handleCommand (command) {
+      console.log(command)
+      switch (command.type) {
+        case 'a':
+          this.sendData = `@${command.info.nick} `
+          this.$refs.textarea1.focus()
+          break;
+        case 'b':
+          this.$confirm('确认删除?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            groupDeletemsg({
+              msgId: command.info.msgId,
+              roomId: command.info.roomId
+            }).then(({ data }) => {
+              let res = data
+              if (res.code === 0) {
+                this.$message.success('删除成功')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          })
+          break;
+        case 'c':
+          if (command.info.role === 6) {
+            forbitchatvisitor({
+              visitorId: command.info.visitorId,
+              roomId: command.info.roomId,
+              type: 1
+            }).then(({ data }) => {
+              let res = data
+              if (res.code === 0) {
+                this.$message.success('禁言成功')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          } else {
+            forbitchat({
+              memberId: command.info.senderId,
+              roomId: command.info.roomId,
+              type: 1
+            }).then(({ data }) => {
+              let res = data
+              if (res.code === 0) {
+                this.$message.success('禁言成功')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          }
+          break;
+        case 'd':
+          if (command.info.role === 6) {
+            forbitchatvisitor({
+              visitorId: command.info.visitorId,
+              roomId: command.info.roomId,
+              type: 2
+            }).then(({ data }) => {
+              let res = data
+              if (res.code === 0) {
+                this.$message.success('取消禁言成功')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          } else {
+            forbitchat({
+              memberId: command.info.senderId,
+              roomId: command.info.roomId,
+              type: 2
+            }).then(({ data }) => {
+              let res = data
+              if (res.code === 0) {
+                this.$message.success('取消禁言成功')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          }
+          break;
+        case 'e':
+          this.$confirm(`是否把 ${command.info.nick} 踢出房间?`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            shotoff({
+              memberId: command.info.senderId,
+              roomId: command.info.roomId,
+            }).then(({ data }) => {
+              let res = data
+              if (res.code === 0) {
+                this.$message.success('踢出成功')
+              } else {
+                this.$message.error(res.message)
+              }
+            })
+          })
+          break;
+      }
+    },
     bindEvent() {
       if (!this.imClient) {
         return
