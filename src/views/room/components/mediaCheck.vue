@@ -144,7 +144,7 @@ export default {
           userId: this.user?.imAccount,
           video: true,
           audio: true,
-          settings: '720p',
+          settings: '360p',
         })
 
         if (error) {
