@@ -1,5 +1,6 @@
 /**
  * @desc sdk for im base on tim-js-sdk
+ * @author pika
  */
 
 import Event from '../utils/event'
@@ -30,7 +31,7 @@ export default class ImLive {
   }
 
   // 初始化 sdk 实例
-  initIm () {
+  initIm() {
     const tim = TIM.create({
       SDKAppID: VITE_sdkAppId,
     });
@@ -44,7 +45,7 @@ export default class ImLive {
    * @param {String} userID 用户ID
    * @param {String} userSig 签名
    */
-  loginIm (params) {
+  loginIm(params) {
     if (!this.tim) {
       return;
     }
@@ -60,7 +61,7 @@ export default class ImLive {
   }
 
   // 登出IM
-  logoutIm () {
+  logoutIm() {
     let promise = this.tim.logout();
     promise.then(() => {
       console.log('logout success'); // IM登出成功
@@ -70,27 +71,27 @@ export default class ImLive {
   }
 
   // 初始化im-sdk监听
-  bindEvent () {
+  bindEvent() {
     this.tim.on(this.event.error, this.onError, this);
   }
 
-  unbindEvent () {
+  unbindEvent() {
     this.tim.off(this.event.error, this.onError);
   }
 
   // tim sdk error
-  onError (event) { // data: { code: any; message: any }
+  onError(event) { // data: { code: any; message: any }
     this.emmitter.emit(this.event.error, {
       errcode: event.data?.code,
       errmsg: event.data?.message,
     });
   }
 
-  on (eventName, handler) {
+  on(eventName, handler) {
     this.tim.on(eventName, handler, this)
   }
 
-  off (eventName, handler) {
+  off(eventName, handler) {
     this.tim.off(eventName, handler, this)
   }
 

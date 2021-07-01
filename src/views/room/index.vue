@@ -27,7 +27,11 @@ import chat from './components/chat/index.vue'
 // import mpCard from './components/header/mpCard.vue'
 // import photoLiveBox from './components/chat/photoLiveBox.vue'
 import Cookies from 'js-cookie'
-import { sendWebsocket, closeWebsocket, websocketSend } from '../../utils/websocket.js'
+import {
+  sendWebsocket,
+  closeWebsocket,
+  websocketSend,
+} from '../../utils/websocket.js'
 import { mapState } from 'vuex'
 
 export default {
@@ -35,7 +39,7 @@ export default {
   data() {
     return {
       initFinish: false,
-      query: null
+      query: null,
     }
   },
   components: {
@@ -62,27 +66,30 @@ export default {
   },
 
   methods: {
-    wsMessage (data) {
+    wsMessage(data) {
       console.log(data.data)
     },
-    wsError () {
-      sendWebsocket( this.query, this.wsMessage, this.wsError)
+
+    wsError() {
+      sendWebsocket(this.query, this.wsMessage, this.wsError)
     },
-    requstWs () {
+
+    requstWs() {
       closeWebsocket()
       this.query = {
         groupid: String(this.roomId),
         memberid: String(this.user.user.imAccount),
         type: '2',
-        token: Cookies.get('userToken')
+        token: Cookies.get('userToken'),
       }
       // 发起ws请求
-      sendWebsocket( this.query, this.wsMessage, this.wsError)
+      sendWebsocket(this.query, this.wsMessage, this.wsError)
       // 每隔5秒发一次心跳
       setInterval(() => {
         websocketSend('ping')
-      }, 5*1000);
+      }, 5 * 1000)
     },
+
     async initRoom() {
       await this.$store.dispatch({
         type: 'room/entryroom',
@@ -96,10 +103,10 @@ export default {
       this.initFinish = true
       this.requstWs()
     },
-    destroyed () {
-      // 销毁监听
-      closeWebsocket()
-    }
+  },
+
+  beforeDestroy() {
+    closeWebsocket()
   },
 }
 </script>
