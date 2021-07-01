@@ -35,7 +35,7 @@ export default {
     phoneRegisterShow: state => state.phoneRegisterShow,
     cardShow: state => state.cardShow,
     isForbit: state => state.isForbit,
-    imAccount: state => state.imAccount,
+    imAccount: state => state.user.imAccount,
     isVisitorLogin: state => state.isVisitorLogin,
     dialogShopVideo: state => state.dialogShopVideo,
   },

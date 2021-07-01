@@ -7,6 +7,7 @@
     "serve": "vite preview --mode prod"
   },
   "dependencies": {
+    "crypto-js": "^4.0.0",
     "element-plus": "^1.0.2-beta.48",
     "js-cookie": "^2.2.1",
     "normalize.css": "^8.0.1",

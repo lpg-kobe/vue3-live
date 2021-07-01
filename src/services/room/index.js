@@ -95,6 +95,14 @@ export function forbitchat(data) {
   )
 }
 
+// 游客禁言或者取消禁言接口
+export function forbitchatvisitor (data) {
+  return request(
+    `/web/member/forbitchatvisitor`,
+    { method: 'post', body: JSON.stringify(data) }
+  )
+}
+
 // 踢出直播间用户接口
 export function shotoff(data) {
   return request(
