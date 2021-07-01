@@ -2,6 +2,7 @@
  * @desc base router config
  */
 import { createRouter, createWebHistory } from 'vue-router'
+import Cookies from 'js-cookie'
 import { getUserSession } from './utils/session'
 import Home from './views/home/index.vue'
 import Room from './views/room/index.vue'
@@ -41,9 +42,13 @@ const router = createRouter({
 
 // router permission
 function routerPermit({ name }, from, next) {
-  if (name !== 'login' && !getUserSession()) {
+  const hasToken = Cookies.get('www_ofweekmember')
+  if (name !== 'login' && (!hasToken || !getUserSession())) {
     next({
-      name: 'login'
+      name: 'login',
+      query: {
+        redirect: encodeURI(location.href)
+      }
     })
   } else {
     next()

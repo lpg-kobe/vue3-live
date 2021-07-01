@@ -29,7 +29,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import PhotoLive from '../../components/chat/PhotoLive.vue'
+import PhotoLive from './PhotoLive.vue'
 export default {
   name: 'photoLiveBox',
   data() {

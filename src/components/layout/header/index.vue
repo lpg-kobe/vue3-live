@@ -187,6 +187,7 @@ import { logout, leaveroom } from '../../../services/room/index.js'
 import { mapState } from 'vuex'
 import QRious from 'qrious'
 import { VITE_wapBaseUrl } from '../../../constants.js'
+import { removeUserSession } from '../../../utils/session'
 import { eventEmitter } from '../../../utils/event'
 
 export default {
@@ -213,8 +214,9 @@ export default {
   methods: {
     logout() {
       leaveroom({ roomid: this.roomId })
-      logout().then((res) => {
-        if (res.code === 0) {
+      logout().then(({ data }) => {
+        if (data?.code === 0) {
+          removeUserSession()
           location.reload()
         }
       })

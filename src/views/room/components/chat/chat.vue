@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import { IM_EVENT } from '../../sdk/imLive'
+import { IM_EVENT } from '../../../../sdk/imLive'
 import { mapState, mapGetters, mapMutations } from 'vuex'
 import {
   groupGetmoremsg,
@@ -147,10 +147,10 @@ import {
   forbitchat,
   shotoff,
   leaveroom,
-} from '../../services/room/index.js'
-import { emoji } from '../../assets/js/emoji'
+} from '../../../../services/room/index.js'
+import { emoji } from '../../../../assets/js/emoji'
 import chatScroll from './chatScroll.vue'
-import { VITE_baseUrl } from '../../constants.js'
+import { VITE_baseUrl } from '../../../../constants.js'
 const baseUrl =
   process.env.NODE_ENV === 'development'
     ? 'https://a.ofweek.com:8081/uploadImg'
@@ -705,7 +705,7 @@ export default {
     float: left;
     width: 24px;
     height: 24px;
-    background: url(../../assets/smile.png) no-repeat;
+    background: url(../../../../assets/smile.png) no-repeat;
     cursor: pointer;
 
     ul {
@@ -747,7 +747,7 @@ export default {
     width: 24px;
     height: 24px;
     margin-left: 20px;
-    background: url(../../assets/imgIcon.png) no-repeat center;
+    background: url(../../../../assets/imgIcon.png) no-repeat center;
     cursor: pointer;
   }
 }

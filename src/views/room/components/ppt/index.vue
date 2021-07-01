@@ -281,7 +281,7 @@ export default {
       display: inline-block;
       width: 16px;
       height: 16px;
-      background: url(../../assets/full.png) no-repeat;
+      background: url(../../../../assets/full.png) no-repeat;
       background-size: contain;
       vertical-align: middle;
     }
@@ -320,7 +320,7 @@ export default {
     width: 4.5em;
     height: 4.5em;
     transform: translateX(-50%) translateY(-50%);
-    background: url(../../assets/icon_play.png) no-repeat;
+    background: url(../../../../assets/icon_play.png) no-repeat;
     background-size: 100% 100%;
     z-index: 12;
     cursor: pointer;

@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { IM_EVENT } from '../../sdk/imLive'
+import { IM_EVENT } from '../../../../sdk/imLive.js'
 import imgTextList from './imgText.vue'
 import product from './product.vue'
 import download from './download.vue'
@@ -60,7 +60,7 @@ import {
   getroomdata,
   getQuestionnaireOne,
   getRoomQuestionnaireList,
-} from '../../services/room/index.js'
+} from '../../../../services/room/index.js'
 export default {
   name: 'imgText',
   data() {
@@ -480,7 +480,7 @@ export default {
     color: #2691e9;
     line-height: 32px;
     padding: 0 5px 0 30px;
-    background: url(../../assets/wj_icon.png) no-repeat 6px center;
+    background: url(../../../../assets/wj_icon.png) no-repeat 6px center;
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
   }

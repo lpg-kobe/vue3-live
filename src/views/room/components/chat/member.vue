@@ -172,23 +172,23 @@ export default {
 .member_control_ban {
   width: 26px;
   height: 18px;
-  background: url(../../assets/jinyan.png) no-repeat center center;
+  background: url(../../../../assets/jinyan.png) no-repeat center center;
   background-size: 100% 100%;
 }
 
 .member_control_mic {
   width: 22px;
   height: 22px;
-  background: url(../../assets/mic_ban.png) no-repeat center center;
+  background: url(../../../../assets/mic_ban.png) no-repeat center center;
 }
 .member_control_mic.light {
-  background: url(../../assets/mic.png) no-repeat center center;
+  background: url(../../../../assets/mic.png) no-repeat center center;
 }
 
 .member_control_more {
   width: 14px;
   height: 12px;
-  background: url(../../assets/more.png) no-repeat center center;
+  background: url(../../../../assets/more.png) no-repeat center center;
 
   ul {
     position: absolute;

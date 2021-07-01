@@ -43,7 +43,7 @@ export default function request(
   // 配置默认headers
   const headers = {
     'Content-Type': 'application/json;charset=UTF-8',
-    devType: 8,
+    devType: 10,
     ...options?.headers,
   };
 
@@ -97,7 +97,7 @@ export default function request(
 
         if (data.code !== 0) {
           // 登录过期
-          if (data.code === -10 || data.code === -20 || data.code === -22) {
+          if (data.code === -10 || data.code === -20 || data.code === -22 || data.code === -24) {
             fetchController.abort();
             handleError(handler, data);
             eventEmitter.emit(IM_EVENT.loginExp, {});

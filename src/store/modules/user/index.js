@@ -3,6 +3,7 @@
  */
 
 import { ElMessage } from 'element-plus'
+import qs from 'qs'
 import { login, sendSms, smsLogin } from '../../../services/user'
 import { getUserSession, saveUserSession } from '../../../utils/session'
 import { replaceHistory } from '../../../utils/tool'
@@ -83,8 +84,13 @@ export default {
         return;
       }
       ElMessage.success('登录成功')
+      const { redirect } = qs.parse(location.search, { ignoreQueryPrefix: true })
       saveUserSession(data)
-      replaceHistory('/')
+      if (redirect) {
+        location.replace(decodeURI(redirect))
+      } else {
+        replaceHistory('/')
+      }
     }
   },
 }

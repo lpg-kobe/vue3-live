@@ -86,16 +86,12 @@ export default {
       if (this.hasShow === false && index2 != 0) {
         if (index === 1) {
           this.$nextTick(() => {
-            setTimeout(() => {
-              this.$refs.chat.toBottomFn()
-            }, 1)
+            // this.$refs.chat.toBottomFn()
           })
           this.hasShow = true
         } else if (index === 3) {
           this.$nextTick(() => {
-            setTimeout(() => {
-              this.$refs.question.toTop()
-            }, 1)
+            // this.$refs.question.toTop()
           })
           this.hasShow = true
         }
@@ -110,7 +106,6 @@ export default {
     },
   },
   created() {
-    console.log(this.room, 1212)
     this.room.menulist.forEach((item) => {
       this.defineTab.forEach((item2) => {
         if (item.menuType === item2.menuType) {
@@ -139,6 +134,6 @@ export default {
 .hot_num {
   line-height: 50px;
   padding-left: 20px;
-  background: url(../../assets/hot.png) no-repeat left center;
+  background: url(../../../../assets/hot.png) no-repeat left center;
 }
 </style>

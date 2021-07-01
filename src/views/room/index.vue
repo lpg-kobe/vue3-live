@@ -22,10 +22,10 @@
 import heads from '../../components/layout/header/index.vue'
 import liveBox from './components/live/index.vue'
 import thumbView from './components/thumbView/index.vue'
-import imgText from '../../components/imgText/index.vue'
-import chat from '../../components/chat/index.vue'
-// import mpCard from '../../components/header/mpCard.vue'
-// import photoLiveBox from '../../components/chat/photoLiveBox.vue'
+import imgText from './components/imgText/index.vue'
+import chat from './components/chat/index.vue'
+// import mpCard from './components/header/mpCard.vue'
+// import photoLiveBox from './components/chat/photoLiveBox.vue'
 import { mapState } from 'vuex'
 
 export default {
@@ -91,7 +91,7 @@ export default {
 }
 
 .wrap-container {
-  margin-top: 20px;
+  margin-top: 12px;
   background: #fff;
 }
 </style>

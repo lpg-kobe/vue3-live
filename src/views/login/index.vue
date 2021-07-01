@@ -1,48 +1,51 @@
 <template>
-  <div class="login-container">
-    <el-tabs v-model="loginMode" @tab-click="handleClick">
-      <el-tab-pane label="密码登录" name="pwd">
-        <el-form
-          :model="accountForm"
-          :rules="accountRules"
-          ref="accountForm"
-          label-width="100px"
-        >
-          <el-form-item label="手机号" prop="account">
-            <el-input v-model.number="accountForm.account"></el-input>
-          </el-form-item>
-          <el-form-item label="密码" prop="password">
-            <el-input
-              type="password"
-              v-model="accountForm.password"
-              autocomplete="off"
-            ></el-input>
-          </el-form-item>
-        </el-form>
-      </el-tab-pane>
-      <el-tab-pane label="验证码登录" name="sms">
-        <el-form
-          :model="smsForm"
-          :rules="smsRules"
-          ref="smsForm"
-          label-width="100px"
-        >
-          <el-form-item label="手机号" prop="mobile">
-            <el-input v-model.number="smsForm.mobile"></el-input>
-          </el-form-item>
-          <el-form-item label="验证码" prop="code">
-            <el-input v-model="smsForm.code" autocomplete="off"></el-input>
-            <el-button
-              type="primary"
-              :disabled="smsDisable"
-              @click="handleSendSms"
-              >{{ smsText }}</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </el-tab-pane>
-    </el-tabs>
-    <el-button @click="handleLogin">登录</el-button>
+  <div class="login-wrap">
+    <div class="login-container">
+      <el-tabs v-model="loginMode" @tab-click="handleClick">
+        <el-tab-pane label="密码登录" name="pwd">
+          <el-form
+            :model="accountForm"
+            :rules="accountRules"
+            ref="accountForm"
+            label-width="100px"
+            @keyup.enter="handleLogin"
+          >
+            <el-form-item label="手机号" prop="account">
+              <el-input v-model.number="accountForm.account"></el-input>
+            </el-form-item>
+            <el-form-item label="密码" prop="password">
+              <el-input
+                type="password"
+                v-model="accountForm.password"
+                autocomplete="off"
+              ></el-input>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
+        <el-tab-pane label="验证码登录" name="sms">
+          <el-form
+            :model="smsForm"
+            :rules="smsRules"
+            ref="smsForm"
+            label-width="100px"
+            @keyup.enter="handleLogin"
+          >
+            <el-form-item label="手机号" prop="mobile">
+              <el-input v-model.number="smsForm.mobile"></el-input>
+            </el-form-item>
+            <el-form-item label="验证码" prop="code">
+              <el-input v-model="smsForm.code" autocomplete="off"></el-input>
+            </el-form-item>
+            <div class="send-sms-btn">
+              <el-button @click="handleSendSms">{{ smsText }}</el-button>
+            </div>
+          </el-form>
+        </el-tab-pane>
+      </el-tabs>
+      <div class="login-btn">
+        <el-button type="primary" @click="handleLogin">登录</el-button>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -91,7 +94,7 @@ export default {
         ],
       },
       smsRules: {
-        phone: [
+        mobile: [
           {
             required: true,
             type: 'number',
@@ -115,15 +118,21 @@ export default {
     handleClick() {},
 
     handleSendSms() {
-      this.$store.dispatch({
-        type: 'user/sendSms',
-        payload: {
-          mobile: this.smsForm.mobile,
-        },
-        callback: () => {
-          ElMessage.success('验证码已发送')
-          this.handleSmsCount(Math.ceil(new Date().getTime() / 1000))
-        },
+      this.$refs.smsForm.validateField('mobile', (errMsg) => {
+        if (errMsg) {
+          return false
+        } else {
+          this.$store.dispatch({
+            type: 'user/sendSms',
+            payload: {
+              mobile: this.smsForm.mobile,
+            },
+            callback: () => {
+              ElMessage.success('验证码已发送')
+              this.handleSmsCount(Math.ceil(new Date().getTime() / 1000))
+            },
+          })
+        }
       })
     },
 
@@ -167,3 +176,37 @@ export default {
   },
 }
 </script>
+
+<style lang="scss" scoped>
+.login-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: url(../../assets/img/login/login_bg.jpg) no-repeat center top;
+
+  .login-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 500px;
+    min-height: 330px;
+    padding: 30px 40px;
+    background: rgba($color: #fff, $alpha: 0.8);
+    border-radius: 10px;
+    transform: translateX(-50%) translateY(-50%);
+
+    .send-sms-btn {
+      text-align: right;
+    }
+
+    .login-btn {
+      text-align: center;
+      margin-top: 10px;
+
+      .el-button {
+        min-width: 120px;
+      }
+    }
+  }
+}
+</style>

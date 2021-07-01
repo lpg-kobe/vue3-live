@@ -6,10 +6,7 @@
     @mouseout="onLiveStreamMouse(0)"
   >
     <div id="speakerId"></div>
-    <div
-      class="controll-layer"
-      v-if="String(speaker.userId_) === String(user.user.imAccount)"
-    >
+    <div class="controll-layer">
       <!-- <i class="icon icon-switch" @click="handleIconClick('switch')"></i> -->
       <i
         class="icon icon-full-screen"
@@ -166,9 +163,10 @@ export default {
       right: 10px;
       width: 18px;
       height: 18px;
-      background: url(../../../assets/img/live/i-full.png) no-repeat center/100%;
+      background: url(../../../../assets/img/live/i-full.png) no-repeat
+        center/100%;
       &.icon-switch {
-        background: url(../../../assets/img/live/i-switch.png) no-repeat
+        background: url(../../../../assets/img/live/i-switch.png) no-repeat
           center/100%;
         right: unset;
         left: 10px;

@@ -2,9 +2,17 @@
   <div class="prod-shadow">
     <div class="prod-dialog">
       <div class="prod-dialog-scroll">
-          <div class="prod-title-wrap">
-          <div class="prod-dialog-title">{{ `${$t('product.show')} > ${title == '推荐产品' ? $t('product.recommend') : title}` }}</div>
-          <div class="iconfont prod-dialog-close" @click="closeDialogFn">&#xe615;</div>
+        <div class="prod-title-wrap">
+          <div class="prod-dialog-title">
+            {{
+              `${$t('product.show')} > ${
+                title == '推荐产品' ? $t('product.recommend') : title
+              }`
+            }}
+          </div>
+          <div class="iconfont prod-dialog-close" @click="closeDialogFn">
+            &#xe615;
+          </div>
         </div>
         <div class="prod-bd">
           <div class="info-wrap clearfix">
@@ -13,16 +21,28 @@
                 <!-- <pic-zoom :url="productInfo.imageUrlList[curImgIndex]"></pic-zoom> -->
               </div>
               <ul class="img-tab">
-                <li v-for="(item, index) of productInfo.imageUrlList" :key="index" :class="{active: curImgIndex === index}" @mouseover="curImgIndex = index">
-                  <img :src="item" alt="">
+                <li
+                  v-for="(item, index) of productInfo.imageUrlList"
+                  :key="index"
+                  :class="{ active: curImgIndex === index }"
+                  @mouseover="curImgIndex = index"
+                >
+                  <img :src="item" alt="" />
                 </li>
               </ul>
             </div>
             <div class="product-right fl">
               <div class="name">{{ productInfo.productName }}</div>
-              <div class="price" v-if="productInfo.price > 0"><i>{{ $t('product.price') }}</i>￥<span>{{ productInfo.price }}</span></div>
-              <div class="price" v-if="productInfo.price == 0"><span>{{ $t('product.free') }}</span></div>
-              <div class="price" v-if="productInfo.price < 0"><span>{{ $t('product.personally') }}</span></div>
+              <div class="price" v-if="productInfo.price > 0">
+                <i>{{ $t('product.price') }}</i
+                >￥<span>{{ productInfo.price }}</span>
+              </div>
+              <div class="price" v-if="productInfo.price == 0">
+                <span>{{ $t('product.free') }}</span>
+              </div>
+              <div class="price" v-if="productInfo.price < 0">
+                <span>{{ $t('product.personally') }}</span>
+              </div>
               <div class="apply-btn">
                 <div @click="applyFn">{{ $t('product.sample') }}</div>
                 <div @click="leaveMsgFn">{{ $t('product.message') }}</div>
@@ -32,9 +52,24 @@
                   <i class="iconfont icon-a"></i>{{ $t('common.share') }}
                   <div class="share-btn">
                     <!-- <a href="javascript:" class="iconfont icon-weichat" :title="$t('common.weChat')" v-popover:popover1></a> -->
-                    <a :href="weibo + '&pic=' + productInfo.imageUrlList[0]" target="_blank" class="iconfont icon-xinlang" :title="$t('common.microblog')"></a>
-                    <a :href="qzone + '&pics=' + productInfo.imageUrlList[0]" target="_blank" class="iconfont icon-Qzone" :title="$t('common.Qzone')"></a>
-                    <a :href="qq + '&pics=' + productInfo.imageUrlList[0]" target="_blank" class="iconfont icon-QQ" title="QQ"></a>
+                    <a
+                      :href="weibo + '&pic=' + productInfo.imageUrlList[0]"
+                      target="_blank"
+                      class="iconfont icon-xinlang"
+                      :title="$t('common.microblog')"
+                    ></a>
+                    <a
+                      :href="qzone + '&pics=' + productInfo.imageUrlList[0]"
+                      target="_blank"
+                      class="iconfont icon-Qzone"
+                      :title="$t('common.Qzone')"
+                    ></a>
+                    <a
+                      :href="qq + '&pics=' + productInfo.imageUrlList[0]"
+                      target="_blank"
+                      class="iconfont icon-QQ"
+                      title="QQ"
+                    ></a>
                   </div>
                   <!-- 微信二维码 -->
                   <!-- <el-popover
@@ -50,12 +85,25 @@
                   </el-popover> -->
                 </div>
               </div>
-              <div class="file-list" v-show="productInfo.productDataDtos.length > 0">
+              <div
+                class="file-list"
+                v-show="productInfo.productDataDtos.length > 0"
+              >
                 <p>{{ $t('product.downloadFile') }}：</p>
                 <ul>
-                  <li class="clearfix" v-for="(item, index) of fileList[currentPage - 1]" :key="index">
+                  <li
+                    class="clearfix"
+                    v-for="(item, index) of fileList[currentPage - 1]"
+                    :key="index"
+                  >
                     <p>{{ item.productName }}</p>
-                    <a class="download" target="_blank" :href="`//${baseUrl}/api/web/download/roomdata?dataid=${item.dataId}&roomid=${roomId}&devType=3`" :download="item.productName">{{ $t('product.download') }}</a>
+                    <a
+                      class="download"
+                      target="_blank"
+                      :href="`//${baseUrl}/api/web/download/roomdata?dataid=${item.dataId}&roomid=${roomId}&devType=3`"
+                      :download="item.productName"
+                      >{{ $t('product.download') }}</a
+                    >
                   </li>
                 </ul>
                 <el-pagination
@@ -64,7 +112,8 @@
                   :current-page="currentPage"
                   :page-size="pageSize"
                   :total="listTotal"
-                  @current-change="pageChange">
+                  @current-change="pageChange"
+                >
                 </el-pagination>
               </div>
             </div>
@@ -72,7 +121,10 @@
           <div class="intro" v-show="productInfo.summary.length > 0">
             <div class="intro-title">{{ $t('product.introduce') }}</div>
             <el-scrollbar>
-              <p class="intro-con" v-html="productInfo.summary.replace(/\n/g,'<br>')"></p>
+              <p
+                class="intro-con"
+                v-html="productInfo.summary.replace(/\n/g, '<br>')"
+              ></p>
             </el-scrollbar>
           </div>
         </div>
@@ -85,17 +137,20 @@
 import PicZoom from './picZoom.vue'
 import QRious from 'qrious'
 import { mapGetters } from 'vuex'
-import { productGetone, answerQuestionnaire } from '../../services/room/index.js'
-import { VITE_baseUrl } from '../../constants.js'
+import {
+  productGetone,
+  answerQuestionnaire,
+} from '../../../../services/room/index.js'
+import { VITE_baseUrl } from '../../../../constants.js'
 export default {
-  name: "question",
+  name: 'question',
   data() {
     return {
       baseUrl: VITE_baseUrl,
       productInfo: {
         imageUrlList: [''],
         productDataDtos: [],
-        summary: ''
+        summary: '',
       },
       loading: false,
       curImgIndex: 0,
@@ -107,39 +162,39 @@ export default {
       fileList: [],
       pageSize: 1,
       currentPage: 1,
-      listTotal: 0
+      listTotal: 0,
     }
   },
   components: { PicZoom },
   props: {
     productId: {
-      type: Number
+      type: Number,
     },
     title: {
-      type: String
-    }
+      type: String,
+    },
   },
   computed: {
     ...mapGetters({
       roomId: 'room/roomId',
-      room: 'room/user'
-    })
+      room: 'room/user',
+    }),
   },
   methods: {
-    closeDialogFn () {
+    closeDialogFn() {
       this.$emit('hideDetial')
     },
-    applyFn () {
+    applyFn() {
       // this.$emit('applyFn', this.productId)
     },
-    leaveMsgFn () {
+    leaveMsgFn() {
       // this.$emit('leaveMsgFn', this.productId)
     },
-    initShare () {
+    initShare() {
       this.pageUrl = `https://room.ofweek.com/livewap/#/live/${this.roomId}`
       new QRious({
         element: document.getElementById('qr4'),
-        value: this.pageUrl
+        value: this.pageUrl,
       })
       let title = this.productInfo.productName
       let url = encodeURIComponent(location.href)
@@ -148,32 +203,34 @@ export default {
       desc = desc.length > 120 ? desc.substring(0, 120) + '...' : desc
       let param = 'title=' + title + '&url=' + url
       this.weibo = 'https://service.weibo.com/share/share.php?' + param
-      this.qzone = 'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + param + '&desc=' + desc + '&summary=' + desc
+      this.qzone =
+        'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' +
+        param +
+        '&desc=' +
+        desc +
+        '&summary=' +
+        desc
       this.qq = 'http://connect.qq.com/widget/shareqq/index.html?' + param
     },
-    group (array, subGroupLength) {
-      let index = 0;
-      let newArray = [];
-      while(index < array.length) {
-          newArray.push(array.slice(index, index += subGroupLength));
+    group(array, subGroupLength) {
+      let index = 0
+      let newArray = []
+      while (index < array.length) {
+        newArray.push(array.slice(index, (index += subGroupLength)))
       }
-      return newArray;
+      return newArray
     },
-    pageChange (val) {
+    pageChange(val) {
       this.currentPage = val
-    }
+    },
   },
-  created () {
-
-  },
-  mounted () {
-
-  },
+  created() {},
+  mounted() {},
   watch: {
-    productId (val) {
+    productId(val) {
       if (val) {
         this.loading = true
-        productGetone({productid: val}).then(({ data }) => {
+        productGetone({ productid: val }).then(({ data }) => {
           let res = data
           if (res.code === 0) {
             this.productInfo = res.data
@@ -184,9 +241,9 @@ export default {
           }
         })
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 <style lang="scss">
 .intro {
@@ -204,7 +261,7 @@ export default {
 .file-list {
   .el-pagination {
     text-align: center;
-    color: #1F1F1F;
+    color: #1f1f1f;
   }
 }
 </style>
@@ -227,7 +284,7 @@ export default {
   width: 1000px;
   margin: 0 0 0 -500px;
   transform: translateY(-50%);
-  font: normal 14px/1.5 "Microsoft Yahei";
+  font: normal 14px/1.5 'Microsoft Yahei';
   letter-spacing: 1px;
   background: #fff;
 }
@@ -263,7 +320,7 @@ export default {
   left: 50px;
   top: 10px;
   font-size: 20px;
-  color: #1F1F1F;
+  color: #1f1f1f;
 }
 
 .prod-bd {
@@ -277,7 +334,7 @@ export default {
     .img-pro {
       width: 335px;
       height: 335px;
-      border: 1px solid #E6E6E6;
+      border: 1px solid #e6e6e6;
     }
 
     .img-tab {
@@ -290,7 +347,7 @@ export default {
         width: 60px;
         height: 60px;
         margin-left: 8px;
-        border: 1px solid #E6E6E6;
+        border: 1px solid #e6e6e6;
         cursor: pointer;
 
         img {
@@ -303,7 +360,7 @@ export default {
           margin-left: 0;
         }
         &.active {
-          border: 1px solid #2691E9;
+          border: 1px solid #2691e9;
         }
       }
     }
@@ -314,13 +371,13 @@ export default {
     .name {
       font-size: 18px;
       font-weight: 400;
-      color: #1F1F1F;
+      color: #1f1f1f;
       line-height: 1.5em;
     }
 
     .price {
       font-size: 16px;
-      color: #C82126;
+      color: #c82126;
       margin-top: 10px;
 
       i {
@@ -348,7 +405,7 @@ export default {
         color: #808080;
         line-height: 40px;
         text-align: center;
-        background: #E6E6E6;
+        background: #e6e6e6;
         border-radius: 4px;
         margin-right: 20px;
         padding: 0 15px;
@@ -375,7 +432,7 @@ export default {
 
       > p {
         font-size: 16px;
-        color: #1F1F1F;
+        color: #1f1f1f;
       }
 
       ul {
@@ -399,10 +456,10 @@ export default {
           max-width: 120px;
           height: 24px;
           font-size: 14px;
-          color: #2691E9;
+          color: #2691e9;
           text-align: center;
           line-height: 24px;
-          border: 1px solid #2691E9;
+          border: 1px solid #2691e9;
           border-radius: 4px;
           user-select: none;
           padding: 0 10px;
@@ -419,7 +476,7 @@ export default {
   .intro-title {
     position: relative;
     font-size: 16px;
-    color: #1F1F1F;
+    color: #1f1f1f;
     padding-left: 10px;
     font-weight: bold;
     line-height: 1;
@@ -432,7 +489,7 @@ export default {
       content: '';
       width: 3px;
       height: 16px;
-      background: #2691E9;
+      background: #2691e9;
     }
   }
 
