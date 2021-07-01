@@ -26,6 +26,8 @@ import imgText from './components/imgText/index.vue'
 import chat from './components/chat/index.vue'
 // import mpCard from './components/header/mpCard.vue'
 // import photoLiveBox from './components/chat/photoLiveBox.vue'
+import Cookies from 'js-cookie'
+import { sendWebsocket, closeWebsocket, websocketSend } from '../../utils/websocket.js'
 import { mapState } from 'vuex'
 
 export default {
@@ -59,6 +61,27 @@ export default {
   },
 
   methods: {
+    wsMessage (data) {
+      console.log(data.data)
+    },
+    wsError () {
+      console.log('ws链接失败')
+    },
+    requstWs () {
+      closeWebsocket()
+      let query = {
+        groupid: String(this.roomId),
+        memberid: String(this.user.user.imAccount),
+        type: '2',
+        token: Cookies.get('userToken')
+      }
+      // 发起ws请求
+      sendWebsocket( query, this.wsMessage, this.wsError)
+      // 每隔5秒发一次心跳
+      setInterval(() => {
+        websocketSend('ping')
+      }, 5*1000);
+    },
     async initRoom() {
       await this.$store.dispatch({
         type: 'room/entryroom',
@@ -70,7 +93,12 @@ export default {
         payload: { roomid: this.roomId },
       })
       this.initFinish = true
+      this.requstWs()
     },
+    destroyed () {
+      // 销毁监听
+      closeWebsocket()
+    }
   },
 }
 </script>
