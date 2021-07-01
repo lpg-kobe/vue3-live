@@ -10,25 +10,25 @@
         <img
           v-if="room.lang === 'zh'"
           class="header_logo"
-          src="../../assets/logo_zh.png"
+          src="../../../assets/logo_zh.png"
           alt=""
         />
         <img
           v-if="room.lang === 'en'"
           class="header_logo"
-          src="../../assets/logo_en.jpg"
+          src="../../../assets/logo_en.jpg"
           alt=""
         />
         <img
           v-if="room.lang === 'ja'"
           class="header_logo"
-          src="../../assets/logo_ja.jpg"
+          src="../../../assets/logo_ja.jpg"
           alt=""
         />
         <img
           v-if="room.lang === 'es'"
           class="header_logo"
-          src="../../assets/logo_es.jpg"
+          src="../../../assets/logo_es.jpg"
           alt=""
         />
       </a>
@@ -37,14 +37,14 @@
         target="_blank"
         v-if="room.room.type === 2"
       >
-        <img class="header_logo" src="../../assets/logo2.png" alt="" />
+        <img class="header_logo" src="../../../assets/logo2.png" alt="" />
       </a>
       <a
         href="https://expo.ofweek.com/"
         target="_blank"
         v-if="room.room.type === 3"
       >
-        <img class="header_logo" src="../../assets/logo3.png" alt="" />
+        <img class="header_logo" src="../../../assets/logo3.png" alt="" />
       </a>
       <!-- room name -->
       <h1 class="dot" :title="room.room.name">{{ room.room.name }}</h1>
@@ -119,7 +119,7 @@
                 ({ userId_ }) => String(userId_) === String(user.user.imAccount)
               )
             "
-            v-if="user.user.role === 1"
+            v-if="user.user.role === 1 && room.room.status === 1"
             >开始直播</el-button
           >
         </li>
@@ -134,7 +134,7 @@
                 ({ userId_ }) => String(userId_) === String(user.user.imAccount)
               )
             "
-            v-if="user.user.role === 1"
+            v-if="user.user.role === 1 && room.room.status === 1"
             :loading="live.liveToggleLoading"
             >结束直播</el-button
           >
@@ -150,7 +150,7 @@
                 ({ userId_ }) => String(userId_) === String(user.user.imAccount)
               )
             "
-            v-if="user.user.role === 2"
+            v-if="user.user.role === 2 && room.room.status === 1"
             :loading="live.liveToggleLoading"
             >申请上麦</el-button
           >
@@ -166,7 +166,7 @@
                 ({ userId_ }) => String(userId_) === String(user.user.imAccount)
               )
             "
-            v-if="user.user.role === 2"
+            v-if="user.user.role === 2 && room.room.status === 1"
             :loading="live.liveToggleLoading"
             >下麦</el-button
           >
@@ -343,7 +343,7 @@ export default {
       display: inline-block;
       width: 17px;
       height: 13px;
-      background: url(../../assets/icon-live.png) no-repeat center center;
+      background: url(../../../assets/icon-live.png) no-repeat center center;
       margin-right: 8px;
     }
 
@@ -378,7 +378,7 @@ export default {
   font-size: 14px;
   color: #1f1f1f;
   line-height: 46px;
-  background: url(../../assets/qr-icon.png) no-repeat left center;
+  background: url(../../../assets/qr-icon.png) no-repeat left center;
   background-size: 25px 25px;
   user-select: none;
   cursor: pointer;
