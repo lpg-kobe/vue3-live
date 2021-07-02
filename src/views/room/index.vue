@@ -36,7 +36,8 @@ export default {
     return {
       initFinish: false,
       query: null,
-      timer: null
+      timer: null,
+      timer2: null
     }
   },
   components: {
@@ -60,6 +61,7 @@ export default {
 
   created() {
     window.onbeforeunload = () => {
+      console.log('onbeforeunload')
       clearInterval(this.timer)
       closeWebsocket()
     }
@@ -72,9 +74,10 @@ export default {
     },
     wsError () {
       clearInterval(this.timer)
-      setTimeout(() => {
+      clearInterval(this.timer2)
+      this.timer2 = setTimeout(() => {
         this.requstWs()
-      }, 2*1000)
+      }, 3*1000)
     },
     websocketOpen () {
       // 每隔5秒发一次心跳
@@ -119,6 +122,7 @@ export default {
     },
     destroyed () {
       // 销毁监听
+      console.log('destroyed')
       clearInterval(this.timer)
       closeWebsocket()
     }

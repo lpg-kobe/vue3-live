@@ -3,7 +3,7 @@ import CryptoJS from 'crypto-js'
 let websock = null
 let messageCallback = null
 let errorCallback = null
-let openCallback = null
+let openCallbackFn = null
 let wsUrl = ''
 let tryTime = 0
 const KP = {
@@ -58,7 +58,7 @@ function websocketclose (e) {
 // 建立ws连接
 function websocketOpen (e) {
   console.log('websocket连接成功')
-  openCallback && openCallback()
+  openCallbackFn && openCallbackFn()
 }
  
 // 初始化weosocket
@@ -96,13 +96,12 @@ function initWebSocket () {
  */
 export function sendWebsocket ({query, successCallback, errCallback, openCallback}) {
   wsUrl = `wss://livetest.ofweek.com/api/web/ws/webSocket?param=${encodeURIComponent(encryptAes(JSON.stringify(query), KP.key, KP.iv))}&needDecode=1`
-  // wsUrl = `ws://qincx.ofweek.com/api/web/ws/webSocket?param=${encodeURIComponent(encryptAes(JSON.stringify(data), KP.key, KP.iv))}&needDecode=1`
-  console.log(wsUrl)
-  initWebSocket()
+
   messageCallback = successCallback ? successCallback : null
-  openCallback = openCallback ? openCallback : null
+  openCallbackFn = openCallback ? openCallback : null
   errorCallback = errCallback ? errCallback : null
-  // websocketSend(agentData)
+
+  initWebSocket()
 }
 
 /**
