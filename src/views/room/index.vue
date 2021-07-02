@@ -35,7 +35,8 @@ export default {
   data() {
     return {
       initFinish: false,
-      query: null
+      query: null,
+      timer: null
     }
   },
   components: {
@@ -58,6 +59,10 @@ export default {
   },
 
   created() {
+    window.onbeforeunload = () => {
+      clearInterval(this.timer)
+      closeWebsocket()
+    }
     this.initRoom()
   },
 
@@ -66,7 +71,16 @@ export default {
       console.log(data.data)
     },
     wsError () {
-      sendWebsocket( this.query, this.wsMessage, this.wsError)
+      clearInterval(this.timer)
+      setTimeout(() => {
+        this.requstWs()
+      }, 2*1000)
+    },
+    websocketOpen () {
+      // 每隔5秒发一次心跳
+      this.timer = setInterval(() => {
+        websocketSend('ping')
+      }, 5*1000);
     },
     requstWs () {
       closeWebsocket()
@@ -77,13 +91,20 @@ export default {
         token: Cookies.get('userToken')
       }
       // 发起ws请求
-      sendWebsocket( this.query, this.wsMessage, this.wsError)
-      // 每隔5秒发一次心跳
-      setInterval(() => {
-        websocketSend('ping')
-      }, 5*1000);
+      sendWebsocket({
+        query: this.query,
+        successCallback: this.wsMessage,
+        errCallback: this.wsError,
+        openCallback: this.websocketOpen
+      })
     },
     async initRoom() {
+      this.$store.commit('room/setState', [
+        {
+          key: 'roomId',
+          value: this.roomId,
+        }
+      ])
       await this.$store.dispatch({
         type: 'room/entryroom',
         payload: { roomid: this.roomId, v: new Date().getTime() },
@@ -98,6 +119,7 @@ export default {
     },
     destroyed () {
       // 销毁监听
+      clearInterval(this.timer)
       closeWebsocket()
     }
   },

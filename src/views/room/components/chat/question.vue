@@ -405,7 +405,7 @@ export default {
                 this.dataList.forEach((item, index) => {
                   if (item.msgId === payloadData.questionId) {
                     if (this.dataList[index].answerList == undefined) {
-                      this.$set(this.dataList[index], 'answerList', [])
+                      this.dataList[index].answerList = []
                     }
                     this.dataList[index].answerList.push(payloadData)
                   }
