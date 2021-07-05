@@ -166,7 +166,7 @@ export default {
       const targetIsAnchor = +member.role === 1
       const targetIsSelf = +member.memberId === +this.user.user.imAccount
       const targetIsSpeaker = +member.memberId === +this.live.liveSpeaker.userId
-      if (!member.online) {
+      if (!member.online || !this.live.liveStart) {
         return false
       }
       if (isAnchor) {

@@ -8,7 +8,9 @@ import {
   toggleMedia,
   guestStartLive,
   guestStopLive,
-  handleApplyLive, handleInviteLive
+  handleApplyLive,
+  inviteLive,
+  handleInviteLive
 } from '../../../services/live'
 
 export default {
