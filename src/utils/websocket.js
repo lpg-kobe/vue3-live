@@ -3,6 +3,7 @@ import CryptoJS from 'crypto-js'
 let websock = null
 let messageCallback = null
 let errorCallback = null
+let openCallbackFn = null
 let wsUrl = ''
 let tryTime = 0
 const KP = {
@@ -24,9 +25,8 @@ function encryptAes(data, key, iv) {
 }
  
 // 接收ws后端返回的数据
-function websocketonmessage (e) { 
-  // messageCallback(JSON.parse(e.data))
-  messageCallback(e)
+function websocketonmessage (e) {
+  messageCallback && messageCallback(e)
 }
 
 /**
@@ -41,7 +41,7 @@ export function websocketSend (agentData) {
   }
   if (websock.readyState === websock.CLOSED) { // websock.CLOSED = 3 
     ElMessage.error('ws连接异常，请稍候重试 onsend')
-    errorCallback()
+    errorCallback && errorCallback()
   }
 }
  
@@ -52,23 +52,13 @@ function websocketclose (e) {
   console.log(e)
   if (e && e.code !== 1000) {
     ElMessage.error('ws连接异常，请稍候重试 onclose')
-    errorCallback()
-    // // 如果需要设置异常重连则可替换为下面的代码，自行进行测试
-    // if (tryTime < 10) {
-    //   setTimeout(function() {
-    //    websock = null
-    //    tryTime++
-    //    initWebSocket()
-    //    console.log(`第${tryTime}次重连`)
-    //  }, 3 * 1000)
-    //} else {
-    //  ElMessage.error('重连失败！请稍后重试')
-    //}
+    errorCallback && errorCallback()
   }
 }
 // 建立ws连接
 function websocketOpen (e) {
   console.log('websocket连接成功')
+  openCallbackFn && openCallbackFn()
 }
  
 // 初始化weosocket
@@ -90,7 +80,7 @@ function initWebSocket () {
   }
   websock.onerror = function () {
     ElMessage.error('ws连接异常，请稍候重试 onerror')
-    errorCallback()
+    errorCallback && errorCallback()
   }
   websock.onclose = function (e) {
     websocketclose(e)
@@ -104,14 +94,14 @@ function initWebSocket () {
  * @param {function} successCallback 接收到ws数据，对数据进行处理的回调函数
  * @param {function} errCallback ws连接错误的回调函数
  */
-export function sendWebsocket ( query, successCallback, errCallback) {
+export function sendWebsocket ({query, successCallback, errCallback, openCallback}) {
   wsUrl = `wss://livetest.ofweek.com/api/web/ws/webSocket?param=${encodeURIComponent(encryptAes(JSON.stringify(query), KP.key, KP.iv))}&needDecode=1`
-  // wsUrl = `ws://qincx.ofweek.com/api/web/ws/webSocket?param=${encodeURIComponent(encryptAes(JSON.stringify(data), KP.key, KP.iv))}&needDecode=1`
-  console.log(wsUrl)
+
+  messageCallback = successCallback ? successCallback : null
+  openCallbackFn = openCallback ? openCallback : null
+  errorCallback = errCallback ? errCallback : null
+
   initWebSocket()
-  messageCallback = successCallback
-  errorCallback = errCallback
-  // websocketSend(agentData)
 }
 
 /**

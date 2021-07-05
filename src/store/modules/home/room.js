@@ -8,7 +8,7 @@ export default {
   namespaced: true,
   state: {
     lang: 'zh',
-    roomId: 94,
+    roomId: '',
     roomType: '', // 是直播房间还是展会房间
     expoRoomName: '',
     trtcPrivateSig: '',

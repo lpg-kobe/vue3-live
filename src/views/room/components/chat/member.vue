@@ -47,7 +47,7 @@
                 @command="handleMemberClick(item, $event)"
               >
                 <span class="el-dropdown-link">
-                  <i class="icon member-control-more"></i>
+                  <i class="icon member-control-more pointer"></i>
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu class="chat-el-dropdown">
@@ -249,11 +249,8 @@ export default {
         position: relative;
         display: inline-block;
         margin-left: 12px;
-        cursor: pointer;
         vertical-align: middle;
         font-style: normal;
-        .icon-speaker {
-        }
       }
       .control_cursor {
         cursor: default;

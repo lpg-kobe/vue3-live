@@ -40,6 +40,8 @@ export default {
     return {
       initFinish: false,
       query: null,
+      timer: null,
+      reconnectTimer: null,
     }
   },
   components: {
@@ -62,16 +64,37 @@ export default {
   },
 
   created() {
+    this.bindEvent()
     this.initRoom()
   },
 
   methods: {
+    bindEvent() {
+      window.onbeforeunload = () => {
+        console.log('onbeforeunload')
+        clearInterval(this.timer)
+        clearInterval(this.reconnectTimer)
+        closeWebsocket()
+      }
+    },
+
     wsMessage(data) {
       console.log(data.data)
     },
 
     wsError() {
-      sendWebsocket(this.query, this.wsMessage, this.wsError)
+      clearInterval(this.timer)
+      clearInterval(this.reconnectTimer)
+      this.reconnectTimer = setTimeout(() => {
+        this.requstWs()
+      }, 3 * 1000)
+    },
+
+    websocketOpen() {
+      // 每隔5秒发一次心跳
+      this.timer = setInterval(() => {
+        websocketSend('ping')
+      }, 5 * 1000)
     },
 
     requstWs() {
@@ -83,14 +106,21 @@ export default {
         token: Cookies.get('userToken'),
       }
       // 发起ws请求
-      sendWebsocket(this.query, this.wsMessage, this.wsError)
-      // 每隔5秒发一次心跳
-      setInterval(() => {
-        websocketSend('ping')
-      }, 5 * 1000)
+      sendWebsocket({
+        query: this.query,
+        successCallback: this.wsMessage,
+        errCallback: this.wsError,
+        openCallback: this.websocketOpen,
+      })
     },
 
     async initRoom() {
+      this.$store.commit('room/setState', [
+        {
+          key: 'roomId',
+          value: this.roomId,
+        },
+      ])
       await this.$store.dispatch({
         type: 'room/entryroom',
         payload: { roomid: this.roomId, v: new Date().getTime() },
