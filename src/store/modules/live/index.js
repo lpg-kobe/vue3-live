@@ -34,6 +34,14 @@ export default {
   },
   getters: {},
   mutations: {
+    // 成员排序规则 (在线主播 > 在线嘉宾 > 离线主播 > 离线嘉宾)
+    sortMembers(state, members) {
+      state['liveMembers'] = [
+        ...members.filter(({ online }) => online).sort((prev, next) => prev.role - next.role),
+        ...members.filter(({ online }) => !online).sort((prev, next) => prev.role - next.role),
+      ]
+    },
+
     setState(state, params) {
       if (Array.isArray(params)) {
         params.forEach(({ key, value }) => {
@@ -59,10 +67,7 @@ export default {
       const { status, data: { data } } = await getMembers(payload)
       if (status) {
         callback?.(data)
-        commit('setState', {
-          key: 'liveMembers',
-          value: data
-        })
+        commit('sortMembers', data)
       }
       return { status, data }
     },

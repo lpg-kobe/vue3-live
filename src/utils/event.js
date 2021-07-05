@@ -26,6 +26,7 @@ export const EVENTENUM = {
   },
   live: {
     joinFail: 'FAIL_TO_JOIN_TRTC',
+    stopLive: 'ANCHOR_STOP_GUEST_OR_GUEST_STOP_SELF', // 主播下麦嘉宾/嘉宾自行下麦
     setMedia: 'OPEN_MEDIA_SETTING', // 媒体设置
     toggleMedia: 'TOGGLE_MEDIA', // 切换麦克风|摄像头开关
     playStream: 'PLAY_STREAM', // 尝试播放直播流

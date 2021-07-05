@@ -258,6 +258,7 @@ export default {
         this.onMediaToggle
       )
       eventEmitter.off(eventEmitter.event?.live?.playStream, this.onPlayStream)
+      eventEmitter.off(eventEmitter.event?.live?.stopLive, this.onLiveStop)
       eventEmitter.off(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.off(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.off(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -277,6 +278,7 @@ export default {
       eventEmitter.on(eventEmitter.event?.live?.setMedia, this.onMediaSetting)
       eventEmitter.on(eventEmitter.event?.live?.toggleMedia, this.onMediaToggle)
       eventEmitter.on(eventEmitter.event?.live?.playStream, this.onPlayStream)
+      eventEmitter.on(eventEmitter.event?.live?.stopLive, this.onLiveStop)
       eventEmitter.on(eventEmitter.event?.anchor?.start, this.onAnchorStart)
       eventEmitter.on(eventEmitter.event?.anchor?.invite, this.onAnchorInvite)
       eventEmitter.on(eventEmitter.event?.anchor?.stop, this.onAnchorStop)
@@ -510,7 +512,7 @@ export default {
       // 主播收回移除的主讲权
       if (this.user.user.role === 1 && remoteIsSpeaker) {
         eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
-          userId_: this.user.user.imAccount,
+          userId: this.user.user.imAccount,
           nick: this.user.user.nick,
         })
       }
@@ -674,6 +676,36 @@ export default {
       this.tryToPlayStream(stream, target)
     },
 
+    /**
+     * @desc 下麦当前用户
+     * @description 1.主播推送嘉宾下麦 2.嘉宾自行下麦
+     **/
+    onLiveStop({ data: payload }) {
+      const isSelf = String(payload.userId) === String(this.user.user.imAccount)
+      const targetIsAnchor = payload.role === 1
+      const targetIsSpeaker =
+        String(payload.userId) === String(this.live.liveSpeaker?.userId)
+      if (isSelf) {
+        targetIsAnchor
+          ? eventEmitter.emit(eventEmitter.event.anchor.stop)
+          : eventEmitter.emit(eventEmitter.event.guest.stop)
+      } else {
+        // 主播推送嘉宾下麦并夺回主讲权
+        targetIsSpeaker &&
+          eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
+            userId: this.user.user.imAccount,
+            nick: this.user.user.nick,
+          })
+        this.$store.dispatch({
+          type: 'live/guestStopLive',
+          payload: {
+            roomid: this.roomId,
+            memberid: payload.userId,
+          },
+        })
+      }
+    },
+
     /** 主播开始直播，主播上麦默认主讲人 */
     async onAnchorStart() {
       if (this.live.liveJoinStatus !== 1) {
@@ -741,8 +773,20 @@ export default {
       )
     },
 
-    /** 主播邀请直播，仅当前主播用户可操作 */
-    async onAnchorInvite() {},
+    /**
+     * @desc 主播邀请直播，仅当前主播用户可操作
+     * @param {Object} userId 邀请的id
+     **/
+    async onAnchorInvite({ data: { userId } }) {
+      await this.$store.dispatch({
+        type: 'live/inviteLive',
+        payload: {
+          roomid: this.roomId,
+          anthorid: userId,
+        },
+        callback: () => ElMessage.success('上麦邀请已发送'),
+      })
+    },
 
     /** 主播结束直播，仅当前主播用户可操作 */
     async onAnchorStop() {
@@ -766,7 +810,7 @@ export default {
         type: 'live/setMainSpeaker',
         payload: {
           roomid: this.roomId,
-          memberid: data?.userId_,
+          memberid: data?.userId,
         },
       })
       if (!status) {
@@ -947,12 +991,6 @@ export default {
         {
           key: 'liveStreamList',
           value: [],
-        },
-        {
-          key: 'liveSpeaker',
-          value: {
-            userId: '',
-          },
         },
         {
           key: 'liveStart',

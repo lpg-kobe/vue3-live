@@ -27,7 +27,11 @@ import chat from './components/chat/index.vue'
 // import mpCard from './components/header/mpCard.vue'
 // import photoLiveBox from './components/chat/photoLiveBox.vue'
 import Cookies from 'js-cookie'
-import { sendWebsocket, closeWebsocket, websocketSend } from '../../utils/websocket.js'
+import {
+  sendWebsocket,
+  closeWebsocket,
+  websocketSend,
+} from '../../utils/websocket.js'
 import { mapState } from 'vuex'
 
 export default {
@@ -37,7 +41,7 @@ export default {
       initFinish: false,
       query: null,
       timer: null,
-      timer2: null
+      reconnectTimer: null,
     }
   },
   components: {
@@ -60,53 +64,62 @@ export default {
   },
 
   created() {
-    window.onbeforeunload = () => {
-      console.log('onbeforeunload')
-      clearInterval(this.timer)
-      closeWebsocket()
-    }
+    this.bindEvent()
     this.initRoom()
   },
 
   methods: {
-    wsMessage (data) {
+    bindEvent() {
+      window.onbeforeunload = () => {
+        console.log('onbeforeunload')
+        clearInterval(this.timer)
+        clearInterval(this.reconnectTimer)
+        closeWebsocket()
+      }
+    },
+
+    wsMessage(data) {
       console.log(data.data)
     },
-    wsError () {
+
+    wsError() {
       clearInterval(this.timer)
-      clearInterval(this.timer2)
-      this.timer2 = setTimeout(() => {
+      clearInterval(this.reconnectTimer)
+      this.reconnectTimer = setTimeout(() => {
         this.requstWs()
-      }, 3*1000)
+      }, 3 * 1000)
     },
-    websocketOpen () {
+
+    websocketOpen() {
       // 每隔5秒发一次心跳
       this.timer = setInterval(() => {
         websocketSend('ping')
-      }, 5*1000);
+      }, 5 * 1000)
     },
-    requstWs () {
+
+    requstWs() {
       closeWebsocket()
       this.query = {
         groupid: String(this.roomId),
         memberid: String(this.user.user.imAccount),
         type: '2',
-        token: Cookies.get('userToken')
+        token: Cookies.get('userToken'),
       }
       // 发起ws请求
       sendWebsocket({
         query: this.query,
         successCallback: this.wsMessage,
         errCallback: this.wsError,
-        openCallback: this.websocketOpen
+        openCallback: this.websocketOpen,
       })
     },
+
     async initRoom() {
       this.$store.commit('room/setState', [
         {
           key: 'roomId',
           value: this.roomId,
-        }
+        },
       ])
       await this.$store.dispatch({
         type: 'room/entryroom',
@@ -120,12 +133,10 @@ export default {
       this.initFinish = true
       this.requstWs()
     },
-    destroyed () {
-      // 销毁监听
-      console.log('destroyed')
-      clearInterval(this.timer)
-      closeWebsocket()
-    }
+  },
+
+  beforeDestroy() {
+    closeWebsocket()
   },
 }
 </script>
