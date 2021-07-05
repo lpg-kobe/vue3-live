@@ -449,7 +449,6 @@ export default {
       const remoteIsInList = this.live.liveStreamList.some(
         ({ userId_ }) => String(userId_) === String(stream.userId_)
       )
-      debugger
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
