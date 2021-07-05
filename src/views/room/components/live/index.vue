@@ -583,8 +583,8 @@ export default {
       this.mainStreamList = this.filterLiveStream()
     },
 
-    // 处理上麦邀请
-    handleInvite(isagree) {
+    // 嘉宾处理上麦邀请
+    handleInvite(isAgree) {
       window.clearTimeout(this.inviteTimer)
       this.$store.dispatch({
         type: 'live/handleInviteLive',
@@ -594,6 +594,7 @@ export default {
           isagree,
         },
       })
+      isagree&&eventEmitter.emit(eventEmitter.event?.guest?.start)
       this.inviteShow = false
     },
 
