@@ -89,9 +89,10 @@
                       v-if="
                         live.liveStreamList.some(
                           ({ userId_ }) => +item.memberId === +userId_
-                        ) && user.user.role === 1
+                        ) &&
+                        (user.user.role === 1
                           ? +item.memberId !== +user.user.imAccount
-                          : +item.memberId === +user.user.imAccount
+                          : +item.memberId === +user.user.imAccount)
                       "
                       >下麦</el-dropdown-item
                     >
