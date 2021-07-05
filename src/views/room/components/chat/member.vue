@@ -161,7 +161,7 @@ export default {
     memberHasMenu(member) {
       const isAnchor = +this.user.user.role === 1
       const targetIsAnchor = +member.role === 1
-      const targetIsSelf = +member.role === +this.user.user.imAccount
+      const targetIsSelf = +member.memberId === +this.user.user.imAccount
       const targetIsSpeaker = +member.memberId === +this.live.liveSpeaker.userId
       if (!member.online) {
         return false

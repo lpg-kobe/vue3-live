@@ -148,7 +148,7 @@
             v-show="
               !live.liveStreamList.some(
                 ({ userId_ }) => String(userId_) === String(user.user.imAccount)
-              )
+              ) && live.liveStart
             "
             v-if="user.user.role === 2 && room.room.status === 1"
             :loading="live.liveToggleLoading"
