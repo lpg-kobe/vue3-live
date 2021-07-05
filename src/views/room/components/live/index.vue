@@ -449,6 +449,7 @@ export default {
       const remoteIsInList = this.live.liveStreamList.some(
         ({ userId_ }) => String(userId_) === String(stream.userId_)
       )
+      debugger
 
       //  ignore current speaker & play remote stream to main stream view
       if (!this.live.liveSpeaker?.userId) {
@@ -509,8 +510,12 @@ export default {
       stream?.stop?.()
       const remoteIsSpeaker =
         String(stream.userId_) === String(this.live.liveSpeaker.userId)
-      // 主播收回移除的主讲权
-      if (this.user.user.role === 1 && remoteIsSpeaker) {
+      // 主播夺回下麦用户的主讲权
+      if (
+        this.user.user.role === 1 &&
+        remoteIsSpeaker &&
+        this.live.liveStreamList.length
+      ) {
         eventEmitter.emit(eventEmitter.event.anchor.setSpeaker, {
           userId: this.user.user.imAccount,
           nick: this.user.user.nick,
@@ -584,7 +589,7 @@ export default {
     },
 
     // 嘉宾处理上麦邀请
-    handleInvite(isAgree) {
+    handleInvite(isagree) {
       window.clearTimeout(this.inviteTimer)
       this.$store.dispatch({
         type: 'live/handleInviteLive',
@@ -594,7 +599,7 @@ export default {
           isagree,
         },
       })
-      isagree&&eventEmitter.emit(eventEmitter.event?.guest?.start)
+      isagree && eventEmitter.emit(eventEmitter.event?.guest?.start)
       this.inviteShow = false
     },
 
@@ -996,6 +1001,14 @@ export default {
         {
           key: 'liveStart',
           value: false,
+        },
+        {
+          // 房间结束还原主讲人至主播
+          key: 'liveSpeaker',
+          value: {
+            userId: this.live.liveMembers.find(({ role }) => role === 1)
+              ?.memberId,
+          },
         },
       ])
       this.mainStreamList = []

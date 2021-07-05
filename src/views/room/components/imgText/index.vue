@@ -379,7 +379,7 @@ export default {
   created() {
     this.bindEvent()
     // 显示后台配置的tab菜单
-    this.room.menulist.forEach((item) => {
+    this.room.menulist?.forEach((item) => {
       this.defineTab.forEach((item2) => {
         if (item.menuType === item2.menuType) {
           item.sort = item2.sort
@@ -388,7 +388,7 @@ export default {
       })
     })
     // this.tab.sort(this.compare('sort'))
-    this.active = this.tab[0].menuType
+    this.active = this.tab[0]?.menuType
 
     // 问卷
     if (this.user.role !== 1 && this.user.role !== 2) {
