@@ -96,7 +96,7 @@ export function forbitchat(data) {
 }
 
 // 游客禁言或者取消禁言接口
-export function forbitchatvisitor (data) {
+export function forbitchatvisitor(data) {
   return request(
     `/web/member/forbitchatvisitor`,
     { method: 'post', body: JSON.stringify(data) }
@@ -247,8 +247,8 @@ export function checkmemberphoneoremail(params) {
   )
 }
 
-// 用户心跳
-export function heartbeat(data) {
+// 房间成员心跳
+export function sendRoomHeartbeat(data) {
   return request(
     `/web/member/heartbeat`,
     { method: 'post', body: JSON.stringify(data) }

@@ -33,6 +33,7 @@ import {
   websocketSend,
 } from '../../utils/websocket.js'
 import { mapState } from 'vuex'
+import { loopToInterval } from '../../utils/tool'
 
 export default {
   name: 'room',
@@ -42,6 +43,7 @@ export default {
       query: null,
       timer: null,
       reconnectTimer: null,
+      heartbeatTimer: null,
     }
   },
   components: {
@@ -114,6 +116,23 @@ export default {
       })
     },
 
+    /**发送房间心跳 */
+    sendRoomHeartbeat() {
+      loopToInterval(
+        () => {
+          return this.$store.dispatch({
+            type: 'room/roomHeartbeat',
+            payload: {
+              memberId: this.user.user.imAccount,
+              roomId: this.roomId,
+            },
+          })
+        },
+        this.heartbeatTimer,
+        8 * 1000
+      )
+    },
+
     async initRoom() {
       this.$store.commit('room/setState', [
         {
@@ -132,6 +151,7 @@ export default {
       })
       this.initFinish = true
       this.requstWs()
+      this.sendRoomHeartbeat()
     },
   },
 

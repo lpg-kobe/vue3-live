@@ -2,7 +2,7 @@
  * @desc base modules of room
  */
 import { ElMessageBox } from 'element-plus'
-import { getroom, entryroom, getcompleteinfo } from '../../../services/room'
+import { getroom, entryroom, getcompleteinfo, sendRoomHeartbeat } from '../../../services/room'
 
 export default {
   namespaced: true,
@@ -160,6 +160,16 @@ export default {
       }
 
       callback?.({ status, ...data })
-    }
+    },
+
+    // 房间成员心跳
+    async roomHeartbeat({ }, { payload, callback }) {
+      const { status, data: { data } } = await sendRoomHeartbeat(payload)
+      if (status) {
+        callback?.(data)
+      }
+      return { status, data }
+    },
+
   }
 }
