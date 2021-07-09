@@ -10,19 +10,29 @@
           <li v-for="(item, index) of dataList" :key="index">
             <div class="question_item">
               <div class="clearfix">
-                <i>{{ $t('question.ask') }}</i>
+                <i>{{ $t("question.ask") }}</i>
                 <span class="name">{{ item.nick }}</span>
                 <span class="fr time">{{
-                  formatDate(item.createDate, 'hh:mm')
+                  formatDate(item.createDate, "hh:mm")
                 }}</span>
               </div>
               <div
                 class="ques_con"
                 v-html="item.content.replace(/\n/g, '<br>')"
               ></div>
-              <div class="question_control" v-show="user.role === 1 || user.role === 2">
-                <span class="grey_btn" @click="deleteQuestion(item)" v-show="user.role !== 2">{{ $t('common.delete') }}</span>
-                <span @click="showAnswerDialog(item)">{{ $t('question.btnAnswer') }}</span>
+              <div
+                class="question_control"
+                v-show="user.role === 1 || user.role === 2"
+              >
+                <span
+                  class="grey_btn"
+                  @click="deleteQuestion(item)"
+                  v-show="user.role !== 2"
+                  >{{ $t("common.delete") }}</span
+                >
+                <span @click="showAnswerDialog(item)">{{
+                  $t("question.btnAnswer")
+                }}</span>
               </div>
             </div>
             <div
@@ -39,21 +49,28 @@
                     >{{ `${items.nick} | `
                     }}<span>{{
                       `${langToIdentity(items.identity)}${$t(
-                        'question.answer'
+                        "question.answer"
                       )}`
                     }}</span></span
                   >
                   <span class="fr time">{{
-                    formatDate(items.createDate, 'hh:mm')
+                    formatDate(items.createDate, "hh:mm")
                   }}</span>
                 </div>
                 <div
                   class="ques_con"
                   v-html="items.content.replace(/\n/g, '<br>')"
                 ></div>
-                <div class="question_control" v-show="user.role === 1 || items.senderId == user.imAccount">
-                  <span class="grey_btn" @click="deleteQuestion(items)">{{ $t('common.delete') }}</span>
-                  <span @click="showUpdateDialog(item, items)">{{ $t('question.btnChange') }}</span>
+                <div
+                  class="question_control"
+                  v-show="user.role === 1 || items.senderId == user.imAccount"
+                >
+                  <span class="grey_btn" @click="deleteQuestion(items)">{{
+                    $t("common.delete")
+                  }}</span>
+                  <span @click="showUpdateDialog(item, items)">{{
+                    $t("question.btnChange")
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -65,10 +82,10 @@
           v-loading="loading"
         ></li>
         <li class="loading_over" v-if="loadOver && dataList.length > 5">
-          {{ $t('common.loadOver') }}
+          {{ $t("common.loadOver") }}
         </li>
         <p class="no_data_tip" v-show="dataList.length < 1">
-          {{ $t('question.noData') }}~
+          {{ $t("question.noData") }}~
         </p>
       </chatScroll>
     </div>
@@ -80,12 +97,12 @@
           v-show="isVisitorLogin"
           v-on:click="openLogin(false)"
         >
-          {{ $t('chat.loginHint1')
-          }}<a href="javascript:"> {{ $t('common.login') }} </a
-          >{{ $t('chat.loginHint2') }}
+          {{ $t("chat.loginHint1")
+          }}<a href="javascript:"> {{ $t("common.login") }} </a
+          >{{ $t("chat.loginHint2") }}
         </p>
         <p class="chat_other_tip" v-show="!isVisitorLogin && isForbit">
-          {{ $t('chat.forbitHint') }}
+          {{ $t("chat.forbitHint") }}
         </p>
         <textarea
           rows="2"
@@ -102,7 +119,7 @@
       <div class="clearfix">
         <!-- <i class="face_icon"></i> -->
         <el-button class="chat-btn" size="small" type="primary" @click="send">{{
-          $t('card.submit')
+          $t("card.submit")
         }}</el-button>
       </div>
     </div>
@@ -111,27 +128,46 @@
     <el-dialog
       :title="$t('question.textAnswer')"
       v-model="answerDialog.visible"
-      width="40%">
-      <p><span style="color: #2691E9;">[{{ $t('question.quesText') }}]</span>&emsp;<span>{{ answerDialog.question }}</span></p>
-      <textarea class="question_textarea" rows="8" v-model="answerDialog.textareaText"></textarea>
+      width="40%"
+    >
+      <p>
+        <span style="color: #2691e9">[{{ $t("question.quesText") }}]</span
+        >&emsp;<span>{{ answerDialog.question }}</span>
+      </p>
+      <textarea
+        class="question_textarea"
+        rows="8"
+        v-model="answerDialog.textareaText"
+      ></textarea>
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="answerFn">{{ $t('common.affirm') }}</el-button>
+          <el-button type="primary" @click="answerFn">{{
+            $t("common.affirm")
+          }}</el-button>
         </span>
       </template>
     </el-dialog>
 
     <!-- 修改答案 -->
-    <el-dialog
-      title="文字解答"
-      v-model="updateDialog.visible"
-      width="40%">
-      <p><span style="color: #2691E9;">[{{ $t('question.quesText') }}]</span>&emsp;<span>{{ updateDialog.question }}</span></p>
-      <p style="margin-top: 10px;"><span style="color: #E65E50;">[{{ $t('question.myAnswer') }}]</span>&emsp;<span style="color: #808080;">{{ updateDialog.answer }}</span></p>
-      <textarea class="question_textarea" rows="8" v-model="updateDialog.textareaText"></textarea>
+    <el-dialog title="文字解答" v-model="updateDialog.visible" width="40%">
+      <p>
+        <span style="color: #2691e9">[{{ $t("question.quesText") }}]</span
+        >&emsp;<span>{{ updateDialog.question }}</span>
+      </p>
+      <p style="margin-top: 10px">
+        <span style="color: #e65e50">[{{ $t("question.myAnswer") }}]</span
+        >&emsp;<span style="color: #808080">{{ updateDialog.answer }}</span>
+      </p>
+      <textarea
+        class="question_textarea"
+        rows="8"
+        v-model="updateDialog.textareaText"
+      ></textarea>
       <template #footer>
         <span class="dialog-footer">
-          <el-button type="primary" @click="updateAnswer">{{ $t('common.affirm') }}</el-button>
+          <el-button type="primary" @click="updateAnswer">{{
+            $t("common.affirm")
+          }}</el-button>
         </span>
       </template>
     </el-dialog>
@@ -139,109 +175,108 @@
 </template>
 
 <script>
-import { IM_EVENT } from '../../../../sdk/imLive'
-import { mapState, mapGetters, mapMutations } from 'vuex'
+import { IM_EVENT } from "../../../../sdk/imLive";
+import { mapState, mapGetters, mapMutations } from "vuex";
 import {
   questionGetmoremsg,
   questionSendmsg,
   questionDeletemsg,
   questionUpdateanswer,
-} from '../../../../services/room/index.js'
-import chatScroll from './chatScroll.vue'
-import { formatDate } from '../../../../utils/tool'
+} from "../../../../services/room/index.js";
+import chatScroll from "./chatScroll.vue";
+import { formatDate } from "../../../../utils/tool";
 export default {
-  name: 'question',
+  name: "question",
   data() {
     return {
       dataList: [],
       loading: false,
       loadOver: false,
-      sendData: '',
+      sendData: "",
       questionId: 0,
       answerDialog: {
         visible: false,
-        textareaText: '',
-        question: '',
-        msgId: '',
-        roomId: ''
+        textareaText: "",
+        question: "",
+        msgId: "",
+        roomId: "",
       },
       updateDialog: {
         visible: false,
-        textareaText: '',
-        question: '',
-        answer: '',
-        msgId: '',
-        roomId: ''
-      }
-    }
+        textareaText: "",
+        question: "",
+        answer: "",
+        msgId: "",
+        roomId: "",
+      },
+    };
   },
   computed: {
     ...mapState({
       imClient: ({ imClient }) => imClient,
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
     ...mapGetters({
-      roomId: 'room/roomId',
-      user: 'user/user',
-      imAccount: 'user/imAccount',
-      isForbit: 'user/isForbit',
-      liveStatus: 'room/liveStatus',
-      isVisitorLogin: 'user/isVisitorLogin',
+      user: "user/user",
+      imAccount: "user/imAccount",
+      isForbit: "user/isForbit",
+      isVisitorLogin: "user/isVisitorLogin",
     }),
   },
   components: { chatScroll },
   methods: {
-    ...mapMutations(['openLogin', 'openCard']),
+    ...mapMutations(["openLogin", "openCard"]),
     formatDate,
     handleClose(done) {
-      done()
+      done();
     },
     getData() {
-      if (this.loadOver) return
-      this.loading = true
+      if (this.loadOver) return;
+      this.loading = true;
       return new Promise((resolve) => {
         questionGetmoremsg({
           questionId: this.questionId,
           roomId: Number(this.roomId),
           size: 50,
         }).then(({ data }) => {
-          let res = data
+          let res = data;
           if (res.data.length < 50) {
-            this.loadOver = true
+            this.loadOver = true;
           }
-          let _arr = res.data
+          let _arr = res.data;
 
           if (_arr.length > 0) {
-            this.questionId = _arr[_arr.length - 1].msgId
+            this.questionId = _arr[_arr.length - 1].msgId;
           }
 
-          this.dataList = this.dataList.concat(_arr)
-          this.loading = false
+          this.dataList = this.dataList.concat(_arr);
+          this.loading = false;
           this.$nextTick(() => {
-            resolve(_arr.length)
-          })
-        })
-      })
+            resolve(_arr.length);
+          });
+        });
+      });
     },
     handleReachTop() {
-      if (this.loadOver || this.loading) return
-      this.loading = true
+      if (this.loadOver || this.loading) return;
+      this.loading = true;
       setTimeout(() => {
-        this.getData()
-      }, 1000)
+        this.getData();
+      }, 1000);
     },
     send() {
       if (this.isVisitorLogin) {
-        this.openLogin(false)
-        return
+        this.openLogin(false);
+        return;
       }
       if (this.user.isCompletedInfo === 0) {
-        this.openCard(false)
-        return
+        this.openCard(false);
+        return;
       }
 
       if (this.sendData.length === 0) {
-        console.log('请输入发送的内容！')
-        return
+        console.log("请输入发送的内容！");
+        return;
       }
 
       questionSendmsg({
@@ -253,230 +288,232 @@ export default {
         senderId: this.imAccount,
         type: 1,
       }).then(({ data }) => {
-        let res = data
+        let res = data;
         if (res.code === 0) {
-          this.sendData = ''
+          this.sendData = "";
         }
-      })
+      });
     },
     langToIdentity(identity) {
       switch (identity) {
-        case '主播':
-          return this.$t('chat.anchor')
-          break
-        case '嘉宾':
-          return this.$t('chat.guest')
-          break
-        case '主持人':
-          return this.$t('chat.compere')
-          break
-        case '主讲人':
-          return this.$t('chat.speaker')
-          break
-        case '展商':
-          return this.$t('chat.exhibitor')
-          break
-        case '客服':
-          return this.$t('chat.service')
-          break
-        case '观众':
-          return this.$t('chat.audience')
-          break
+        case "主播":
+          return this.$t("chat.anchor");
+          break;
+        case "嘉宾":
+          return this.$t("chat.guest");
+          break;
+        case "主持人":
+          return this.$t("chat.compere");
+          break;
+        case "主讲人":
+          return this.$t("chat.speaker");
+          break;
+        case "展商":
+          return this.$t("chat.exhibitor");
+          break;
+        case "客服":
+          return this.$t("chat.service");
+          break;
+        case "观众":
+          return this.$t("chat.audience");
+          break;
         default:
-          return ''
+          return "";
       }
     },
     keyDown(e) {
-      const { keyCode, shiftKey } = e
+      const { keyCode, shiftKey } = e;
       if (keyCode === 13) {
         if (shiftKey) {
-          return
+          return;
         } else {
-          e.preventDefault()
-          this.send()
+          e.preventDefault();
+          this.send();
         }
       }
     },
-    deleteQuestion (item) {
-      this.$confirm('确认删除?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+    deleteQuestion(item) {
+      this.$confirm("确认删除?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       }).then(() => {
-        questionDeletemsg({ msgId: item.msgId, roomId: item.roomId }).then(({ data }) => {
-          let res = data
-          if (res.code === 0) {
-            this.$message.success('删除成功')
-          } else {
-            this.$message.error(res.message)
+        questionDeletemsg({ msgId: item.msgId, roomId: item.roomId }).then(
+          ({ data }) => {
+            let res = data;
+            if (res.code === 0) {
+              this.$message.success("删除成功");
+            } else {
+              this.$message.error(res.message);
+            }
           }
-        })
-      })
+        );
+      });
     },
-    showAnswerDialog (item) {
-      this.answerDialog.textareaText = ''
-      this.answerDialog.question = item.content
-      this.answerDialog.msgId = item.msgId
-      this.answerDialog.roomId = item.roomId
-      this.answerDialog.visible = true
+    showAnswerDialog(item) {
+      this.answerDialog.textareaText = "";
+      this.answerDialog.question = item.content;
+      this.answerDialog.msgId = item.msgId;
+      this.answerDialog.roomId = item.roomId;
+      this.answerDialog.visible = true;
     },
-    showUpdateDialog (item, items) {
-      this.updateDialog.textareaText = ''
-      this.updateDialog.question = item.content
-      this.updateDialog.answer = items.content
-      this.updateDialog.msgId = items.msgId
-      this.updateDialog.roomId = items.roomId
-      this.updateDialog.visible = true
+    showUpdateDialog(item, items) {
+      this.updateDialog.textareaText = "";
+      this.updateDialog.question = item.content;
+      this.updateDialog.answer = items.content;
+      this.updateDialog.msgId = items.msgId;
+      this.updateDialog.roomId = items.roomId;
+      this.updateDialog.visible = true;
     },
-    answerFn () {
+    answerFn() {
       if (this.answerDialog.textareaText.length < 1) {
-        this.$message.error('请输入回答')
-        return
+        this.$message.error("请输入回答");
+        return;
       }
       questionSendmsg({
         content: {
           content: encodeURI(this.answerDialog.textareaText),
-          msgType: 1
+          msgType: 1,
         },
         questionId: this.answerDialog.msgId,
         roomId: this.answerDialog.roomId,
         senderId: this.imAccount,
-        type: 2
+        type: 2,
       }).then(({ data }) => {
-        let res = data
-        this.answerDialog.visible = false
+        let res = data;
+        this.answerDialog.visible = false;
         if (res.code === 0) {
-          this.$message.success('回答成功')
+          this.$message.success("回答成功");
         } else {
-          this.$message.error(res.message)
+          this.$message.error(res.message);
         }
-      })
+      });
     },
-    updateAnswer () {
+    updateAnswer() {
       if (this.updateDialog.textareaText.length < 1) {
-        this.$message.error('请输入回答')
-        return
+        this.$message.error("请输入回答");
+        return;
       }
       questionUpdateanswer({
         content: encodeURI(this.updateDialog.textareaText),
         answerId: this.updateDialog.msgId,
         roomId: this.updateDialog.roomId,
-        senderId: this.imAccount
+        senderId: this.imAccount,
       }).then(({ data }) => {
-        let res = data
-        this.updateDialog.visible = false
+        let res = data;
+        this.updateDialog.visible = false;
         if (res.code === 0) {
-          this.$message.success('修改成功')
+          this.$message.success("修改成功");
         } else {
-          this.$message.error(res.message)
+          this.$message.error(res.message);
         }
-      })
+      });
     },
     bindEvent() {
       if (!this.imClient) {
-        return
+        return;
       }
-      this.imClient.on(IM_EVENT?.msgReceive, this.onMsgReceive)
+      this.imClient.on(IM_EVENT?.msgReceive, this.onMsgReceive);
     },
 
     onMsgReceive({ data }) {
       try {
         for (let i = 0, len = data.length; i < len; i++) {
-          const msg = data[i]
-          const payloadData = JSON.parse(msg.payload?.data)
-          let msgCode = payloadData.msgCode
+          const msg = data[i];
+          const payloadData = JSON.parse(msg.payload?.data);
+          let msgCode = payloadData.msgCode;
           if (payloadData.roomId != this.roomId) {
-            return
+            return;
           }
 
           switch (String(msgCode)) {
             // 广播群问答消息
-            case '1002':
-              console.log('广播群问答消息1002')
-              console.log(payloadData)
+            case "1002":
+              console.log("广播群问答消息1002");
+              console.log(payloadData);
               if (payloadData.type === 1) {
-                this.dataList.unshift(payloadData)
+                this.dataList.unshift(payloadData);
                 this.$nextTick(() => {
                   setTimeout(() => {
-                    this.$refs.chatscroll.toTop()
-                  }, 1)
-                })
+                    this.$refs.chatscroll.toTop();
+                  }, 1);
+                });
               } else if (payloadData.type === 2) {
                 this.dataList.forEach((item, index) => {
                   if (item.msgId === payloadData.questionId) {
                     if (this.dataList[index].answerList == undefined) {
-                      this.dataList[index].answerList = []
+                      this.dataList[index].answerList = [];
                     }
-                    this.dataList[index].answerList.push(payloadData)
+                    this.dataList[index].answerList.push(payloadData);
                   }
-                })
+                });
               }
-              break
+              break;
 
             // 广播更新了回答消息
-            case '1003':
-              console.log('广播更新了回答消息1003')
-              console.log(payloadData)
+            case "1003":
+              console.log("广播更新了回答消息1003");
+              console.log(payloadData);
               this.dataList.forEach((item) => {
                 if (item.msgId === payloadData.questionId) {
                   item.answerList.forEach((item2, index2) => {
                     if (item2.msgId == payloadData.msgId) {
-                      item.answerList[index2].content = payloadData.content
+                      item.answerList[index2].content = payloadData.content;
                     }
-                  })
+                  });
                 }
-              })
-              break
+              });
+              break;
 
             // 审核通过问答消息
-            case '1012':
-              console.log('审核通过问答消息1012')
-              console.log(payloadData)
-              this.dataList.push(payloadData)
+            case "1012":
+              console.log("审核通过问答消息1012");
+              console.log(payloadData);
+              this.dataList.push(payloadData);
               this.$nextTick(() => {
                 setTimeout(() => {
-                  this.$refs.chatscroll.toTop()
-                }, 1)
-              })
-              break
+                  this.$refs.chatscroll.toTop();
+                }, 1);
+              });
+              break;
 
             // 审核不通过问答消息
-            case '1013':
-              console.log('审核不通过问答消息1013')
-              break
+            case "1013":
+              console.log("审核不通过问答消息1013");
+              break;
 
             // 删除问答消息
-            case '1015':
-              console.log('删除问答消息1015')
-              console.log(payloadData)
+            case "1015":
+              console.log("删除问答消息1015");
+              console.log(payloadData);
               if (payloadData.type === 1) {
                 this.dataList = this.dataList.filter((item) => {
-                  return item.msgId == payloadData.msgId ? false : true
-                })
+                  return item.msgId == payloadData.msgId ? false : true;
+                });
               } else if (payloadData.type === 2) {
                 this.dataList.forEach((item) => {
                   if (item.msgId === payloadData.questionId) {
                     item.answerList = item.answerList.filter((item2) => {
-                      return item2.msgId == payloadData.msgId ? false : true
-                    })
+                      return item2.msgId == payloadData.msgId ? false : true;
+                    });
                   }
-                })
+                });
               }
-              break
+              break;
           }
         }
       } catch (err) {
-        console.warn('fail to pass msg of im')
+        console.warn("fail to pass msg of im");
       }
     },
   },
   created() {
-    this.bindEvent()
+    this.bindEvent();
   },
   mounted() {
-    this.getData()
+    this.getData();
   },
-}
+};
 </script>
 <style lang="scss" scoped>
 .question {
@@ -506,7 +543,7 @@ export default {
         position: absolute;
         top: -20px;
         left: 20px;
-        content: '';
+        content: "";
         width: 0;
         height: 0;
         border: 10px solid;

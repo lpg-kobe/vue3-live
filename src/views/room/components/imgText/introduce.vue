@@ -14,15 +14,15 @@
         <ul class="time-place">
           <li v-if="liveInfo.time && roomId === '210'">
             <span class="iconfont icon-remind"></span
-            >{{ $t('intro.time2') }}：{{ transTime(liveInfo.time) }}
+            >{{ $t("intro.time2") }}：{{ transTime(liveInfo.time) }}
           </li>
           <li v-if="liveInfo.time && roomId !== '210'">
-            <span class="iconfont icon-remind"></span>{{ $t('intro.time') }}：{{
+            <span class="iconfont icon-remind"></span>{{ $t("intro.time") }}：{{
               transTime(liveInfo.time)
             }}
           </li>
           <li v-if="liveInfo.companyName">
-            <span class="iconfont icon-home"></span>{{ $t('intro.units') }}：{{
+            <span class="iconfont icon-home"></span>{{ $t("intro.units") }}：{{
               liveInfo.companyName
             }}
           </li>
@@ -31,7 +31,7 @@
     </div>
 
     <div class="intro" v-if="liveInfo.description">
-      <h3>{{ $t('intro.content') }}</h3>
+      <h3>{{ $t("intro.content") }}</h3>
       <div
         class="content word-break"
         v-html="liveInfo.description.replace(/\n/g, '<br>')"
@@ -81,7 +81,7 @@
       class="gift"
       v-if="liveInfo.roomPrizeDtoList && liveInfo.roomPrizeDtoList.length > 0"
     >
-      <h3>{{ $t('intro.participate') }}</h3>
+      <h3>{{ $t("intro.participate") }}</h3>
       <div
         class="clearfix"
         style="margin-top: 20px"
@@ -91,15 +91,15 @@
         <img class="gift-photo" v-bind:src="item.prizeImageUrl" />
         <ul class="gift-info">
           <li>
-            <span class="fl">{{ $t('intro.prizeName') }}：</span>
+            <span class="fl">{{ $t("intro.prizeName") }}：</span>
             <div class="fl word-break" v-html="item.prizeName"></div>
           </li>
           <li v-if="item.prizeSummary">
-            <span class="fl">{{ $t('intro.way') }}：</span>
+            <span class="fl">{{ $t("intro.way") }}：</span>
             <div class="fl word-break" v-html="item.prizeSummary"></div>
           </li>
           <li v-if="item.winners">
-            <span class="fl">{{ $t('intro.winnerList') }}：</span>
+            <span class="fl">{{ $t("intro.winnerList") }}：</span>
             <div class="fl word-break" v-html="item.winners"></div>
           </li>
         </ul>
@@ -107,7 +107,7 @@
     </div>
 
     <div class="intro" v-if="liveInfo.companySummary">
-      <h3>{{ $t('intro.company') }}</h3>
+      <h3>{{ $t("intro.company") }}</h3>
       <div
         class="content word-break"
         v-html="liveInfo.companySummary.replace(/\n/g, '<br>')"
@@ -117,54 +117,54 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { getroomsummary } from '../../../../services/room/index.js'
+import { mapState } from "vuex";
+import { getroomsummary } from "../../../../services/room/index.js";
 // import * as moment from 'moment'
 export default {
-  name: 'introduce',
+  name: "introduce",
   data() {
     return {
       liveInfo: {},
-    }
+    };
   },
   computed: {
-    ...mapGetters({
-      roomId: 'room/roomId',
+    ...mapState({
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
   methods: {
     langToIdentity(identity) {
       switch (identity) {
-        case '主播':
-          return this.$t('chat.anchor')
-          break
-        case '嘉宾':
-          return this.$t('chat.guest')
-          break
-        case '主持人':
-          return this.$t('chat.compere')
-          break
-        case '主讲人':
-          return this.$t('chat.speaker')
-          break
-        case '展商':
-          return this.$t('chat.exhibitor')
-          break
-        case '客服':
-          return this.$t('chat.service')
-          break
-        case '观众':
-          return this.$t('chat.audience')
-          break
+        case "主播":
+          return this.$t("chat.anchor");
+          break;
+        case "嘉宾":
+          return this.$t("chat.guest");
+          break;
+        case "主持人":
+          return this.$t("chat.compere");
+          break;
+        case "主讲人":
+          return this.$t("chat.speaker");
+          break;
+        case "展商":
+          return this.$t("chat.exhibitor");
+          break;
+        case "客服":
+          return this.$t("chat.service");
+          break;
+        case "观众":
+          return this.$t("chat.audience");
+          break;
         default:
-          return ''
+          return "";
       }
     },
     transTime(str) {
-      let _str = str ? str : ''
-      _str = _str.replace(/[年月]/g, '-')
-      _str = _str.replace(/[日]/g, '')
-      return _str
+      let _str = str ? str : "";
+      _str = _str.replace(/[年月]/g, "-");
+      _str = _str.replace(/[日]/g, "");
+      return _str;
       // let _start = moment(start)
       // let _end = moment(end)
       // if (_start.format('YYYY-MM-DD') === _end.format('YYYY-MM-DD')) {
@@ -176,14 +176,14 @@ export default {
   },
   created() {
     getroomsummary({ roomid: this.roomId }).then(({ data }) => {
-      let res = data
+      let res = data;
       if (res.code === 0) {
-        this.liveInfo = res.data
+        this.liveInfo = res.data;
       }
-    })
+    });
   },
   mounted() {},
-}
+};
 </script>
 
 <style lang="scss" scoped>

@@ -52,12 +52,12 @@
       <el-popover placement="bottom-start" trigger="hover">
         <template #reference v-if="room.room.companyQrUrl">
           <div class="company-qr">
-            <span>{{ $t('head.scan') }}</span>
+            <span>{{ $t("head.scan") }}</span>
           </div>
         </template>
         <div class="company-qr-code">
           <img :src="room.room.companyQrUrl" alt="" />
-          <p>{{ $t('head.scanFirm') }}</p>
+          <p>{{ $t("head.scanFirm") }}</p>
         </div>
       </el-popover>
 
@@ -68,7 +68,7 @@
             <template #reference>
               <div>
                 <span class="iconfont icon-5app"></span
-                ><span>{{ $t('common.watchInMobile') }}</span>
+                ><span>{{ $t("common.watchInMobile") }}</span>
               </div>
             </template>
             <div class="qr-code">
@@ -79,11 +79,13 @@
           </el-popover>
         </li>
         <li>
-          {{ $t('common.welcome') }}，<b class="blue_txt">{{ user.userName }}</b
+          {{ $t("common.welcome") }}，<b class="blue_txt">{{
+            user.user.nick
+          }}</b
           >，
         </li>
         <li style="margin-left: 0">
-          <a href="javascript:;" @click="logout">{{ $t('common.logout') }}</a>
+          <a href="javascript:;" @click="logout">{{ $t("common.logout") }}</a>
         </li>
         <!-- 多语言切换下拉菜单 -->
         <li v-if="false">
@@ -114,12 +116,8 @@
             round
             @click="handleBtnClick('start')"
             :loading="live.liveToggleLoading"
-            v-show="
-              !live.liveStreamList.some(
-                ({ userId_ }) => String(userId_) === String(user.user.imAccount)
-              )
-            "
-            v-if="user.user.role === 1 && room.room.status === 1"
+            v-show="!live.liveStart && room.room.status === 1"
+            v-if="user.user.role === 1"
             >开始直播</el-button
           >
         </li>
@@ -129,12 +127,8 @@
             size="mini"
             round
             @click="handleBtnClick('stop')"
-            v-show="
-              live.liveStreamList.some(
-                ({ userId_ }) => String(userId_) === String(user.user.imAccount)
-              )
-            "
-            v-if="user.user.role === 1 && room.room.status === 1"
+            v-show="live.liveStart && room.room.status === 1"
+            v-if="user.user.role === 1"
             :loading="live.liveToggleLoading"
             >结束直播</el-button
           >
@@ -146,11 +140,11 @@
             round
             @click="handleBtnClick('apply')"
             v-show="
-              !live.liveStreamList.some(
-                ({ userId_ }) => String(userId_) === String(user.user.imAccount)
-              ) && live.liveStart
+              !live.liveMembers.find(
+                ({ memberId }) => +memberId === +user.user.imAccount
+              )?.isLiving && live.liveStart
             "
-            v-if="user.user.role === 2 && room.room.status === 1"
+            v-if="user.user.role === 2"
             :loading="live.liveToggleLoading"
             >申请上麦</el-button
           >
@@ -162,11 +156,11 @@
             round
             @click="handleBtnClick('offLive')"
             v-show="
-              live.liveStreamList.some(
-                ({ userId_ }) => String(userId_) === String(user.user.imAccount)
-              )
+              live.liveMembers.find(
+                ({ memberId }) => +memberId === +user.user.imAccount
+              )?.isLiving && live.liveStart
             "
-            v-if="user.user.role === 2 && room.room.status === 1"
+            v-if="user.user.role === 2"
             :loading="live.liveToggleLoading"
             >下麦</el-button
           >
@@ -183,25 +177,26 @@
 </template>
 
 <script>
-import { logout, leaveroom } from '../../../services/room/index.js'
-import { mapState } from 'vuex'
-import QRious from 'qrious'
-import { VITE_wapBaseUrl } from '../../../constants.js'
-import { removeUserSession } from '../../../utils/session'
-import { eventEmitter } from '../../../utils/event'
+import { logout, leaveroom } from "../../../services/room/index.js";
+import { mapState } from "vuex";
+import { ElMessage } from "element-plus";
+import QRious from "qrious";
+import { VITE_wapBaseUrl } from "../../../constants.js";
+import { removeUserSession } from "../../../utils/session";
+import { eventEmitter } from "../../../utils/event";
 
 export default {
-  name: 'heads',
+  name: "heads",
   data() {
     return {
-      currentUrl: '',
+      currentUrl: "",
       langList: {
-        zh: '中文',
-        en: 'English',
-        ja: '日本語',
-        es: 'Español',
+        zh: "中文",
+        en: "English",
+        ja: "日本語",
+        es: "Español",
       },
-    }
+    };
   },
   computed: {
     ...mapState({
@@ -211,62 +206,97 @@ export default {
       roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
+  created() {},
   methods: {
     logout() {
-      leaveroom({ roomid: this.roomId })
+      leaveroom({ roomid: this.roomId });
       logout().then(({ data }) => {
         if (data?.code === 0) {
-          removeUserSession()
-          location.reload()
+          removeUserSession();
+          location.reload();
         }
-      })
+      });
     },
 
     changeLang(lang) {
-      this.setLang(lang)
-      localStorage.setItem('userSetLang', lang)
+      this.setLang(lang);
+      localStorage.setItem("userSetLang", lang);
     },
 
     handleBtnClick(menu) {
       const actionMap = {
         start: () => {
-          eventEmitter.emit(eventEmitter.event?.anchor?.start)
+          // 主播推送开始直播消息
+          this.$store.dispatch({
+            type: "live/startLive",
+            payload: {
+              roomid: this.roomId,
+              streamid: this.room.room?.myStreamIdMix,
+              streamtype: 4,
+            },
+            callback: () => {},
+          });
         },
+
         stop: () => {
-          eventEmitter.emit(eventEmitter.event?.anchor?.stop)
+          // 主播推送结束直播消息
+          this.$store.dispatch({
+            type: "live/stopLive",
+            payload: {
+              roomid: this.roomId,
+            },
+            callback: () => ElMessage.success("直播已结束"),
+          });
         },
+
         apply: () => {
-          eventEmitter.emit(eventEmitter.event?.guest?.apply)
+          // 发送申请推送
+          this.$store.dispatch({
+            type: "live/applyLive",
+            payload: {
+              roomid: this.roomId,
+            },
+            callback: () => ElMessage.success("上麦申请已发送"),
+          });
         },
+
         offLive: () => {
-          eventEmitter.emit(eventEmitter.event?.guest?.stop)
+          // 嘉宾推送下麦消息
+          this.$store.dispatch({
+            type: "live/guestStopLive",
+            payload: {
+              roomid: this.roomId,
+              memberid: this.user.user.imAccount,
+            },
+          });
         },
+
         mediaSet: () => {
-          eventEmitter.emit(eventEmitter.event?.live?.setMedia)
+          eventEmitter.emit(eventEmitter.event?.live?.setMedia);
         },
-      }
-      actionMap[menu]?.()
+      };
+      actionMap[menu]?.();
     },
   },
   mounted() {
-    this.currentUrl = `https://${VITE_wapBaseUrl}/livewap/#/live/${this.roomId}`
+    this.currentUrl = `https://${VITE_wapBaseUrl}/livewap/#/live/${this.roomId}`;
     new QRious({
-      element: document.getElementById('qr3'),
+      element: document.getElementById("qr3"),
       value: this.currentUrl,
-    })
+    });
 
-    if (this.room.lang !== 'zh') {
-      this.$i18n.locale = this.room.lang
+    if (this.room.lang !== "zh") {
+      this.$i18n.locale = this.room.lang;
     }
   },
   watch: {
-    'room.lang': {
+    "room.lang": {
       handler: function (val) {
-        this.$i18n.locale = val
+        this.$i18n.locale = val;
       },
     },
   },
-}
+};
 </script>
 
 <style lang="scss">

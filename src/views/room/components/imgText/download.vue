@@ -20,7 +20,7 @@
       </li>
     </ul>
     <p class="no_data_tip" v-show="data.length < 1">
-      {{ $t('download.noData') }}！
+      {{ $t("download.noData") }}！
     </p>
     <p
       class="chat-icon-loading"
@@ -28,20 +28,20 @@
       v-loading="isLoading"
     ></p>
     <p class="over_data_tip" v-show="data.length > 1 && isOver">
-      {{ $t('imgText.loadOver') }}...
+      {{ $t("imgText.loadOver") }}...
     </p>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
-import { VITE_baseUrl } from '../../../../constants.js'
+import { mapGetters, mapMutations, mapState } from "vuex";
+import { VITE_baseUrl } from "../../../../constants.js";
 export default {
-  name: 'download',
+  name: "download",
   data() {
     return {
       baseUrl: VITE_baseUrl,
-    }
+    };
   },
   props: {
     data: {
@@ -58,26 +58,28 @@ export default {
   },
   computed: {
     ...mapGetters({
-      roomId: 'room/roomId',
-      user: 'user/user',
-      isVisitorLogin: 'user/isVisitorLogin',
+      user: "user/user",
+      isVisitorLogin: "user/isVisitorLogin",
+    }),
+    ...mapState({
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
   methods: {
-    ...mapMutations(['openLogin', 'openCard']),
+    ...mapMutations(["openLogin", "openCard"]),
     showLogin() {
       if (this.isVisitorLogin) {
-        this.openLogin(false)
-        return
+        this.openLogin(false);
+        return;
       }
       if (this.user.isCompletedInfo === 0) {
-        this.openCard(false)
+        this.openCard(false);
       }
     },
   },
   created() {},
   mounted() {},
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -101,19 +103,19 @@ export default {
 
       &::after {
         position: absolute;
-        content: '';
+        content: "";
         top: 17px;
         right: 20px;
         width: 18px;
         height: 16px;
-        background: url(../../../assets/down.png) no-repeat;
+        background: url(../../../../assets/down.png) no-repeat;
       }
 
       &:hover {
         color: #2691e9;
 
         &::after {
-          background: url(../../../assets/down_hover.png) no-repeat;
+          background: url(../../../../assets/down_hover.png) no-repeat;
         }
       }
     }

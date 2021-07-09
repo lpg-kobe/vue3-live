@@ -9,6 +9,8 @@ export const EVENTENUM = {
     invite: 'ANCHOR_INVITE_LIVE', // 邀请上麦
     start: 'ANCHOR_START_LIVE', // 开始直播
     stop: 'ANCHOR_STOP_LIVE', // 结束直播
+    online: 'ANCHOR_ON_LINE', // 上麦
+    offline: 'ANCHOR_OFF_LINE', // 下麦
     closeMic: 'ANCHOR_CLOSE_MIC', // 关闭麦克风
     openMic: 'ANCHOR_OPEN_MIC', // 开启麦克风
     openCamera: 'ANCHOR_OPEN_CAMERA', // 开启摄像头
@@ -51,7 +53,7 @@ export default class Event {
     this.eventBus = this.eventBus || Object.create(null);
   }
 
-  on(eventName, handler, context) {
+  on (eventName, handler, context) {
     if (typeof handler !== 'function') {
       console.error('Event handler must be a function');
       return;
@@ -63,7 +65,7 @@ export default class Event {
     });
   }
 
-  emit(eventName, data) {
+  emit (eventName, data) {
     let eventCollection = this.eventBus[eventName];
     const args = [];
     if (eventCollection) {
@@ -78,7 +80,7 @@ export default class Event {
     }
   }
 
-  off(eventName, handler) {
+  off (eventName, handler) {
     const eventCollection = this.eventBus[eventName];
 
     // clear all eventBus when not give the eventName

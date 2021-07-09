@@ -1,46 +1,43 @@
 <template>
-  <div class="stream-mask flex-center" v-if="judgeAnchorOrSelf(stream)">
+  <div class="stream-mask flex-center" v-if="judgeAnchorOrSelf(member)">
     <div class="mask-menu flex-center">
       <i
         class="icon icon-user"
         title="设为主讲"
-        v-if="
-          user.user.role === 1 &&
-          String(stream.userId_) !== String(live.liveSpeaker.userId)
-        "
-        @click="handleIconClick('speaker', stream)"
+        v-if="user.user.role === 1 && !member.isMainSpeaker"
+        @click="handleIconClick('speaker', member)"
       ></i>
       <i
-        :class="`icon icon-${stream.isOpenCamera ? 'camera' : 'uncamera'}`"
-        :title="`${stream.isOpenCamera ? '关闭' : '开启'}摄像头`"
-        @click="handleIconClick('camera', stream)"
+        :class="`icon icon-${member.isOpenCamera ? 'camera' : 'uncamera'}`"
+        :title="`${member.isOpenCamera ? '关闭' : '开启'}摄像头`"
+        @click="handleIconClick('camera', member)"
       ></i>
       <i
-        :class="`icon icon-${stream.isOpenMic ? 'mic' : 'unmic'}`"
-        :title="`${stream.isOpenMic ? '关闭' : '开启'}麦克风`"
-        @click="handleIconClick('mic', stream)"
+        :class="`icon icon-${member.isOpenMike ? 'mic' : 'unmic'}`"
+        :title="`${member.isOpenMike ? '关闭' : '开启'}麦克风`"
+        @click="handleIconClick('mic', member)"
       ></i>
       <i
         class="icon icon-hand"
         v-if="
           user.user.role === 1
-            ? String(stream.userId_) !== String(user.user.imAccount)
-            : String(stream.userId_) === String(user.user.imAccount)
+            ? +member.memberId !== +user.user.imAccount
+            : +member.memberId === +user.user.imAccount
         "
         title="下麦"
-        @click="handleIconClick('live', stream)"
+        @click="handleIconClick('live', member)"
       ></i>
     </div>
   </div>
 </template>
 <script>
 /** 互動直播流菜單 */
-
-import { mapState } from 'vuex'
-import { eventEmitter } from '../../../utils/event'
+import { ElMessage } from "element-plus";
+import { mapState } from "vuex";
+import { eventEmitter } from "../../../utils/event";
 
 export default {
-  name: 'streamMask',
+  name: "streamMask",
   computed: {
     ...mapState({
       user: ({ user }) => user,
@@ -49,73 +46,84 @@ export default {
     }),
   },
   props: {
-    stream: {
+    member: {
       type: Object,
       default: () => ({}),
     },
   },
+  emits: ["menuClick"],
   methods: {
     /** handle menu click of user live stream */
     handleIconClick(type, payload) {
       const actionMap = {
         speaker: () => {
-          eventEmitter.emit(
-            eventEmitter.event.anchor.setSpeaker,
-            Object.assign(payload, {
-              userId: payload.userId_,
-            })
-          )
+          // 发送设置主讲人推送
+          this.$store.dispatch({
+            type: "live/setMainSpeaker",
+            payload: {
+              roomid: this.roomId,
+              memberid: payload?.memberId,
+            },
+            callback: () =>
+              ElMessage.success(`${payload?.nick}已成为新的主讲人`),
+          });
+          this.$emit("menuClick", {
+            type,
+            userId: payload.memberId,
+          });
         },
         mic: () => {
           this.$store.dispatch({
-            type: 'live/toggleMedia',
+            type: "live/toggleMedia",
             payload: {
               roomid: this.roomId,
-              memberid: payload.userId_,
-              miketype: +!payload.isOpenMic,
+              memberid: payload.memberId,
+              miketype: +!payload.isOpenMike,
             },
-          })
-          eventEmitter.emit(eventEmitter.event.live.toggleMedia, {
-            type: 'mic',
-            userId: payload.userId_,
-            isOpenMic: !payload.isOpenMic,
-          })
+          });
+          this.$emit("menuClick", {
+            type,
+            userId: payload.memberId,
+          });
         },
         camera: () => {
           this.$store.dispatch({
-            type: 'live/toggleMedia',
+            type: "live/toggleMedia",
             payload: {
               roomid: this.roomId,
-              memberid: payload.userId_,
+              memberid: payload.memberId,
               cameratype: +!payload.isOpenCamera,
             },
-          })
-          eventEmitter.emit(eventEmitter.event.live.toggleMedia, {
-            type: 'camera',
-            userId: payload.userId_,
-            isOpenCamera: !payload.isOpenCamera,
-          })
+          });
+          this.$emit("menuClick", {
+            type,
+            userId: payload.memberId,
+          });
         },
         live: () => {
           eventEmitter.emit(
             eventEmitter.event.live.stopLive,
             Object.assign(payload, {
-              userId: payload.userId_,
+              userId: payload.memberId,
             })
-          )
+          );
+          this.$emit("menuClick", {
+            type,
+            userId: payload.memberId,
+          });
         },
-      }
-      actionMap[type]?.()
+      };
+      actionMap[type]?.();
     },
 
     judgeAnchorOrSelf(payload) {
       return (
-        String(payload.userId_) === String(this.user.user.imAccount) ||
+        +payload.memberId === +this.user.user.imAccount ||
         this.user.user.role === 1
-      )
+      );
     },
   },
-}
+};
 </script>
 <style lang="scss" scoped>
 .stream-mask {

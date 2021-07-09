@@ -14,7 +14,7 @@
             v-loading="loading"
           ></li>
           <li class="loading_over" v-if="loadOver && dataList.length > 5">
-            {{ $t('common.loadOver') }}
+            {{ $t("common.loadOver") }}
           </li>
           <!-- compere 主持人样式 -->
           <li class="chat_item" v-for="(item, index) of dataList" :key="index">
@@ -28,7 +28,7 @@
               >
                 {{ item.nick }}
                 <span v-if="item.role === 1 || item.role === 2">{{
-                  '[' + item.identity + ']'
+                  "[" + item.identity + "]"
                 }}</span>
               </span>
               <el-dropdown
@@ -47,7 +47,7 @@
                   >
                     {{ item.nick }}
                     <span v-if="item.role === 1 || item.role === 2">{{
-                      '[' + item.identity + ']'
+                      "[" + item.identity + "]"
                     }}</span>
                   </span>
                 </span>
@@ -55,14 +55,14 @@
                   <el-dropdown-item
                     :command="commandPara(item, 'a')"
                     v-show="item.senderId !== Number(imAccount)"
-                    >{{ $t('chart.replyChart') }}</el-dropdown-item
+                    >{{ $t("chart.replyChart") }}</el-dropdown-item
                   >
                   <el-dropdown-item
                     :command="commandPara(item, 'b')"
                     v-show="
                       item.senderId === Number(imAccount) || user.role === 1
                     "
-                    >{{ $t('chart.deleteChart') }}</el-dropdown-item
+                    >{{ $t("chart.deleteChart") }}</el-dropdown-item
                   >
                   <el-dropdown-item
                     :command="commandPara(item, 'c')"
@@ -71,7 +71,7 @@
                       item.isForbit === 2 &&
                       user.role === 1
                     "
-                    >{{ $t('chart.onForbit') }}</el-dropdown-item
+                    >{{ $t("chart.onForbit") }}</el-dropdown-item
                   >
                   <el-dropdown-item
                     :command="commandPara(item, 'd')"
@@ -80,7 +80,7 @@
                       item.isForbit === 1 &&
                       user.role === 1
                     "
-                    >{{ $t('chart.offForbit') }}</el-dropdown-item
+                    >{{ $t("chart.offForbit") }}</el-dropdown-item
                   >
                   <el-dropdown-item
                     :command="commandPara(item, 'e')"
@@ -89,7 +89,7 @@
                       user.role === 1 &&
                       item.role !== 6
                     "
-                    >{{ $t('chart.tickOut') }}</el-dropdown-item
+                    >{{ $t("chart.tickOut") }}</el-dropdown-item
                   >
                 </el-dropdown-menu>
               </el-dropdown>
@@ -108,7 +108,7 @@
           </li>
         </ul>
         <p class="no_data_tip" v-show="dataList.length < 1">
-          {{ $t('chart.noData') }}~
+          {{ $t("chart.noData") }}~
         </p>
       </chatScroll>
     </div>
@@ -121,12 +121,12 @@
           v-on:click="openLogin(false)"
         >
           <!-- 请登录后发言 -->
-          {{ $t('chart.loginHint1')
-          }}<a href="javascript:"> {{ $t('common.login') }} </a
-          >{{ $t('chart.loginHint2') }}
+          {{ $t("chart.loginHint1")
+          }}<a href="javascript:"> {{ $t("common.login") }} </a
+          >{{ $t("chart.loginHint2") }}
         </p>
         <p class="chat_other_tip" v-show="isForbit && !isVisitorLogin">
-          {{ $t('chart.forbitHint') }}
+          {{ $t("chart.forbitHint") }}
         </p>
         <textarea
           rows="2"
@@ -168,21 +168,21 @@
         </el-upload>
 
         <el-button class="chat-btn" size="small" type="primary" @click="send">{{
-          $t('common.send')
+          $t("common.send")
         }}</el-button>
       </div>
     </div>
 
     <!-- 互动区图片预览弹框 -->
-    <el-dialog :visible.sync="chartImgDialogShow" width="30%">
+    <el-dialog v-model="chartImgDialogShow" width="30%">
       <img :src="chartImgSrc" alt="" style="width: 100%" />
     </el-dialog>
   </div>
 </template>
 
 <script>
-import TIM from 'tim-js-sdk'
-import { mapGetters, mapMutations } from 'vuex'
+import TIM from "tim-js-sdk";
+import { mapGetters, mapMutations, mapState } from "vuex";
 import {
   groupGetmoremsg,
   groupSendmsg,
@@ -190,113 +190,113 @@ import {
   forbitchat,
   forbitchatvisitor,
   shotoff,
-} from '@/api'
-import { emoji } from '.././../../assets/js/emoji'
-import chatScroll from '../chat/chatScroll'
-import { BASE_URL, FILE_URL } from '@/utils/buildVar'
+} from "@/api";
+import { emoji } from ".././../../assets/js/emoji";
+import chatScroll from "../chat/chatScroll";
+import { BASE_URL, FILE_URL } from "@/utils/buildVar";
 const baseUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'https://a.ofweek.com:8081/admina'
-    : `https://${FILE_URL}/api/fileremote`
+  process.env.NODE_ENV === "development"
+    ? "https://a.ofweek.com:8081/admina"
+    : `https://${FILE_URL}/api/fileremote`;
 export default {
-  name: 'chatList',
+  name: "chatList",
   data() {
     return {
-      uploadSrc: baseUrl + '/file/uploadfile2',
+      uploadSrc: baseUrl + "/file/uploadfile2",
       uploadImgData: {
-        filetype: '0',
-        module: 'msgpictext',
+        filetype: "0",
+        module: "msgpictext",
       },
       dataList: [],
       loading: false,
       loadOver: false,
-      sendData: '',
-      msgId: '',
+      sendData: "",
+      msgId: "",
       faceUrl: `https://${BASE_URL}/file/static/img/face/emoji/`,
       displayFace: false,
       face: emoji,
       faceRegExp: /\[[a-zA-Z0-9\/\u4e00-\u9fa5]+\]/g,
-      chartImgSrc: '',
+      chartImgSrc: "",
       chartImgDialogShow: false,
-    }
+    };
   },
   components: { chatScroll },
   methods: {
-    ...mapMutations(['openLogin', 'openCard', 'setIsForbit', 'setPv']),
+    ...mapMutations(["openLogin", "openCard", "setIsForbit"]),
     getData() {
-      if (this.loadOver) return
-      this.loading = true
+      if (this.loadOver) return;
+      this.loading = true;
       return new Promise((resolve) => {
         groupGetmoremsg({
           msgId: this.msgId,
           roomId: this.roomId,
           size: 50,
         }).then((res) => {
-          console.log(res)
+          console.log(res);
           if (res.data.length < 50) {
-            this.loadOver = true
+            this.loadOver = true;
           }
-          let _arr = res.data.reverse()
+          let _arr = res.data.reverse();
 
           if (_arr.length > 0) {
-            this.msgId = _arr[0].msgId
+            this.msgId = _arr[0].msgId;
           }
 
-          this.dataList = _arr.concat(this.dataList)
-          this.loading = false
+          this.dataList = _arr.concat(this.dataList);
+          this.loading = false;
           this.$nextTick(() => {
-            resolve(_arr.length)
-          })
-        })
-      })
+            resolve(_arr.length);
+          });
+        });
+      });
     },
     handleReachTop() {
-      if (this.loadOver) return
-      this.loading = true
+      if (this.loadOver) return;
+      this.loading = true;
       setTimeout(() => {
         this.getData().then((val) => {
-          this.$refs.chatscroll.toLi(val)
-        })
-      }, 1000)
+          this.$refs.chatscroll.toLi(val);
+        });
+      }, 1000);
     },
     faceToHTML(value) {
-      if (!value) return ''
-      const url = this.faceUrl
+      if (!value) return "";
+      const url = this.faceUrl;
       value = value.replace(this.faceRegExp, function (word) {
-        return '<img width="24" src="' + url + word + '@2x.png" />'
-      })
-      return value
+        return '<img width="24" src="' + url + word + '@2x.png" />';
+      });
+      return value;
     },
     switchDisplayFace() {
       if (this.isVisitorLogin) {
-        this.openLogin(false)
-        return
+        this.openLogin(false);
+        return;
       }
       if (this.isForbit) {
-        return
+        return;
       }
       if (this.isVisitor || this.isShutup) {
         //
       } else {
-        this.displayFace = !this.displayFace
+        this.displayFace = !this.displayFace;
       }
     },
     selectFace(face) {
-      this.sendData += face
-      document.querySelector('.chat_con').focus()
+      this.sendData += face;
+      document.querySelector(".chat_con").focus();
     },
     // 禁止拖动表情图片
     banDragImage(e) {
-      if (e.target.tagName === 'IMG') {
-        e.preventDefault()
+      if (e.target.tagName === "IMG") {
+        e.preventDefault();
       }
     },
     beforeChartUpload(file) {
-      const isMax = file.size / 1024 / 1024 < 2
+      const isMax = file.size / 1024 / 1024 < 2;
       if (!isMax) {
-        this.$message.error('图片大小不能超过 ' + 2 + 'MB!')
+        this.$message.error("图片大小不能超过 " + 2 + "MB!");
       }
-      return isMax
+      return isMax;
     },
     chartUploadSuccess(res) {
       if (res.code === 0) {
@@ -307,25 +307,25 @@ export default {
           },
           roomId: this.roomId,
           senderId: this.imAccount,
-        }).then((res) => {})
+        }).then((res) => {});
       }
     },
     chartUploadError(err) {
-      this.$message.error(JSON.parse(String(err).split(': ')[1]))
+      this.$message.error(JSON.parse(String(err).split(": ")[1]));
     },
     send() {
       if (this.isVisitorLogin) {
-        this.openLogin(false)
-        return
+        this.openLogin(false);
+        return;
       }
       if (this.user.isCompletedInfo === 0) {
-        this.openCard(false)
-        return
+        this.openCard(false);
+        return;
       }
 
       if (this.sendData.length === 0) {
-        console.log('请输入发送的内容！')
-        return
+        console.log("请输入发送的内容！");
+        return;
       }
 
       groupSendmsg({
@@ -336,47 +336,47 @@ export default {
         roomId: this.roomId,
         senderId: this.imAccount,
       }).then((res) => {
-        console.log(res)
+        console.log(res);
         if (res.code === 0) {
-          this.sendData = ''
+          this.sendData = "";
         }
-      })
+      });
     },
     commandPara(item, type) {
       return {
         info: item,
         type,
-      }
+      };
     },
     toBottomFn() {
-      this.$refs.chatscroll.toBottom()
+      this.$refs.chatscroll.toBottom();
     },
     handleCommand(command) {
-      console.log(command)
+      console.log(command);
       switch (command.type) {
-        case 'a':
-          this.sendData = `@${command.info.nick} `
-          this.$refs.textarea1.focus()
-          break
-        case 'b':
-          this.$confirm('确认删除?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
+        case "a":
+          this.sendData = `@${command.info.nick} `;
+          this.$refs.textarea1.focus();
+          break;
+        case "b":
+          this.$confirm("确认删除?", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
           }).then(() => {
             groupDeletemsg({
               msgId: command.info.msgId,
               roomId: command.info.roomId,
             }).then((res) => {
               if (res.code === 0) {
-                this.$message.success('删除成功')
+                this.$message.success("删除成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
-          })
-          break
-        case 'c':
+            });
+          });
+          break;
+        case "c":
           if (command.info.role === 6) {
             forbitchatvisitor({
               visitorId: command.info.visitorId,
@@ -384,11 +384,11 @@ export default {
               type: 1,
             }).then((res) => {
               if (res.code === 0) {
-                this.$message.success('禁言成功')
+                this.$message.success("禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           } else {
             forbitchat({
               memberId: command.info.senderId,
@@ -396,14 +396,14 @@ export default {
               type: 1,
             }).then((res) => {
               if (res.code === 0) {
-                this.$message.success('禁言成功')
+                this.$message.success("禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           }
-          break
-        case 'd':
+          break;
+        case "d":
           if (command.info.role === 6) {
             forbitchatvisitor({
               visitorId: command.info.visitorId,
@@ -411,11 +411,11 @@ export default {
               type: 2,
             }).then((res) => {
               if (res.code === 0) {
-                this.$message.success('取消禁言成功')
+                this.$message.success("取消禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           } else {
             forbitchat({
               memberId: command.info.senderId,
@@ -423,48 +423,44 @@ export default {
               type: 2,
             }).then((res) => {
               if (res.code === 0) {
-                this.$message.success('取消禁言成功')
+                this.$message.success("取消禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           }
-          break
-        case 'e':
-          this.$confirm(`是否把 ${command.info.nick} 踢出房间?`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
+          break;
+        case "e":
+          this.$confirm(`是否把 ${command.info.nick} 踢出房间?`, "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
           }).then(() => {
             shotoff({
               memberId: command.info.senderId,
               roomId: command.info.roomId,
             }).then((res) => {
               if (res.code === 0) {
-                this.$message.success('踢出成功')
+                this.$message.success("踢出成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
-          })
-          break
+            });
+          });
+          break;
       }
     },
     showChartImg(src) {
-      this.chartImgSrc = src
-      this.chartImgDialogShow = true
+      this.chartImgSrc = src;
+      this.chartImgDialogShow = true;
     },
   },
   computed: {
-    ...mapGetters([
-      'roomId',
-      'isForbit',
-      'imAccount',
-      'room',
-      'user',
-      'liveStatus',
-      'isVisitorLogin',
-    ]),
+    ...mapGetters(["isForbit", "imAccount", "room", "user", "isVisitorLogin"]),
+    ...mapState({
+      room: ({ room }) => room,
+      roomId: ({ router: { params } }) => params?.roomId,
+    }),
   },
   created() {
     this.tim.on(TIM.EVENT.MESSAGE_RECEIVED, (event) => {
@@ -472,67 +468,67 @@ export default {
       // event.name - TIM.EVENT.MESSAGE_RECEIVED
       // event.data - 存储 Message 对象的数组 - [Message]
       event.data.forEach((eventItem) => {
-        const payloadData = JSON.parse(eventItem.payload.data)
-        let msgCode = payloadData.msgCode
+        const payloadData = JSON.parse(eventItem.payload.data);
+        let msgCode = payloadData.msgCode;
 
         if (payloadData.roomId != this.roomId) {
-          return
+          return;
         }
 
         switch (String(msgCode)) {
           // 广播群互动消息
-          case '1000':
-            console.log('广播群互动消息1000')
+          case "1000":
+            console.log("广播群互动消息1000");
             // console.log(payloadData)
-            payloadData.isForbit = 2
-            this.dataList.push(payloadData)
+            payloadData.isForbit = 2;
+            this.dataList.push(payloadData);
             this.$nextTick(() => {
               setTimeout(() => {
-                this.$refs.chatscroll.scrollToBottom()
-              }, 1)
-            })
-            break
+                this.$refs.chatscroll.scrollToBottom();
+              }, 1);
+            });
+            break;
 
           // 审核通过互动聊天消息
-          case '1010':
-            console.log('审核通过互动聊天消息1010')
-            console.log(payloadData)
-            this.dataList.push(payloadData)
+          case "1010":
+            console.log("审核通过互动聊天消息1010");
+            console.log(payloadData);
+            this.dataList.push(payloadData);
             this.$nextTick(() => {
               setTimeout(() => {
-                this.$refs.chatscroll.scrollToBottom()
-              }, 1)
-            })
-            break
+                this.$refs.chatscroll.scrollToBottom();
+              }, 1);
+            });
+            break;
 
           // 审核不通过互动聊天消息
-          case '1011':
-            console.log('审核不通过互动聊天消息1011')
-            break
+          case "1011":
+            console.log("审核不通过互动聊天消息1011");
+            break;
 
           // 删除群互动消息
-          case '1014':
-            console.log('删除群互动消息1014')
-            console.log(payloadData)
+          case "1014":
+            console.log("删除群互动消息1014");
+            console.log(payloadData);
             this.dataList = this.dataList.filter((item) => {
-              return item.msgId == payloadData.msgId ? false : true
-            })
-            break
+              return item.msgId == payloadData.msgId ? false : true;
+            });
+            break;
 
           // 禁言/取消禁言用户消息
-          case '1017':
-            console.log('禁言/取消禁言用户消息1017')
+          case "1017":
+            console.log("禁言/取消禁言用户消息1017");
 
-            console.log(this.imAccount)
-            console.log(payloadData)
+            console.log(this.imAccount);
+            console.log(payloadData);
 
             if (payloadData.memberId == this.imAccount) {
               if (payloadData.type === 1) {
-                this.setIsForbit(true)
-                this.$message.warning('对不起，您已被禁言')
+                this.setIsForbit(true);
+                this.$message.warning("对不起，您已被禁言");
               } else if (payloadData.type === 2) {
-                this.setIsForbit(false)
-                this.$message.success('您已被解除禁言')
+                this.setIsForbit(false);
+                this.$message.success("您已被解除禁言");
               }
             }
 
@@ -542,66 +538,61 @@ export default {
                 payloadData.visitorId === item.visitorId
               ) {
                 if (payloadData.type === 1) {
-                  item.isForbit = 1
+                  item.isForbit = 1;
                 } else if (payloadData.type === 2) {
-                  item.isForbit = 2
+                  item.isForbit = 2;
                 }
               }
-            })
-            break
+            });
+            break;
 
           // 踢出用户消息
-          case '1018':
+          case "1018":
             if (payloadData.memberId == this.imAccount) {
-              this.$alert('对不起，您被踢出该直播间！', '提示', {
-                type: 'warning',
+              this.$alert("对不起，您被踢出该直播间！", "提示", {
+                type: "warning",
                 showClose: false,
-                confirmButtonText: '确定',
+                confirmButtonText: "确定",
                 callback: (action) => {
                   if (this.room.type === 1) {
-                    location.href = 'https://live.ofweek.com/'
+                    location.href = "https://live.ofweek.com/";
                   } else if (this.room.type === 2) {
-                    location.href = 'https://webinar.ofweek.com/'
+                    location.href = "https://webinar.ofweek.com/";
                   } else if (this.room.type === 3) {
-                    location.href = 'https://expo.ofweek.com/'
+                    location.href = "https://expo.ofweek.com/";
                   }
                 },
-              })
+              });
             }
-            break
-
-          // 1005广播直播间统计数据
-          case '1005':
-            this.setPv(payloadData.pv)
-            break
+            break;
 
           // 进入直播间广播消息
-          case '1020':
+          case "1020":
             // console.log('进入直播间广播消息1020')
-            break
+            break;
 
           // 在线用户变化广播消息
-          case '1021':
+          case "1021":
             // console.log('在线用户变化广播消息1021')
-            break
+            break;
         }
-      })
-    })
+      });
+    });
   },
   mounted() {
     // 鼠标点击任何地方都隐藏表情
-    document.body.addEventListener('click', (e) => {
-      if (e.target.className.indexOf('face_icon') < 0) {
-        this.displayFace = false
+    document.body.addEventListener("click", (e) => {
+      if (e.target.className.indexOf("face_icon") < 0) {
+        this.displayFace = false;
       }
-    })
+    });
 
     // 获取聊天数据后滚动到最低部
     this.getData().then(() => {
-      this.$refs.chatscroll.toBottom()
-    })
+      this.$refs.chatscroll.toBottom();
+    });
   },
-}
+};
 </script>
 <style lang="scss">
 .chat-btn {
@@ -642,10 +633,10 @@ export default {
   background: rgba($color: #000000, $alpha: 0.8);
   border: none;
 }
-.chat-el-dropdown.el-popper[x-placement^='bottom'] .popper__arrow::after {
+.chat-el-dropdown.el-popper[x-placement^="bottom"] .popper__arrow::after {
   border-bottom-color: rgba($color: #000000, $alpha: 0.8);
 }
-.chat-el-dropdown.no-dropdown.el-popper[x-placement^='bottom']
+.chat-el-dropdown.no-dropdown.el-popper[x-placement^="bottom"]
   .popper__arrow::after {
   border-bottom-color: #fff;
 }

@@ -14,7 +14,7 @@
             v-loading="loading"
           ></li>
           <li class="loading_over" v-if="loadOver && dataList.length > 5">
-            {{ $t('common.loadOver') }}
+            {{ $t("common.loadOver") }}
           </li>
           <!-- compere 主持人样式 -->
           <li class="chat_item" v-for="(item, index) of dataList" :key="index">
@@ -24,7 +24,7 @@
                 class="chat_user_name compere"
                 v-if="item.identity === 'enterMsg'"
               >
-                {{ item.nick }}{{ $t('chat.enter') }}
+                {{ item.nick }}{{ $t("chat.enter") }}
               </span>
               <!-- 错误信息 -->
               <span
@@ -34,20 +34,71 @@
                 {{ item.content }}
               </span>
               <!-- 聊天信息 -->
-              <el-dropdown class="black_dropdown" trigger="click" @command="handleCommand" v-if="user.role === 1 || user.role === 2">
+              <el-dropdown
+                class="black_dropdown"
+                trigger="click"
+                @command="handleCommand"
+                v-if="user.role === 1 || user.role === 2"
+              >
                 <span class="el-dropdown-link">
-                  <span :class="['chat_user_name', 'point_style', {compere: item.role === 1 || item.role === 2}]" v-if="item.identity !== 'enterMsg' && item.identity !== 'errorMsg'">
-                    {{item.nick.replace(/^游客/, $t('head.visitor'))}}
-                    <span v-if="item.role === 1 || item.role === 2">{{ `[${ langToIdentity(item.identity) }]` }}</span>
+                  <span
+                    :class="[
+                      'chat_user_name',
+                      'point_style',
+                      { compere: item.role === 1 || item.role === 2 },
+                    ]"
+                    v-if="
+                      item.identity !== 'enterMsg' &&
+                      item.identity !== 'errorMsg'
+                    "
+                  >
+                    {{ item.nick.replace(/^游客/, $t("head.visitor")) }}
+                    <span v-if="item.role === 1 || item.role === 2">{{
+                      `[${langToIdentity(item.identity)}]`
+                    }}</span>
                   </span>
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu class="chat-el-dropdown">
-                    <el-dropdown-item :command="commandPara(item, 'a')" v-show="item.senderId !== Number(imAccount)">回复聊天</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'b')" v-show="(item.senderId === Number(imAccount)) || user.role === 1">删除聊天</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'c')" v-show="item.senderId !== Number(imAccount) && item.isForbit === 2 && user.role === 1">禁言用户</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'd')" v-show="item.senderId !== Number(imAccount) && item.isForbit === 1 && user.role === 1">解除禁言</el-dropdown-item>
-                    <el-dropdown-item :command="commandPara(item, 'e')" v-show="item.senderId !== Number(imAccount) && user.role === 1 && item.role !== 6">踢出用户</el-dropdown-item>
+                    <el-dropdown-item
+                      :command="commandPara(item, 'a')"
+                      v-show="item.senderId !== Number(imAccount)"
+                      >回复聊天</el-dropdown-item
+                    >
+                    <el-dropdown-item
+                      :command="commandPara(item, 'b')"
+                      v-show="
+                        item.senderId === Number(imAccount) || user.role === 1
+                      "
+                      >删除聊天</el-dropdown-item
+                    >
+                    <el-dropdown-item
+                      :command="commandPara(item, 'c')"
+                      v-show="
+                        item.senderId !== Number(imAccount) &&
+                        item.isForbit === 2 &&
+                        user.role === 1
+                      "
+                      >禁言用户</el-dropdown-item
+                    >
+                    <el-dropdown-item
+                      :command="commandPara(item, 'd')"
+                      v-show="
+                        item.senderId !== Number(imAccount) &&
+                        item.isForbit === 1 &&
+                        user.role === 1
+                      "
+                      >解除禁言</el-dropdown-item
+                    >
+                    <el-dropdown-item
+                      :command="commandPara(item, 'e')"
+                      v-show="
+                        item.senderId !== Number(imAccount) &&
+                        user.role === 1 &&
+                        item.role !== 6
+                      "
+                      >踢出用户</el-dropdown-item
+                    >
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
@@ -66,7 +117,7 @@
           </li>
         </ul>
         <p class="no_data_tip" v-show="dataList.length < 1">
-          {{ $t('chat.noData') }}~
+          {{ $t("chat.noData") }}~
         </p>
       </chatScroll>
     </div>
@@ -79,15 +130,15 @@
           v-on:click="openLogin(false)"
         >
           <!-- 请登录后发言 -->
-          {{ $t('chat.loginHint1')
-          }}<a href="javascript:"> {{ $t('common.login') }} </a
-          >{{ $t('chat.loginHint2') }}
+          {{ $t("chat.loginHint1")
+          }}<a href="javascript:"> {{ $t("common.login") }} </a
+          >{{ $t("chat.loginHint2") }}
         </p>
         <p
           class="chat_other_tip"
           v-show="visitorChat ? isForbit : isForbit && !isVisitorLogin"
         >
-          {{ $t('chat.forbitHint') }}
+          {{ $t("chat.forbitHint") }}
         </p>
         <textarea
           rows="2"
@@ -134,7 +185,7 @@
         </el-upload>
 
         <el-button class="chat-btn" size="small" type="primary" @click="send">{{
-          $t('common.send')
+          $t("common.send")
         }}</el-button>
       </div>
     </div>
@@ -142,8 +193,8 @@
 </template>
 
 <script>
-import { IM_EVENT } from '../../../../sdk/imLive'
-import { mapState, mapGetters, mapMutations } from 'vuex'
+import { IM_EVENT } from "../../../../sdk/imLive";
+import { mapState, mapGetters, mapMutations } from "vuex";
 import {
   groupGetmoremsg,
   groupSendmsg,
@@ -151,132 +202,130 @@ import {
   forbitchat,
   shotoff,
   leaveroom,
-} from '../../../../services/room/index.js'
-import { emoji } from '../../../../assets/js/emoji'
-import chatScroll from './chatScroll.vue'
-import { VITE_baseUrl } from '../../../../constants.js'
+} from "../../../../services/room/index.js";
+import { emoji } from "../../../../assets/js/emoji";
+import chatScroll from "./chatScroll.vue";
+import { VITE_baseUrl } from "../../../../constants.js";
 const baseUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'https://a.ofweek.com:8081/uploadImg'
-    : `https://${VITE_baseUrl}/api/fileremote`
+  process.env.NODE_ENV === "development"
+    ? "https://a.ofweek.com:8081/uploadImg"
+    : `https://${VITE_baseUrl}/api/fileremote`;
 export default {
-  name: 'chatList',
+  name: "chatList",
   data() {
     return {
-      uploadSrc: baseUrl + '/file/uploadfile2',
+      uploadSrc: baseUrl + "/file/uploadfile2",
       uploadImgData: {
-        filetype: '0',
-        module: 'msgpictext',
+        filetype: "0",
+        module: "msgpictext",
       },
       dataList: [],
       loading: false,
       loadOver: false,
-      sendData: '',
-      msgId: '',
+      sendData: "",
+      msgId: "",
       faceUrl: `https://${VITE_baseUrl}/file/static/img/face/emoji/`,
       displayFace: false,
       face: emoji,
       faceRegExp: /\[[a-zA-Z0-9\/\u4e00-\u9fa5]+\]/g,
-    }
+    };
   },
   computed: {
     ...mapState({
       imClient: ({ imClient }) => imClient,
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
     ...mapGetters({
-      room: 'room/room',
-      roomId: 'room/roomId',
-      user: 'user/user',
-      imAccount: 'user/imAccount',
-      isForbit: 'user/isForbit',
-      liveStatus: 'room/liveStatus',
-      pv: 'room/pv',
-      isVisitorLogin: 'user/isVisitorLogin',
+      room: "room/room",
+      user: "user/user",
+      imAccount: "user/imAccount",
+      isForbit: "user/isForbit",
+      isVisitorLogin: "user/isVisitorLogin",
     }),
     visitorChat() {
-      return this.room.watchMode === 1
+      return this.room.watchMode === 1;
     },
   },
   components: { chatScroll },
   methods: {
-    ...mapMutations(['openLogin', 'openCard', 'setIsForbit']),
+    ...mapMutations(["openLogin", "openCard", "setIsForbit"]),
     getData() {
-      if (this.loadOver) return
-      this.loading = true
+      if (this.loadOver) return;
+      this.loading = true;
       return new Promise((resolve) => {
         groupGetmoremsg({
           msgId: this.msgId,
           roomId: this.roomId,
           size: 50,
         }).then(({ data }) => {
-          let res = data
+          let res = data;
           if (res.data.length < 50) {
-            this.loadOver = true
+            this.loadOver = true;
           }
-          let _arr = res.data.reverse()
+          let _arr = res.data.reverse();
 
           if (_arr.length > 0) {
-            this.msgId = _arr[0].msgId
+            this.msgId = _arr[0].msgId;
           }
 
-          this.dataList = _arr.concat(this.dataList)
-          this.loading = false
+          this.dataList = _arr.concat(this.dataList);
+          this.loading = false;
           this.$nextTick(() => {
-            resolve(_arr.length)
-          })
-        })
-      })
+            resolve(_arr.length);
+          });
+        });
+      });
     },
     handleReachTop() {
-      if (this.loadOver) return
-      this.loading = true
+      if (this.loadOver) return;
+      this.loading = true;
       setTimeout(() => {
         this.getData().then((val) => {
-          this.$refs.chatscroll.toLi(val)
-        })
-      }, 1000)
+          this.$refs.chatscroll.toLi(val);
+        });
+      }, 1000);
     },
     faceToHTML(value) {
-      if (!value) return ''
-      const url = this.faceUrl
+      if (!value) return "";
+      const url = this.faceUrl;
       value = value.replace(this.faceRegExp, (word) => {
         let includeFace = this.face.filter((item) => {
-          return item.face_name === word
-        })
+          return item.face_name === word;
+        });
         if (includeFace.length > 0) {
-          return '<img width="24" src="' + url + word + '@2x.png" />'
+          return '<img width="24" src="' + url + word + '@2x.png" />';
         } else {
-          return word
+          return word;
         }
-      })
-      return value
+      });
+      return value;
     },
     switchDisplayFace() {
       if (this.isVisitorLogin && !this.visitorChat) {
-        this.openLogin(false)
-        return
+        this.openLogin(false);
+        return;
       }
       if (this.isForbit) {
-        return
+        return;
       }
-      this.displayFace = !this.displayFace
+      this.displayFace = !this.displayFace;
     },
     selectFace(face) {
-      this.sendData += face
-      document.querySelector('.chat_con').focus()
+      this.sendData += face;
+      document.querySelector(".chat_con").focus();
     },
     // 禁止拖动表情图片
     banDragImage(e) {
-      if (e.target.tagName === 'IMG') {
-        e.preventDefault()
+      if (e.target.tagName === "IMG") {
+        e.preventDefault();
       }
     },
     beforeChatUpload(file) {
-      const isMax = file.size / 1024 / 1024 < 2
+      const isMax = file.size / 1024 / 1024 < 2;
       if (!isMax) {
-        this.$message.error(this.$t('chat.oversize') + '2MB!')
+        this.$message.error(this.$t("chat.oversize") + "2MB!");
       }
-      return isMax
+      return isMax;
     },
     chatUploadSuccess(res) {
       if (res.code === 0) {
@@ -287,27 +336,27 @@ export default {
           },
           roomId: this.roomId,
           senderId: this.imAccount,
-        }).then(({ data }) => {})
+        }).then(({ data }) => {});
       }
     },
     chatUploadError(err) {
-      this.$message.error(JSON.parse(String(err).split(': ')[1]))
+      this.$message.error(JSON.parse(String(err).split(": ")[1]));
     },
     send() {
       if (this.isVisitorLogin && !this.visitorChat) {
-        this.openLogin(false)
-        return
+        this.openLogin(false);
+        return;
       }
       if (this.user.isCompletedInfo === 0 && !this.visitorChat) {
-        this.openCard(false)
-        return
+        this.openCard(false);
+        return;
       }
 
       if (this.sendData.length === 0) {
-        return
+        return;
       } else if (this.sendData.length > 1000) {
-        this.$message.error(this.$t('chat.overlength') + '!')
-        return
+        this.$message.error(this.$t("chat.overlength") + "!");
+        return;
       }
 
       groupSendmsg({
@@ -316,254 +365,254 @@ export default {
           msgType: 1,
         },
         roomId: this.roomId,
-        senderId: this.isVisitorLogin ? '94' : this.imAccount,
+        senderId: this.isVisitorLogin ? "94" : this.imAccount,
         userType: this.isVisitorLogin ? 2 : 1,
-        visitor: this.isVisitorLogin ? this.imAccount : '',
+        visitor: this.isVisitorLogin ? this.imAccount : "",
       }).then(({ data }) => {
-        let res = data
+        let res = data;
         if (res.code === 0) {
-          this.sendData = ''
+          this.sendData = "";
         }
-      })
+      });
     },
     keyDown(e) {
-      const { keyCode, shiftKey } = e
+      const { keyCode, shiftKey } = e;
       if (keyCode === 13) {
         if (shiftKey) {
-          return
+          return;
         } else {
-          e.preventDefault()
-          this.send()
+          e.preventDefault();
+          this.send();
         }
       }
     },
     toBottomFn() {
-      this.$refs.chatscroll.toBottom()
+      this.$refs.chatscroll.toBottom();
     },
     langToIdentity(identity) {
       switch (identity) {
-        case '主播':
-          return this.$t('chat.anchor')
-          break
-        case '嘉宾':
-          return this.$t('chat.guest')
-          break
-        case '主持人':
-          return this.$t('chat.compere')
-          break
-        case '主讲人':
-          return this.$t('chat.speaker')
-          break
-        case '展商':
-          return this.$t('chat.exhibitor')
-          break
-        case '客服':
-          return this.$t('chat.service')
-          break
-        case '观众':
-          return this.$t('chat.audience')
-          break
+        case "主播":
+          return this.$t("chat.anchor");
+          break;
+        case "嘉宾":
+          return this.$t("chat.guest");
+          break;
+        case "主持人":
+          return this.$t("chat.compere");
+          break;
+        case "主讲人":
+          return this.$t("chat.speaker");
+          break;
+        case "展商":
+          return this.$t("chat.exhibitor");
+          break;
+        case "客服":
+          return this.$t("chat.service");
+          break;
+        case "观众":
+          return this.$t("chat.audience");
+          break;
         default:
-          return ''
+          return "";
       }
     },
     chatAddErrorMsg(msg) {
       let obj = {
         roomId: this.roomId,
         msgCode: 1000,
-        nick: 'system',
-        identity: 'errorMsg',
+        nick: "system",
+        identity: "errorMsg",
         content: msg,
         isForbit: 1,
         role: 3,
-        memberId: '',
-      }
+        memberId: "",
+      };
 
-      this.dataList.push(obj)
+      this.dataList.push(obj);
 
       this.$nextTick(() => {
-        this.$refs.chatscroll.toBottom()
-      })
+        this.$refs.chatscroll.toBottom();
+      });
     },
-    commandPara (item, type) {
+    commandPara(item, type) {
       return {
         info: item,
-        type
-      }
+        type,
+      };
     },
-    handleCommand (command) {
-      console.log(command)
+    handleCommand(command) {
+      console.log(command);
       switch (command.type) {
-        case 'a':
-          this.sendData = `@${command.info.nick} `
-          this.$refs.textarea1.focus()
+        case "a":
+          this.sendData = `@${command.info.nick} `;
+          this.$refs.textarea1.focus();
           break;
-        case 'b':
-          this.$confirm('确认删除?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
+        case "b":
+          this.$confirm("确认删除?", "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
           }).then(() => {
             groupDeletemsg({
               msgId: command.info.msgId,
-              roomId: command.info.roomId
+              roomId: command.info.roomId,
             }).then(({ data }) => {
-              let res = data
+              let res = data;
               if (res.code === 0) {
-                this.$message.success('删除成功')
+                this.$message.success("删除成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
-          })
+            });
+          });
           break;
-        case 'c':
+        case "c":
           if (command.info.role === 6) {
             forbitchatvisitor({
               visitorId: command.info.visitorId,
               roomId: command.info.roomId,
-              type: 1
+              type: 1,
             }).then(({ data }) => {
-              let res = data
+              let res = data;
               if (res.code === 0) {
-                this.$message.success('禁言成功')
+                this.$message.success("禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           } else {
             forbitchat({
               memberId: command.info.senderId,
               roomId: command.info.roomId,
-              type: 1
+              type: 1,
             }).then(({ data }) => {
-              let res = data
+              let res = data;
               if (res.code === 0) {
-                this.$message.success('禁言成功')
+                this.$message.success("禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           }
           break;
-        case 'd':
+        case "d":
           if (command.info.role === 6) {
             forbitchatvisitor({
               visitorId: command.info.visitorId,
               roomId: command.info.roomId,
-              type: 2
+              type: 2,
             }).then(({ data }) => {
-              let res = data
+              let res = data;
               if (res.code === 0) {
-                this.$message.success('取消禁言成功')
+                this.$message.success("取消禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           } else {
             forbitchat({
               memberId: command.info.senderId,
               roomId: command.info.roomId,
-              type: 2
+              type: 2,
             }).then(({ data }) => {
-              let res = data
+              let res = data;
               if (res.code === 0) {
-                this.$message.success('取消禁言成功')
+                this.$message.success("取消禁言成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
+            });
           }
           break;
-        case 'e':
-          this.$confirm(`是否把 ${command.info.nick} 踢出房间?`, '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
+        case "e":
+          this.$confirm(`是否把 ${command.info.nick} 踢出房间?`, "提示", {
+            confirmButtonText: "确定",
+            cancelButtonText: "取消",
+            type: "warning",
           }).then(() => {
             shotoff({
               memberId: command.info.senderId,
               roomId: command.info.roomId,
             }).then(({ data }) => {
-              let res = data
+              let res = data;
               if (res.code === 0) {
-                this.$message.success('踢出成功')
+                this.$message.success("踢出成功");
               } else {
-                this.$message.error(res.message)
+                this.$message.error(res.message);
               }
-            })
-          })
+            });
+          });
           break;
       }
     },
     bindEvent() {
       if (!this.imClient) {
-        return
+        return;
       }
-      this.imClient.on(IM_EVENT?.msgReceive, this.onMsgReceive)
+      this.imClient.on(IM_EVENT?.msgReceive, this.onMsgReceive);
     },
 
     onMsgReceive({ data }) {
       try {
         for (let i = 0, len = data.length; i < len; i++) {
-          const msg = data[i]
-          const payloadData = JSON.parse(msg.payload?.data)
-          let msgCode = payloadData.msgCode
+          const msg = data[i];
+          const payloadData = JSON.parse(msg.payload?.data);
+          let msgCode = payloadData.msgCode;
           if (payloadData.roomId != this.roomId) {
-            return
+            return;
           }
           switch (String(msgCode)) {
             // 广播群互动消息
-            case '1000':
-              console.log('广播群互动消息1000')
+            case "1000":
+              console.log("广播群互动消息1000");
               // console.log(payloadData)
-              this.dataList.push(payloadData)
+              this.dataList.push(payloadData);
               this.$nextTick(() => {
                 setTimeout(() => {
-                  this.$refs.chatscroll.toBottom()
-                }, 1)
-              })
-              break
+                  this.$refs.chatscroll.toBottom();
+                }, 1);
+              });
+              break;
 
             // 审核通过互动聊天消息
-            case '1010':
-              console.log('审核通过互动聊天消息1010')
-              this.dataList.push(payloadData)
+            case "1010":
+              console.log("审核通过互动聊天消息1010");
+              this.dataList.push(payloadData);
               this.$nextTick(() => {
                 setTimeout(() => {
-                  this.$refs.chatscroll.toBottom()
-                }, 1)
-              })
-              break
+                  this.$refs.chatscroll.toBottom();
+                }, 1);
+              });
+              break;
 
             // 审核不通过互动聊天消息
-            case '1011':
-              console.log('审核不通过互动聊天消息1011')
-              break
+            case "1011":
+              console.log("审核不通过互动聊天消息1011");
+              break;
 
             // 删除群互动消息
-            case '1014':
-              console.log('删除群互动消息1014')
+            case "1014":
+              console.log("删除群互动消息1014");
               this.dataList = this.dataList.filter((item) => {
-                return item.msgId == payloadData.msgId ? false : true
-              })
-              break
+                return item.msgId == payloadData.msgId ? false : true;
+              });
+              break;
 
             // 禁言/取消禁言用户消息
-            case '1017':
-              console.log('禁言/取消禁言用户消息1017')
-              console.log(payloadData)
+            case "1017":
+              console.log("禁言/取消禁言用户消息1017");
+              console.log(payloadData);
 
               if (
                 payloadData.memberId == this.imAccount ||
                 payloadData.visitorId === this.imAccount
               ) {
                 if (payloadData.type === 1) {
-                  this.setIsForbit(true)
-                  this.$message.warning(this.$t('chat.deny'))
+                  this.setIsForbit(true);
+                  this.$message.warning(this.$t("chat.deny"));
                 } else if (payloadData.type === 2) {
-                  this.setIsForbit(false)
-                  this.$message.success(this.$t('chat.clearDeny'))
+                  this.setIsForbit(false);
+                  this.$message.success(this.$t("chat.clearDeny"));
                 }
               }
 
@@ -573,97 +622,101 @@ export default {
                   payloadData.visitorId === item.visitorId
                 ) {
                   if (payloadData.type === 1) {
-                    item.isForbit = 1
+                    item.isForbit = 1;
                   } else if (payloadData.type === 2) {
-                    item.isForbit = 2
+                    item.isForbit = 2;
                   }
                 }
-              })
-              break
+              });
+              break;
 
             // 踢出用户消息
-            case '1018':
-              console.log('踢出用户消息1018')
+            case "1018":
+              console.log("踢出用户消息1018");
               if (payloadData.memberId == this.imAccount) {
                 this.$alert(
-                  this.$t('chat.kickout') + '！',
-                  this.$t('common.hint'),
+                  this.$t("chat.kickout") + "！",
+                  this.$t("common.hint"),
                   {
-                    type: 'warning',
+                    type: "warning",
                     showClose: false,
-                    confirmButtonText: this.$t('common.affirm'),
+                    confirmButtonText: this.$t("common.affirm"),
                     callback: (action) => {
-                      location.href = 'https://live.ofweek.com/'
+                      location.href = "https://live.ofweek.com/";
                     },
                   }
-                )
+                );
                 // 没有点确定3秒后自动退到列表
                 setTimeout(() => {
-                  location.href = 'https://live.ofweek.com/'
-                }, 3000)
+                  location.href = "https://live.ofweek.com/";
+                }, 3000);
               }
-              break
+              break;
 
             // 1005广播直播间统计数据
-            case '1005':
-              this.$store.commit({
-                type: 'room/setState',
-                key: 'pv',
-                value: payloadData.pv,
-              })
-              break
+            case "1005":
+              this.$store.commit("room/setState", [
+                {
+                  key: "room",
+                  value: {
+                    ...this.room,
+                    pv: payloadData.pv,
+                  },
+                },
+              ]);
+              break;
 
             // 进入直播间广播消息
-            case '1020':
-              console.log('进入直播间广播消息1020')
-              console.log(payloadData)
+            case "1020":
+              console.log("进入直播间广播消息1020");
+              console.log(payloadData);
               if (payloadData.isEntry === 1) {
-                return
+                return;
               } else if (payloadData.isEntry === 0) {
                 let obj = {
                   roomId: payloadData.roomId,
                   msgCode: payloadData.msgCode,
                   nick: payloadData.nick,
-                  identity: 'enterMsg',
+                  identity: "enterMsg",
                   isForbit: payloadData.isForbit,
                   role: payloadData.role,
                   memberId: payloadData.memberId,
-                }
+                };
 
-                this.dataList.push(obj)
+                this.dataList.push(obj);
 
                 this.$nextTick(() => {
-                  this.$refs.chatscroll.toBottom()
-                })
+                  this.$refs.chatscroll.toBottom();
+                });
               }
-              break
+              break;
           }
         }
       } catch (err) {
-        console.warn('fail to pass msg of im')
+        console.warn("fail to pass msg of im");
       }
     },
   },
   created() {
-    this.bindEvent()
+    this.bindEvent();
   },
   mounted() {
     // 鼠标点击任何地方都隐藏表情
-    document.body.addEventListener('click', (e) => {
-      if (e.target.className.indexOf('face_icon') < 0) {
-        this.displayFace = false
+    document.body.addEventListener("click", (e) => {
+      if (e.target.className.indexOf("face_icon") < 0) {
+        this.displayFace = false;
       }
-    })
+    });
 
     // 获取聊天数据后滚动到最低部
     this.getData().then(() => {
-      this.$refs.chatscroll.toBottom()
-    })
+      this.$refs.chatscroll.toBottom();
+    });
 
     // 提示错误信息
     // this.$EventBus.$on('chatAddErrorMsg', this.chatAddErrorMsg)
   },
-}
+};
 </script>
 <style lang="scss">
 .chat-btn {
@@ -704,10 +757,10 @@ export default {
   background: rgba($color: #000000, $alpha: 0.8);
   border: none;
 }
-.chat-el-dropdown.el-popper[x-placement^='bottom'] .popper__arrow::after {
+.chat-el-dropdown.el-popper[x-placement^="bottom"] .popper__arrow::after {
   border-bottom-color: rgba($color: #000000, $alpha: 0.8);
 }
-.chat-el-dropdown.no-dropdown.el-popper[x-placement^='bottom']
+.chat-el-dropdown.no-dropdown.el-popper[x-placement^="bottom"]
   .popper__arrow::after {
   border-bottom-color: #fff;
 }

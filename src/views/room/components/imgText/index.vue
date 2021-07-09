@@ -96,12 +96,11 @@ export default {
   computed: {
     ...mapState({
       imClient: ({ imClient }) => imClient,
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
     ...mapGetters({
-      roomId: 'room/roomId',
       room: 'room/room',
       isVisitorLogin: 'user/isVisitorLogin',
-      liveStatus: 'room/liveStatus',
       phoneRegisterShow: 'user/phoneRegisterShow',
       user: 'user/user',
     }),

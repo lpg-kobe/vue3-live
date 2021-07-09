@@ -55,7 +55,6 @@ export default {
         console.log('maxTop')
         this.$emit('maxTop')
       } else if (this.wrap.scrollTop >= h_wrap - h_box - 50) {
-        console.log('maxBottom')
         this.$emit('maxBottom')
       }
     });

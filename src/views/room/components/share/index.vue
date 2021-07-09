@@ -52,12 +52,32 @@
       </div>
     </el-popover> -->
 
-    <div class="fl share-other"><i class="iconfont icon-a"></i>{{ $t('common.share') }}
+    <div class="fl share-other">
+      <i class="iconfont icon-a"></i>{{ $t("common.share") }}
       <div class="share-btn">
-        <a href="javascript:" class="iconfont icon-weichat" :title="$t('common.weChat')"></a>
-        <a :href="weibo + '&pic=' + room.coverUrl" target="_blank" class="iconfont icon-xinlang" :title="$t('common.microblog')"></a>
-        <a :href="qzone + '&pics=' + room.coverUrl" target="_blank" class="iconfont icon-Qzone" :title="$t('common.Qzone')"></a>
-        <a :href="qq + '&pics=' + room.coverUrl" target="_blank" class="iconfont icon-QQ" title="QQ"></a>
+        <a
+          href="javascript:"
+          class="iconfont icon-weichat"
+          :title="$t('common.weChat')"
+        ></a>
+        <a
+          :href="weibo + '&pic=' + room.coverUrl"
+          target="_blank"
+          class="iconfont icon-xinlang"
+          :title="$t('common.microblog')"
+        ></a>
+        <a
+          :href="qzone + '&pics=' + room.coverUrl"
+          target="_blank"
+          class="iconfont icon-Qzone"
+          :title="$t('common.Qzone')"
+        ></a>
+        <a
+          :href="qq + '&pics=' + room.coverUrl"
+          target="_blank"
+          class="iconfont icon-QQ"
+          title="QQ"
+        ></a>
       </div>
     </div>
     <!-- <span class="share-fence">|</span>
@@ -68,52 +88,60 @@
     <span class="share-fence">|</span>
     <div class="fl share-mobile-watch">
       <span class="iconfont icon-5app"></span>
-      <span>{{ $t('common.watchInMobile') }}</span>
+      <span>{{ $t("common.watchInMobile") }}</span>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import QRious from 'qrious'
-import { VITE_wapBaseUrl } from '../../constants'
+import { mapGetters, mapState } from "vuex";
+import QRious from "qrious";
+import { VITE_wapBaseUrl } from "../../constants";
 export default {
-  name: 'share-bar',
-  data () {
+  name: "share-bar",
+  data() {
     return {
-      pageUrl: '',
-      weibo: '',
-      qzone: '',
-      qq: '',
+      pageUrl: "",
+      weibo: "",
+      qzone: "",
+      qq: "",
       popover1: false,
       popover2: false,
-      popover3: false
-    }
+      popover3: false,
+    };
   },
   computed: {
     ...mapGetters({
-      room: 'room/room',
-      roomId: 'room/roomId'
-    })
+      room: "room/room",
+    }),
+    ...mapState({
+      roomId: ({ router: { params } }) => params?.roomId,
+    }),
   },
-  mounted () {
-    this.pageUrl = `https://${VITE_wapBaseUrl}/livewap/#/live/${this.roomId}`
+  mounted() {
+    this.pageUrl = `https://${VITE_wapBaseUrl}/livewap/#/live/${this.roomId}`;
     new QRious({
-          element: document.getElementById('qr'),
-          value: this.pageUrl
-        })
+      element: document.getElementById("qr"),
+      value: this.pageUrl,
+    });
     new QRious({
-          element: document.getElementById('qr2'),
-          value: this.pageUrl
-        })
-    let title = this.room.name
-    let url = encodeURIComponent(location.href)
-    let desc = this.room.description.replace(/<br>/g, ',')
-    let param = 'title=' + title + '&url=' + url
-    desc = desc.length > 20 ? desc.substring(0, 20) + '...' : desc
-    this.weibo = 'https://service.weibo.com/share/share.php?' + param
-    this.qzone = 'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' + param + '&desc=' + desc + '&summary=' + desc
-    this.qq = 'http://connect.qq.com/widget/shareqq/index.html?' + param
-  }
-}
+      element: document.getElementById("qr2"),
+      value: this.pageUrl,
+    });
+    let title = this.room.name;
+    let url = encodeURIComponent(location.href);
+    let desc = this.room.description.replace(/<br>/g, ",");
+    let param = "title=" + title + "&url=" + url;
+    desc = desc.length > 20 ? desc.substring(0, 20) + "..." : desc;
+    this.weibo = "https://service.weibo.com/share/share.php?" + param;
+    this.qzone =
+      "http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?" +
+      param +
+      "&desc=" +
+      desc +
+      "&summary=" +
+      desc;
+    this.qq = "http://connect.qq.com/widget/shareqq/index.html?" + param;
+  },
+};
 </script>

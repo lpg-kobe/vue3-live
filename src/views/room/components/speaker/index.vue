@@ -2,10 +2,15 @@
   <div
     class="ofweek-speaker live-speaker-container"
     ref="speakerRef"
-    @mouseover="onLiveStreamMouse(1)"
-    @mouseout="onLiveStreamMouse(0)"
+    @mouseenter="onLiveStreamMouseEnter"
+    @mouseleave="onLiveStreamMouseLeave"
+    v-if="speaker"
   >
     <div id="speakerId"></div>
+    <!--default cover-->
+    <div class="stream-cover" v-show="!speaker.isOpenCamera">
+      <Img :src="speaker.headUrl" alt="cover" />
+    </div>
     <div class="controll-layer">
       <!-- <i class="icon icon-switch" @click="handleIconClick('switch')"></i> -->
       <i
@@ -17,130 +22,156 @@
     <div class="stream-label">
       <label class="label-name">{{ speaker.nick }}</label>
     </div>
-    <stream-mask v-show="speakerMaskShow" :stream="speaker" />
+    <stream-mask
+      v-show="speaker.maskShow"
+      :member="speaker"
+      @menu-click="handleSpeakerMaskClick"
+    />
+  </div>
+  <div class="speaker-empty" v-show="!speaker">
+    <p>暂无主讲人</p>
   </div>
 </template>
 
 <script>
 /** 互动直播主讲人控件 */
-import { mapState } from 'vuex'
-import { eventEmitter } from '../../../../utils/event'
-import { exitFullScreen, fullScreenEle } from '../../../../utils/tool'
-import streamMask from '../streamMask.vue'
+import { mapState } from "vuex";
+import { eventEmitter } from "../../../../utils/event";
+import { exitFullScreen, fullScreenEle } from "../../../../utils/tool";
+import Img from "../../../../components/img/index.vue";
+import streamMask from "../streamMask.vue";
 
 export default {
-  name: 'mainSpeaker',
+  name: "mainSpeaker",
   components: {
     streamMask,
+    Img,
   },
   created() {
-    this.unbindEvent()
-    this.bindEvent()
+    this.unbindEvent();
+    this.bindEvent();
   },
   data() {
     return {
-      speakerMaskShow: false,
-      speaker: {},
       isFullScreen: false,
-    }
+    };
   },
   computed: {
+    speaker: ({ live }) =>
+      live.liveMembers?.find(({ isMainSpeaker }) => isMainSpeaker),
     ...mapState({
       live: ({ live }) => live,
       user: ({ user }) => user,
     }),
   },
-  watch: {
-    'live.liveSpeaker.userId': {
-      handler: async function (nVal, oVal) {
-        const oldSpeaker = this.live.liveStreamList.find(
-          ({ userId_ }) => String(userId_) === String(oVal)
-        )
-        const newSpeaker = this.live.liveStreamList.find(
-          ({ userId_ }) => String(userId_) === String(nVal)
-        )
-        this.speaker = Object.assign(newSpeaker || {}, {
-          nick: this.live.liveMembers.find(
-            ({ memberId }) => String(memberId) === String(newSpeaker?.userId_)
-          )?.nick,
-        })
-        // old stream must stop & replay in new dom if it has been play in other dom
-        await oldSpeaker?.stop()
-        await newSpeaker?.stop()
-        // 主讲人跟视频流列表画面交换
-        this.$nextTick(() => {
-          oldSpeaker &&
-            eventEmitter.emit(eventEmitter.event.live.playStream, {
-              stream: oldSpeaker,
-              target: `live_stream_${oldSpeaker.userId_}`,
-            })
-          newSpeaker &&
-            eventEmitter.emit(eventEmitter.event.live.playStream, {
-              stream: newSpeaker,
-              target: 'speakerId',
-            })
-        })
-      },
-      immediate: true,
-    },
-  },
+
   methods: {
     unbindEvent() {
-      eventEmitter.off(eventEmitter.event.live.toggleMedia, this.onToggleMedia)
+      eventEmitter.off(eventEmitter.event.live.toggleMedia, this.onToggleMedia);
+      this.$nextTick(() => {
+        this.$refs.speakerRef?.removeEventListener(
+          "fullscreenchange",
+          this.onFullScreenChange
+        );
+      });
     },
 
     bindEvent() {
-      eventEmitter.on(eventEmitter.event.live.toggleMedia, this.onToggleMedia)
+      eventEmitter.on(eventEmitter.event.live.toggleMedia, this.onToggleMedia);
+      this.$nextTick(() => {
+        this.$refs.speakerRef?.addEventListener(
+          "fullscreenchange",
+          this.onFullScreenChange
+        );
+      });
     },
 
     /**
-     * @desc 直播间切换媒体设备开关
-     * @param {type:String,userId:String,isOpenMic:Boolean,isOpenCamera:Boolean} Object
+     * @desc 直播间切换媒体设备开关 1、用户自行切换 2、主播推送嘉宾切换
+     * @param {type:String,userId:String,isOpenMike:Boolean,isOpenCamera:Boolean} Object
      */
-    onToggleMedia({ data: { type, userId, isOpenMic, isOpenCamera } }) {
-      const isMicToggle = type === 'mic'
+    onToggleMedia({ data: { type, userId, isOpenMike, isOpenCamera } }) {
+      const isMicToggle = type === "mic";
       const targetIsSpeaker =
-        String(userId) === String(this.live.liveSpeaker.userId)
+        String(userId) === String(this.live.liveSpeaker.userId);
       if (!targetIsSpeaker) {
-        return
+        return;
       }
       this.speaker = Object.assign(this.speaker, {
-        isOpenMic: isMicToggle ? isOpenMic : this.speaker.isOpenMic,
+        isOpenMike: isMicToggle ? isOpenMike : this.speaker.isOpenMike,
         isOpenCamera: !isMicToggle ? isOpenCamera : this.speaker.isOpenCamera,
-      })
+      });
     },
 
-    onLiveStreamMouse(visible) {
-      const { role, imAccount } = this.user.user
-      const isSelf = String(imAccount) === String(this.speaker.userId_)
+    onLiveStreamMouseEnter() {
+      const { role, imAccount } = this.user.user;
+      const isSelf = +imAccount === +this.speaker.memberId;
+
       if ((role !== 1 && !isSelf) || this.isFullScreen) {
-        return
+        return;
       }
-      this.speakerMaskShow = visible
+
+      this.speaker.maskShow = true;
+    },
+
+    onLiveStreamMouseLeave() {
+      this.speaker.maskShow = false;
+    },
+
+    onFullScreenChange() {
+      this.isFullScreen =
+        document.fullscreenElement || document.mozFullScreenElement;
     },
 
     handleIconClick(menu) {
       const actionMap = {
         screen: () => {
           if (!this.isFullScreen) {
-            this.isFullScreen = true
-            this.speakerMaskShow = false
-            fullScreenEle(this.$refs.speakerRef)
+            this.isFullScreen = true;
+            this.speaker.maskShow = false;
+            fullScreenEle(this.$refs.speakerRef);
           } else {
-            this.isFullScreen = false
-            exitFullScreen(this.$refs.speakerRef)
+            this.isFullScreen = false;
+            exitFullScreen(this.$refs.speakerRef);
           }
         },
         switch: () => {},
-      }
-      actionMap[menu]?.()
+      };
+      actionMap[menu]?.();
+    },
+
+    handleSpeakerMaskClick({ type }) {
+      const isLiveToggle = type === "live";
+      // 主讲人下麦屏蔽遮罩
+      isLiveToggle && (this.speaker.maskShow = false);
     },
   },
-}
+};
 </script>
 
 <style lang="scss" scoped>
 .ofweek-speaker {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  .stream-cover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: url(../../../../assets/img/live/live_default_avatar.png)
+      no-repeat center/100px;
+    img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      object-fit: cover;
+    }
+  }
   .stream-label {
     font-size: 14px;
     color: #fff;
@@ -174,6 +205,20 @@ export default {
         top: 10px;
       }
     }
+  }
+}
+.speaker-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url(../../../../assets/img/live/bg-nospeaker.png) no-repeat center;
+  p {
+    color: #797878;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 155px;
   }
 }
 </style>

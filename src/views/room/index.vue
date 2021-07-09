@@ -19,32 +19,27 @@
 </template>
 
 <script>
-import heads from '../../components/layout/header/index.vue'
-import liveBox from './components/live/index.vue'
-import thumbView from './components/thumbView/index.vue'
-import imgText from './components/imgText/index.vue'
-import chat from './components/chat/index.vue'
+import heads from "../../components/layout/header/index.vue";
+import liveBox from "./components/live/index.vue";
+import thumbView from "./components/thumbView/index.vue";
+import imgText from "./components/imgText/index.vue";
+import chat from "./components/chat/index.vue";
 // import mpCard from './components/header/mpCard.vue'
 // import photoLiveBox from './components/chat/photoLiveBox.vue'
-import Cookies from 'js-cookie'
-import {
-  sendWebsocket,
-  closeWebsocket,
-  websocketSend,
-} from '../../utils/websocket.js'
-import { mapState } from 'vuex'
-import { loopToInterval } from '../../utils/tool'
+import Cookies from "js-cookie";
+import OfweekSocket from "../../utils/websocket.js";
+import { mapState } from "vuex";
+import { loopToInterval } from "../../utils/tool";
 
 export default {
-  name: 'room',
+  name: "room",
   data() {
     return {
       initFinish: false,
       query: null,
-      timer: null,
-      reconnectTimer: null,
+      socket: null,
       heartbeatTimer: null,
-    }
+    };
   },
   components: {
     heads,
@@ -66,99 +61,91 @@ export default {
   },
 
   created() {
-    this.bindEvent()
-    this.initRoom()
+    this.bindEvent();
+    this.initRoom();
   },
 
   methods: {
     bindEvent() {
       window.onbeforeunload = () => {
-        console.log('onbeforeunload')
-        clearInterval(this.timer)
-        clearInterval(this.reconnectTimer)
-        closeWebsocket()
-      }
-    },
-
-    wsMessage(data) {
-      console.log(data.data)
-    },
-
-    wsError() {
-      clearInterval(this.timer)
-      clearInterval(this.reconnectTimer)
-      this.reconnectTimer = setTimeout(() => {
-        this.requstWs()
-      }, 3 * 1000)
-    },
-
-    websocketOpen() {
-      // 每隔5秒发一次心跳
-      this.timer = setInterval(() => {
-        websocketSend('ping')
-      }, 5 * 1000)
+        console.log("onbeforeunload");
+      };
     },
 
     requstWs() {
-      closeWebsocket()
       this.query = {
         groupid: String(this.roomId),
         memberid: String(this.user.user.imAccount),
-        type: '2',
-        token: Cookies.get('userToken'),
-      }
-      // 发起ws请求
-      sendWebsocket({
-        query: this.query,
-        successCallback: this.wsMessage,
-        errCallback: this.wsError,
-        openCallback: this.websocketOpen,
-      })
+        type: "2",
+        token: Cookies.get("userToken"),
+        sendRate: 1 * 1000,
+      };
+      this.socket = new OfweekSocket(this.query);
+      // 直播状态取决于socket连接
+      this.socket.on(this.socket.code["XXX"], () => {
+        this.live.liveSocketStatus &&
+          this.$store.commit("live/setState", {
+            key: "liveSocketStatus",
+            value: 0,
+          });
+      });
+      this.socket.on(this.socket.code["200"], () => {
+        !this.live.liveSocketStatus &&
+          this.$store.commit("live/setState", {
+            key: "liveSocketStatus",
+            value: 1,
+          });
+      });
     },
 
-    /**发送房间心跳 */
+    /**发送房间用户心跳 */
     sendRoomHeartbeat() {
       loopToInterval(
         () => {
           return this.$store.dispatch({
-            type: 'room/roomHeartbeat',
+            type: "room/roomHeartbeat",
             payload: {
               memberId: this.user.user.imAccount,
               roomId: this.roomId,
             },
-          })
+          });
         },
         this.heartbeatTimer,
         8 * 1000
-      )
+      );
     },
 
     async initRoom() {
-      this.$store.commit('room/setState', [
-        {
-          key: 'roomId',
-          value: this.roomId,
-        },
-      ])
-      await this.$store.dispatch({
-        type: 'room/entryroom',
+      let result = {};
+      result = await this.$store.dispatch({
+        type: "room/entryroom",
         payload: { roomid: this.roomId, v: new Date().getTime() },
         callback: () => {},
-      })
-      await this.$store.dispatch({
-        type: 'room/getroom',
+      });
+
+      result = await this.$store.dispatch({
+        type: "room/getroom",
         payload: { roomid: this.roomId },
-      })
-      this.initFinish = true
-      this.requstWs()
-      this.sendRoomHeartbeat()
+        callback: ({ manyLiveStatus }) => {
+          this.$store.commit("live/setState", [
+            {
+              key: "liveStart",
+              value: Boolean(manyLiveStatus),
+            },
+          ]);
+        },
+      });
+
+      if (!result.status) {
+        return;
+      }
+
+      this.initFinish = true;
+      this.requstWs();
+      this.sendRoomHeartbeat();
     },
   },
-
-  beforeDestroy() {
-    closeWebsocket()
-  },
-}
+};
 </script>
 
 <style lang="scss">

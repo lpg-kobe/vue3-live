@@ -6,13 +6,13 @@
     >
       <textarea class="imgtext_textarea" rows="10" v-model="imgtxt"></textarea>
       <div class="clearfix imgtext_control">
-        <p class="fl"><i>!</i>{{ $t('imgText.redHint') }}</p>
+        <p class="fl"><i>!</i>{{ $t("imgText.redHint") }}</p>
         <div class="fr">
           <span class="grey_btn" @click="dialogVisible = true">{{
-            $t('imgText.upload')
+            $t("imgText.upload")
           }}</span>
-          <span @click="showPreview">{{ $t('imgText.preview') }}</span>
-          <span @click="issueFn">{{ $t('imgText.issue') }}</span>
+          <span @click="showPreview">{{ $t("imgText.preview") }}</span>
+          <span @click="issueFn">{{ $t("imgText.issue") }}</span>
         </div>
       </div>
     </div>
@@ -20,7 +20,7 @@
     <ul id="height_ul" class="img_text">
       <li v-for="(item, index) of data" :key="index">
         <div class="img_text_time clearfix">
-          <span>{{ formatDate(item.createDate, 'hh:mm:ss YYYY-MM-DD') }}</span>
+          <span>{{ formatDate(item.createDate, "hh:mm:ss YYYY-MM-DD") }}</span>
           <div
             class="fr"
             v-show="user.role === 1 || item.senderId == user.imAccount"
@@ -50,7 +50,7 @@
       class="no_data_tip"
       v-show="data.length < 1 && user.role != 1 && user.role != 2"
     >
-      {{ $t('imgText.noData') }}！
+      {{ $t("imgText.noData") }}！
     </p>
     <p
       class="chat-icon-loading"
@@ -58,7 +58,7 @@
       v-loading="isLoading"
     ></p>
     <p class="over_data_tip" v-show="data.length > 1 && isOver">
-      {{ $t('imgText.loadOver') }}...
+      {{ $t("imgText.loadOver") }}...
     </p>
 
     <!-- 上传图片 -->
@@ -86,7 +86,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="showPreview()">{{
-            $t('common.finish')
+            $t("common.finish")
           }}</el-button>
         </span>
       </template>
@@ -111,10 +111,10 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible2 = false">{{
-            $t('imgText.btnEdit')
+            $t("imgText.btnEdit")
           }}</el-button>
           <el-button type="primary" @click="issueFn">{{
-            $t('imgText.btnIssue')
+            $t("imgText.btnIssue")
           }}</el-button>
         </span>
       </template>
@@ -148,7 +148,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="imagetextUpdateFn">{{
-            $t('imgText.btnChange')
+            $t("imgText.btnChange")
           }}</el-button>
         </span>
       </template>
@@ -157,43 +157,45 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from "vuex";
 import {
   imagetextSendmsg,
   imagetextUpdate,
   imagetextDeletemsg,
-} from '../../../../services/room/index.js'
-import { formatDate } from '../../../../utils/tool'
-import { VITE_baseUrl } from '../../../../constants.js'
+} from "../../../../services/room/index.js";
+import { formatDate } from "../../../../utils/tool";
+import { VITE_baseUrl } from "../../../../constants.js";
 const baseUrl =
-  process.env.NODE_ENV === 'development'
-    ? 'https://a.ofweek.com:8081/uploadImg'
-    : `https://${VITE_baseUrl}/api/fileremote`
+  process.env.NODE_ENV === "development"
+    ? "https://a.ofweek.com:8081/uploadImg"
+    : `https://${VITE_baseUrl}/api/fileremote`;
 export default {
-  name: 'imgTextList',
+  name: "imgTextList",
   data() {
     return {
       dialogVisible: false,
       dialogVisible2: false,
       dialogVisible3: false,
-      uploadSrc: baseUrl + '/file/uploadfile2',
+      uploadSrc: baseUrl + "/file/uploadfile2",
       fileList: [],
-      imgtxt: '',
+      imgtxt: "",
       uploadImgData: {
-        filetype: '0',
-        module: 'msgpictext',
+        filetype: "0",
+        module: "msgpictext",
       },
-      updateImgtxt: '',
+      updateImgtxt: "",
       fileList2: [],
       updateImgList: [],
-      updateMsgid: '',
-    }
+      updateMsgid: "",
+    };
   },
   computed: {
     ...mapGetters({
-      roomId: 'room/roomId',
-      imAccount: 'user/imAccount',
-      user: 'user/user',
+      imAccount: "user/imAccount",
+      user: "user/user",
+    }),
+    ...mapState({
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
   props: {
@@ -214,145 +216,145 @@ export default {
     handleRemove(file) {
       this.fileList.forEach((item, index) => {
         if (file.response.data === item.url) {
-          this.fileList.splice(index, 1)
+          this.fileList.splice(index, 1);
         }
-      })
-      console.log(this.fileList)
+      });
+      console.log(this.fileList);
     },
     handleRemove2(file) {
       this.fileList2.forEach((item, index) => {
         if (file.url === item) {
-          this.fileList2.splice(index, 1)
+          this.fileList2.splice(index, 1);
         }
-      })
-      console.log(this.fileList2)
+      });
+      console.log(this.fileList2);
     },
     uploadSuccess(response, file, fileList) {
-      console.log(file)
+      console.log(file);
       this.fileList.push({
         url: response.data,
-      })
-      console.log(this.fileList)
+      });
+      console.log(this.fileList);
     },
     uploadSuccess2(response, file, fileList) {
-      this.fileList2.push(response.data)
-      console.log(this.fileList2)
+      this.fileList2.push(response.data);
+      console.log(this.fileList2);
     },
     tranFileId() {
-      var idArr = []
+      var idArr = [];
       this.fileList.forEach((item) => {
-        idArr.push(item.url)
-      })
-      return idArr.join(',')
+        idArr.push(item.url);
+      });
+      return idArr.join(",");
     },
     showPreview() {
       if (this.fileList.length == 0 && this.imgtxt.length == 0) {
-        this.$message.error('请添加图片或者文字')
-        return
+        this.$message.error("请添加图片或者文字");
+        return;
       }
-      this.dialogVisible = false
-      this.dialogVisible2 = true
+      this.dialogVisible = false;
+      this.dialogVisible2 = true;
     },
     showEditDialog(item) {
-      this.updateMsgid = item.msgId
-      this.updateImgtxt = item.text
-      this.updateImgList = []
-      this.fileList2 = []
+      this.updateMsgid = item.msgId;
+      this.updateImgtxt = item.text;
+      this.updateImgList = [];
+      this.fileList2 = [];
       item.imageVoList.forEach((item) => {
         this.updateImgList.push({
           url: item.imageUrl,
-        })
-        this.fileList2.push(item.imageUrl)
-      })
-      this.dialogVisible3 = true
+        });
+        this.fileList2.push(item.imageUrl);
+      });
+      this.dialogVisible3 = true;
     },
     // 发布图文
     issueFn() {
       let param = {
-        fileUrl: '',
+        fileUrl: "",
         roomId: this.roomId,
         senderId: this.imAccount,
         text: encodeURI(this.imgtxt),
         type: 1,
-      }
+      };
 
       if (this.fileList.length == 0 && this.imgtxt.length == 0) {
-        this.$message.error('请添加图片或者文字')
-        return
+        this.$message.error("请添加图片或者文字");
+        return;
       } else if (this.fileList.length > 0 && this.imgtxt.length == 0) {
-        param.type = 2
-        param.fileUrl = this.tranFileId()
+        param.type = 2;
+        param.fileUrl = this.tranFileId();
       } else if (this.fileList.length > 0 && this.imgtxt.length > 0) {
-        param.type = 3
-        param.fileUrl = this.tranFileId()
+        param.type = 3;
+        param.fileUrl = this.tranFileId();
       }
 
       imagetextSendmsg(param).then(({ data }) => {
-        let res = data
+        let res = data;
         if (res.code === 0) {
-          this.$message.success('发送成功')
-          this.imgtxt = ''
-          this.fileList = []
-          this.$refs['imgTextUpload'].clearFiles()
-          this.dialogVisible2 = false
+          this.$message.success("发送成功");
+          this.imgtxt = "";
+          this.fileList = [];
+          this.$refs["imgTextUpload"].clearFiles();
+          this.dialogVisible2 = false;
         } else {
-          this.$message.error(res.message)
+          this.$message.error(res.message);
         }
-      })
+      });
     },
     // 删除图文
     imgtextDelete(item) {
-      this.$confirm('确认删除?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
+      this.$confirm("确认删除?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
       }).then(() => {
         imagetextDeletemsg({
           msgId: item.msgId,
           roomId: item.roomId,
         }).then(({ data }) => {
-          let res = data
+          let res = data;
           if (res.code === 0) {
-            this.$message.success('删除成功')
+            this.$message.success("删除成功");
           } else {
-            this.$message.error(res.message)
+            this.$message.error(res.message);
           }
-        })
-      })
+        });
+      });
     },
     imagetextUpdateFn() {
       let param = {
-        fileUrl: '',
+        fileUrl: "",
         msgId: this.updateMsgid,
         text: encodeURI(this.updateImgtxt),
         type: 1,
-      }
+      };
 
       if (this.fileList2.length == 0 && this.updateImgtxt.length == 0) {
-        this.$message.error('请添加图片或者文字')
-        return
+        this.$message.error("请添加图片或者文字");
+        return;
       } else if (this.fileList2.length > 0 && this.updateImgtxt.length == 0) {
-        param.type = 2
-        param.fileUrl = this.fileList2.join(',')
+        param.type = 2;
+        param.fileUrl = this.fileList2.join(",");
       } else if (this.fileList2.length > 0 && this.updateImgtxt.length > 0) {
-        param.type = 3
-        param.fileUrl = this.fileList2.join(',')
+        param.type = 3;
+        param.fileUrl = this.fileList2.join(",");
       }
 
       imagetextUpdate(param).then(({ data }) => {
-        let res = data
+        let res = data;
         if (res.code === 0) {
-          this.$message.success('修改成功')
-          this.dialogVisible3 = false
+          this.$message.success("修改成功");
+          this.dialogVisible3 = false;
         } else {
-          this.$message.error(res.message)
+          this.$message.error(res.message);
         }
-      })
+      });
     },
   },
   created() {},
   mounted() {},
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -380,7 +382,7 @@ export default {
         position: absolute;
         left: -30px;
         top: 5px;
-        content: '';
+        content: "";
         width: 10px;
         height: 10px;
         border-radius: 10px;

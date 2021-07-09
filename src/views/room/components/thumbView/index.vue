@@ -5,11 +5,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import speaker from '../speaker/index.vue'
+import { mapState } from "vuex";
+import speaker from "../speaker/index.vue";
 
 export default {
-  name: 'thumbView',
+  name: "thumbView",
   components: {
     speaker,
   },
@@ -18,7 +18,7 @@ export default {
       live: ({ live }) => live,
     }),
   },
-}
+};
 </script>
 <style lang="scss" scoped>
 .thumb-view-container {

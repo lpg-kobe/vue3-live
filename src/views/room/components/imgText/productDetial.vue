@@ -5,20 +5,22 @@
         <div class="prod-title-wrap">
           <div class="prod-dialog-title">
             {{
-              `${$t('product.show')} > ${
-                title == '推荐产品' ? $t('product.recommend') : title
+              `${$t("product.show")} > ${
+                title == "推荐产品" ? $t("product.recommend") : title
               }`
             }}
           </div>
           <div class="iconfont prod-dialog-close" @click="closeDialogFn">
-            &#xe615;
+            <i class="el-icon-close"></i>
           </div>
         </div>
         <div class="prod-bd">
           <div class="info-wrap clearfix">
             <div class="product-left fl">
               <div class="img-pro">
-                <!-- <pic-zoom :url="productInfo.imageUrlList[curImgIndex]"></pic-zoom> -->
+                <pic-zoom
+                  :url="productInfo.imageUrlList[curImgIndex]"
+                ></pic-zoom>
               </div>
               <ul class="img-tab">
                 <li
@@ -34,22 +36,22 @@
             <div class="product-right fl">
               <div class="name">{{ productInfo.productName }}</div>
               <div class="price" v-if="productInfo.price > 0">
-                <i>{{ $t('product.price') }}</i
+                <i>{{ $t("product.price") }}</i
                 >￥<span>{{ productInfo.price }}</span>
               </div>
               <div class="price" v-if="productInfo.price == 0">
-                <span>{{ $t('product.free') }}</span>
+                <span>{{ $t("product.free") }}</span>
               </div>
               <div class="price" v-if="productInfo.price < 0">
-                <span>{{ $t('product.personally') }}</span>
+                <span>{{ $t("product.personally") }}</span>
               </div>
               <div class="apply-btn">
-                <div @click="applyFn">{{ $t('product.sample') }}</div>
-                <div @click="leaveMsgFn">{{ $t('product.message') }}</div>
+                <div @click="applyFn">{{ $t("product.sample") }}</div>
+                <div @click="leaveMsgFn">{{ $t("product.message") }}</div>
               </div>
-              <div class="clearfix">
+              <div class="clearfix" v-show="false">
                 <div class="share-other fr">
-                  <i class="iconfont icon-a"></i>{{ $t('common.share') }}
+                  <i class="iconfont icon-a"></i>{{ $t("common.share") }}
                   <div class="share-btn">
                     <!-- <a href="javascript:" class="iconfont icon-weichat" :title="$t('common.weChat')" v-popover:popover1></a> -->
                     <a
@@ -89,7 +91,7 @@
                 class="file-list"
                 v-show="productInfo.productDataDtos.length > 0"
               >
-                <p>{{ $t('product.downloadFile') }}：</p>
+                <p>{{ $t("product.downloadFile") }}：</p>
                 <ul>
                   <li
                     class="clearfix"
@@ -102,7 +104,7 @@
                       target="_blank"
                       :href="`//${baseUrl}/api/web/download/roomdata?dataid=${item.dataId}&roomid=${roomId}&devType=3`"
                       :download="item.productName"
-                      >{{ $t('product.download') }}</a
+                      >{{ $t("product.download") }}</a
                     >
                   </li>
                 </ul>
@@ -119,7 +121,7 @@
             </div>
           </div>
           <div class="intro" v-show="productInfo.summary.length > 0">
-            <div class="intro-title">{{ $t('product.introduce') }}</div>
+            <div class="intro-title">{{ $t("product.introduce") }}</div>
             <el-scrollbar>
               <p
                 class="intro-con"
@@ -134,36 +136,36 @@
 </template>
 
 <script>
-import PicZoom from './picZoom.vue'
-import QRious from 'qrious'
-import { mapGetters } from 'vuex'
+import PicZoom from "./picZoom.vue";
+import QRious from "qrious";
+import { mapGetters, mapState } from "vuex";
 import {
   productGetone,
   answerQuestionnaire,
-} from '../../../../services/room/index.js'
-import { VITE_baseUrl } from '../../../../constants.js'
+} from "../../../../services/room/index.js";
+import { VITE_baseUrl } from "../../../../constants.js";
 export default {
-  name: 'question',
+  name: "question",
   data() {
     return {
       baseUrl: VITE_baseUrl,
       productInfo: {
-        imageUrlList: [''],
+        imageUrlList: [""],
         productDataDtos: [],
-        summary: '',
+        summary: "",
       },
       loading: false,
       curImgIndex: 0,
-      pageUrl: '',
-      weibo: '',
-      qzone: '',
-      qq: '',
+      pageUrl: "",
+      weibo: "",
+      qzone: "",
+      qq: "",
       popover1: false,
       fileList: [],
       pageSize: 1,
       currentPage: 1,
       listTotal: 0,
-    }
+    };
   },
   components: { PicZoom },
   props: {
@@ -176,13 +178,15 @@ export default {
   },
   computed: {
     ...mapGetters({
-      roomId: 'room/roomId',
-      room: 'room/user',
+      room: "room/user",
+    }),
+    ...mapState({
+      roomId: ({ router: { params } }) => params?.roomId,
     }),
   },
   methods: {
     closeDialogFn() {
-      this.$emit('hideDetial')
+      this.$emit("hideDetial");
     },
     applyFn() {
       // this.$emit('applyFn', this.productId)
@@ -191,37 +195,37 @@ export default {
       // this.$emit('leaveMsgFn', this.productId)
     },
     initShare() {
-      this.pageUrl = `https://room.ofweek.com/livewap/#/live/${this.roomId}`
+      this.pageUrl = `https://room.ofweek.com/livewap/#/live/${this.roomId}`;
       new QRious({
-        element: document.getElementById('qr4'),
+        element: document.getElementById("qr4"),
         value: this.pageUrl,
-      })
-      let title = this.productInfo.productName
-      let url = encodeURIComponent(location.href)
-      let desc = `我在${this.room.name}展会上发现了一个不错的展品，赶快来看看吧。`
-      title = title.length > 20 ? title.substring(0, 20) + '...' : title
-      desc = desc.length > 120 ? desc.substring(0, 120) + '...' : desc
-      let param = 'title=' + title + '&url=' + url
-      this.weibo = 'https://service.weibo.com/share/share.php?' + param
+      });
+      let title = this.productInfo.productName;
+      let url = encodeURIComponent(location.href);
+      let desc = `我在${this.room.name}展会上发现了一个不错的展品，赶快来看看吧。`;
+      title = title.length > 20 ? title.substring(0, 20) + "..." : title;
+      desc = desc.length > 120 ? desc.substring(0, 120) + "..." : desc;
+      let param = "title=" + title + "&url=" + url;
+      this.weibo = "https://service.weibo.com/share/share.php?" + param;
       this.qzone =
-        'http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?' +
+        "http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?" +
         param +
-        '&desc=' +
+        "&desc=" +
         desc +
-        '&summary=' +
-        desc
-      this.qq = 'http://connect.qq.com/widget/shareqq/index.html?' + param
+        "&summary=" +
+        desc;
+      this.qq = "http://connect.qq.com/widget/shareqq/index.html?" + param;
     },
     group(array, subGroupLength) {
-      let index = 0
-      let newArray = []
+      let index = 0;
+      let newArray = [];
       while (index < array.length) {
-        newArray.push(array.slice(index, (index += subGroupLength)))
+        newArray.push(array.slice(index, (index += subGroupLength)));
       }
-      return newArray
+      return newArray;
     },
     pageChange(val) {
-      this.currentPage = val
+      this.currentPage = val;
     },
   },
   created() {},
@@ -229,21 +233,21 @@ export default {
   watch: {
     productId(val) {
       if (val) {
-        this.loading = true
+        this.loading = true;
         productGetone({ productid: val }).then(({ data }) => {
-          let res = data
+          let res = data;
           if (res.code === 0) {
-            this.productInfo = res.data
-            this.curImgIndex = 0
-            this.fileList = this.group(res.data.productDataDtos, 5)
-            this.listTotal = this.fileList.length
-            this.initShare()
+            this.productInfo = res.data;
+            this.curImgIndex = 0;
+            this.fileList = this.group(res.data.productDataDtos, 5);
+            this.listTotal = this.fileList.length;
+            this.initShare();
           }
-        })
+        });
       }
     },
   },
-}
+};
 </script>
 <style lang="scss">
 .intro {
@@ -284,7 +288,7 @@ export default {
   width: 1000px;
   margin: 0 0 0 -500px;
   transform: translateY(-50%);
-  font: normal 14px/1.5 'Microsoft Yahei';
+  font: normal 14px/1.5 "Microsoft Yahei";
   letter-spacing: 1px;
   background: #fff;
 }
@@ -486,7 +490,7 @@ export default {
       position: absolute;
       left: 0;
       top: 0;
-      content: '';
+      content: "";
       width: 3px;
       height: 16px;
       background: #2691e9;

@@ -12,7 +12,6 @@ export default {
   namespaced: true,
   state: {
     userInfo: getUserSession(),
-    userName: '',
     user: {},
     mainFormId: '',
     closeNeedOut: false,
@@ -26,7 +25,6 @@ export default {
     dialogShopVideo: false
   },
   getters: {
-    userName: state => state.userName,
     user: state => state.user,
     mainFormId: state => state.mainFormId,
     closeNeedOut: state => state.closeNeedOut,
@@ -40,7 +38,7 @@ export default {
     dialogShopVideo: state => state.dialogShopVideo,
   },
   mutations: {
-    setState(state, params) {
+    setState (state, params) {
       if (Array.isArray(params)) {
         params.forEach(({ key, value }) => {
           state[key] = value
@@ -53,7 +51,7 @@ export default {
     }
   },
   actions: {
-    async login({ commit, dispatch }, { payload }) {
+    async login ({ commit, dispatch }, { payload }) {
       const { status, data: { data } } = await login(payload)
       status && dispatch({
         type: 'judgeLogin',
@@ -63,12 +61,12 @@ export default {
       })
     },
 
-    async sendSms({ commit, dispatch }, { payload, callback }) {
+    async sendSms ({ commit, dispatch }, { payload, callback }) {
       const { status, data } = await sendSms(payload)
       status && callback?.({ status, ...data })
     },
 
-    async smsLogin({ commit, dispatch }, { payload }) {
+    async smsLogin ({ commit, dispatch }, { payload }) {
       const { status, data: { data } } = await smsLogin(payload)
       status && dispatch({
         type: 'judgeLogin',
@@ -78,7 +76,7 @@ export default {
       })
     },
 
-    judgeLogin({ }, { payload: { data } }) {
+    judgeLogin ({ }, { payload: { data } }) {
       if (data?.isAuthorOrGuest === 0) {
         ElMessage.error('您还不是主播，请点击右下方申请直播');
         return;
